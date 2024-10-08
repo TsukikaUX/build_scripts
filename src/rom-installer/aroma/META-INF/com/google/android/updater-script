@@ -1,0 +1,14 @@
+if file_getprop("/tmp/aroma/lang.prop","selected.0") == "1" then
+    package_extract_file("META-INF/com/google/android/aroma/langs/japanese.lang", "/tmp/common.lang");
+endif;
+if file_getprop("/tmp/aroma/lang.prop","selected.0") == "2" then
+    package_extract_file("META-INF/com/google/android/aroma/langs/english.lang", "/tmp/common.lang");
+endif;
+package_extract_file("installer.sh", "/tmp/installer.sh");
+package_extract_file("source/functions.sh", "/tmp/functions.sh");
+package_extract_file("flasher.items", "/tmp/flasher.items");
+set_perm(0, 0, 0755, "/tmp/installer.sh");
+set_perm(0, 0, 0755, "/tmp/functions.sh");
+set_perm(0, 0, 0755, "/tmp/flasher.items");
+run_program("/tmp/installer.sh", "placebo");
+set_progress(0);

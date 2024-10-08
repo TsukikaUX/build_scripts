@@ -1,0 +1,68 @@
+ini_set("force_colorspace", "rgba");
+ini_set("rom_name", "Tsukika");
+ini_set("rom_version", "Eternal Bliss");
+ini_set("rom_author", "DOOM");
+ini_set("rom_device", "REF");
+ini_set("rom_date", "24-May-2008");
+splash(2000, "splash");
+fontresload("0", "ttf/NotoSansMedium.ttf", "11");
+fontresload("1", "ttf/NotoSansMedium.ttf", "14");
+theme("icmat");
+# FIX: LOADS THE LANGUAGE AGAIN TO FIX UNKNOWN CHARACTER PROBLEM IF THEY WENT BACK TO THIS WINDOW.
+loadlang("langs/english.lang");
+selectbox("", "Please select installer language that you want to use in this installation:", "@default", "lang.prop",
+    "Japanese",         "If you would like the process to be conducted in Japanese, please select this.", 1,
+    "English",          "If you would like the process to be conducted in English, please select this.", 0
+);
+# Load language list and font if Japanese is chosen.
+if prop("lang.prop", "selected.0") == "1" then
+    fontresload("0", "ttf/NotoSansJPRegular.ttf", "11");
+    fontresload("1", "ttf/NotoSansJPRegular.ttf", "14");
+    loadlang("langs/japanese.lang");
+endif;
+# Skip loading the font again if English is chosen.
+# FIX: LOAD THE FONT AGAIN TO FIX UNKNOWN CHARACTER PROBLEM IF THEY CHANGED THE LANGUAGE.
+if prop("lang.prop", "selected.0") == "2" then
+    fontresload("0", "ttf/NotoSansMedium.ttf", "11");
+    fontresload("1", "ttf/NotoSansMedium.ttf", "14");
+    loadlang("langs/english.lang");
+endif;
+viewbox(
+    "",
+    ""+
+    "<b><#selectbg_g><~welcome.text1></#></b>.\n"+
+    "<~welcome.text2>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"+
+    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t",
+    "@install"
+);
+if prop("lang.prop","selected.0") == "1" then
+    agreebox("", "<~terms.desc>", "@license", resread("tc-jp.txt"), "<~terms.check>", "<@center><~terms.confirm></@>");
+    textbox("", "<~changelog.sub.title>", "@info", resread("changelogs-japanese.txt"));
+endif;
+if prop("lang.prop","selected.0") == "2" then
+    agreebox("", "<~terms.desc>", "@license", resread("tc-en.txt"), "<~terms.check>", "<@center><~terms.confirm></@>");
+    textbox("", "<~changelog.sub.title>", "@info", resread("changelogs-english.txt"));
+endif;
+selectbox("", "<~checkbox.confirmation>", "@default", "adcmt.prop",
+    "<~text_yes>",         " ", 1,
+    "<~text_no>",          " ", 0
+);
+if prop("adcmt.prop", "selected.0") == "1" then
+    checkbox("", "<~checkbox.desc.first> | <~checkbox.desc>", "@apps", "checkbox0.prop", "", "", 2,
+        "IndexOneNameOne:", "IndexOneDeskOne:", 0,
+        "IndexOneNameTwo", "IndexOneDeskTwo:", 0
+    );
+    checkbox("", "<~checkbox.desc.second> | <~checkbox.desc>", "@apps", "checkbox1.prop", "", "", 2,
+        "IndexTwoNameOne:", "IndexTwoDeskOne:", 0,
+        "IndexTwoNameTwo:", "IndexTwoDeskTwo:", 0
+    );
+    checkbox("", "<~checkbox.desc.third> | <~checkbox.desc>", "@apps", "checkbox2.prop", "", "", 2,
+        "IndexThreeNameOne:", "IndexThreeDeskOne:", 0,
+        "IndexThreeNameTwo:", "IndexThreeDeskTwo:", 0
+    );
+    checkbox("", "<~checkbox.desc.fourth> | <~checkbox.desc>", "@apps", "checkbox3.prop", "", "", 2,
+        "IndexFourNameOne:", "IndexFourDeskOne:", 0,
+        "IndexFourNameTwo:", "IndexFourDeskTwo:", 0
+    );
+endif;
+setvar("retstatus", install("", "<@center><~aroma.flashing.status></@>\n"+ "<@center><~aroma.flashing.wait></@>", "<~aroma.flashing.success>"));

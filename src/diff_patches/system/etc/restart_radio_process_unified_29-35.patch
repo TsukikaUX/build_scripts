@@ -1,0 +1,74 @@
+--- restart_radio_process.sh	2025-07-14 01:33:27.757114800 +0000
++++ restart_radio_process.sh	2025-07-14 12:11:31.929081100 +0000
+@@ -1,9 +1,64 @@
+ #!/system/bin/sh
+-# Copyright (c) 2016, Samsung Electronics Co., Ltd.
+ 
+-control=`getprop ro.vendor.use_data_netmgrd`
++is_integer() {
++    [[ "$1" =~ ^-?[0-9]+$ ]]
++}
+ 
+-if [ "$control" = "true" ]; then
+-      stop netmgrd
+-      start netmgrd
+-fi
++help_text() {
++    echo "############################################"
++    echo "   _  _      _____          _    _ _"
++    echo " _| || |_    |_  _|__ _   _| | _(_) | ____ _ "
++    echo "|_  ..  _|    | |/ __| | | | |/ / | |/ / _  |"
++    echo "|_     _ |    | |\__ \ |_| |   <| |   < (_| |"
++    echo "   |_||_|     |_||___/\__,_|_|\_\_|_|\_\__,_|"
++    echo ""
++    echo "############################################"
++    echo " - Usage:"
++    echo "         /system/etc/restart_radio.sh (restarts radio if \"ro.vendor.use_data_netmgrd\" set to true)"
++    echo "         /system/etc/restart_radio.sh --stop-radio xx (duration in seconds)"
++    echo "         /system/etc/restart_radio.sh --kill-radio-till-reboot"
++    echo "setprop ro.vendor.use_data_netmgrd true; /system/etc/restart_radio.sh"
++    echo -e "\nWhat this script does??"
++    echo -e "    - This stops the netmgrd which is responsible for handling the radio process in the system.\n"
++    echo -e "What does \"--stop-radio\" do??"
++    echo -e "    - This prevents the netmgrd from starting for a given period of time.\n"
++    echo -e "What does \"--kill-radio-till-reboot\" do??"
++    echo -e "    - This stops the netmgrd from starting temporarily.\n"
++}
++
++main() {
++    local cmd="${1,,}"
++    if [ "$(getprop ro.vendor.use_data_netmgrd)" = "true" ]; then
++        stop netmgrd
++        sleep 0.5
++        start netmgrd
++    elif [ "$cmd" = "--stop-radio" ]; then
++        if is_integer "$2"; then
++            stop netmgrd
++            sleep "$2"
++            start netmgrd
++        else
++            help_text
++            return 1
++        fi
++    elif [ "$cmd" = "--kill-radio-till-reboot" ]; then
++        echo -e " - This shell will be doomed, please use another shell!"
++        while true; do
++            local netmgrd_pid=$(pidof netmgrd)
++            if [ -z "$netmgrd_pid" ]; then
++                sleep 10
++            elif is_integer "$netmgrd_pid"; then
++                kill "$netmgrd_pid"
++            fi
++        done &
++        echo " - you may have seen a number above, please note it down and if you"
++        echo "   want to stop this script from killing the netmgrd, please enter the following in your console:"
++        echo "kill <the noted number>"
++    else
++        help_text
++        return 1
++    fi
++    return 0
++}
++
++main "$@"
+\ No newline at end of file
