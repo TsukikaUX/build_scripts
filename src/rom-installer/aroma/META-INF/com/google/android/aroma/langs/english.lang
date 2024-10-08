@@ -1,0 +1,84 @@
+### LICENSE:
+#
+# Copyright (C) 2011 Ahmad Amarullah ( http://amarullz.com/ )
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+### LANGUAGE STRING RESOURCE FILE
+#
+#   Language  : English
+#   By        : Ayumi
+#
+
+#
+#--- COMMON SYSTEM STRING RESOURCE
+#
+text_ok=OK
+text_next=Next
+text_back=Back
+text_yes=Yes
+text_no=No
+text_about=About
+text_quit=Quit Installation
+text_quit_msg=Are you sure to quit the installer?
+welcome.text1=This is Tsukika's Aroma Installer
+welcome.text2=This will help you to configure your ROM installation.
+terms.title=Terms and Conditions
+terms.desc=Please Read the Terms of Use carefully below.
+terms.check=I Agree with the Terms and Conditions
+terms.confirm=You must accept the terms and conditions
+changelog.title=Changelog
+changelog.desc=AROMA Installer Changelog
+
+## ignore these:
+welcome.version=Version
+welcome.codename=Codename
+welcome.updated=Update
+welcome.next=Press Next to Continue the Installation...
+
+# custom implz - aroma-config
+changelog.sub.title=ROM Changelogs
+checkbox.desc=Choose the Samsung services you want to install
+checkbox.desc.first=First
+checkbox.desc.second=Second
+checkbox.desc.third=Third
+checkbox.desc.fourth=Fourth
+checkbox.confirmation=Do you want to install add-ons?
+
+checkbox.unsupported.device.confirm=Unsupported device, do you want to reboot the device?
+checkbox.unsupported.device=Unsupported device.
+
+# bruh
+aroma.flashing.status=Aroma is trying to flash the rom into your device.
+aroma.flashing.wait=Please wait for the installation to either finish or fail.
+aroma.flashing.success=Tsukika has been flashed successfully!
+
+# custom implz - updater-script
+flasher.welcome=Welcome to Tsukika!
+flasher.installing.system=Installing system partition...
+flasher.installing.vendor=Installing vendor partition...
+flasher.installing.super=Installing super partition...
+flasher.installing.kernel=Installing kernel and it's dependencies...
+flasher.unsupported.buildid=This package is not intended to be flashed over older ROM versions.
+flasher.verifying=Checking device integrity...
+flasher.dontwipe0=As mentioned in the installation tutorial, you should not wipe the system partitions before flashing this package.
+flasher.dontwipe1=Please reinstall Tsukika or install the full rom package.
+flasher.failed.system.mount=Failed to mount /system
+flasher.charge.atleast=Please atleast charge your device to 40% to continue the installation
+flasher.undefined=Undefined behaviour/action, stopping installatiom.
+flasher.handling.aroma.actions=Handling aroma actions...
+
+# maybe one of the worst code i wrote.
+flasher.supported.older.version.build.id=82313072485
+flasher.supported.device.modelOne=a30
+flasher.supported.device.modelTwo=a30dd

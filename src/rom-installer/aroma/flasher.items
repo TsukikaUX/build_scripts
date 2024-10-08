@@ -1,0 +1,16 @@
+################# examples ############################
+# types: raw/sparse
+# block path: /dev/..../system
+
+example:
+flashables="/dev/block/by-name/system -> tsukika/system.img -> raw"
+            # block path                  # file path in zip   # types
+
+# dont remove the "->" delimiter, as it is used to point to stuff.
+
+# raw should be used on partitions like boot and etc.
+################# examples ############################
+
+
+# put your flashable images list into the variable.
+flashables="<block path> -> <file path in zip> -> <type> "

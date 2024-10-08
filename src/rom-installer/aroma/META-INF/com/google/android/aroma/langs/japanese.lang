@@ -1,0 +1,85 @@
+### LICENSE:
+#
+# Copyright (C) 2011 Ahmad Amarullah (http://amarullz.com)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+### LANGUAGE STRING RESOURCE FILE
+#
+#   Language  : Japanese
+#   By        : https://www.deepl.com/en/translator#en/ja/
+#
+
+#
+#--- COMMON SYSTEM STRING RESOURCE
+#
+text_ok=OK
+text_no=No
+text_yes=Yes
+welcome.version=Version
+changelog.title=Changelog
+changelog.desc=AROMA Installer Changelog
+
+# begin translations:
+text_next=次のページ
+text_back=バック
+text_about=について
+text_quit=インストールを終了する
+text_quit_msg=インストーラーを終了してよろしいですか？
+welcome.text1=月香のアロマインストーラーです
+welcome.text2=これはROMのインストールを設定するのに役立ちます。
+terms.title=ご利用条件
+terms.desc=以下の利用規約をよくお読みください。
+terms.check=利用規約に同意する
+terms.confirm=利用規約に同意すること
+
+## ignore these:
+welcome.codename=コードネーム
+welcome.updated=更新
+welcome.next=次へを押してインストールを続ける...
+
+# custom implz - aroma-config
+changelog.sub.title=ROMチェンジログ
+checkbox.desc=インストールするサムスンのサービスを選択します。
+checkbox.confirmation=アドオンをインストールしますか？
+checkbox.unsupported.device.confirm=サポートされていないデバイスです。デバイスを再起動しますか?
+checkbox.unsupported.device=デバイスがサポートされていない
+checkbox.desc.first=最初
+checkbox.desc.second=セカンド
+checkbox.desc.third=サード
+checkbox.desc.fourth=第四
+
+# bruh
+aroma.flashing.status=アロマはあなたのデバイスにロムをフラッシュしようとしています。
+aroma.flashing.wait=インストールが完了するか、失敗するまでお待ちください。
+aroma.flashing.success=ツキカのフラッシュ成功しました！
+
+# custom implz - updater-script
+flasher.welcome=月香へようこそ！
+flasher.installing.system=システム・パーティションのインストール...
+flasher.installing.vendor=ベンダー・パーティションのインストール...
+flasher.installing.super=スーパー・パーティションのインストール
+flasher.installing.kernel=カーネルとその依存関係のインストール...
+flasher.unsupported.buildid=このパッケージは、古いROMバージョンの上にフラッシュすることを意図していません。
+flasher.verifying=デバイスの完全性の確認...
+flasher.dontwipe0=インストールチュートリアルで説明されているように、このパッケージをフラッシュする前にシステムパーティションを消去しないでください。
+flasher.dontwipe1=Tsukikaを再インストールするか、フルROMパッケージをインストールしてください。
+flasher.failed.system.mount=/system をマウントできませんでした。
+flasher.charge.atleast=少なくともデバイスを40%まで充電してから、インストールを継続してください。
+flasher.undefined=未定義の動作が発生しました。インストールを停止します...
+flasher.handling.aroma.actions=香りの処理に関する操作..
+
+# maybe one of the worst code i wrote.
+flasher.supported.older.version.build.id=82313072485
+flasher.supported.device.modelOne=a30
+flasher.supported.device.modelTwo=a30dd
