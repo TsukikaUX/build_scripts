@@ -66,22 +66,6 @@ for i in system/product/priv-app system/product/etc system/product/overlay \
 			debugPrint "build.sh: Making ./local_build/${i} directory.."
 done
 
-# TODO: re-run the script with root permissions to manage mounted images
-case "$(id -u)" in
-	0)
-		debugPrint "build.sh: Script ran with root privilages."
-	;;
-	*)
-		if stringFormat -l "$(file "${argOne}")" | grep -q zip || echo "$argOne" | grep -qE "samfw|samfwpremium"; then
-			console_print "You will be prompted to put your sudo password to mount stuff in ./local_build/etc/imageSetup"
-			console_print "if you are worried, you can always check the script before entering the sudo password."
-			debugPrint "build.sh: Relaunching the script with root privilages..."
-			touch "$thisConsoleTempLogFile"
-			sudo "$0" "$argOne" "$BUILD_USERNAME"
-		fi
-	;;
-esac
-
 # TODO: export this to call binaries without having to deal with wrong paths and stuff.
 export PATH="$PATH:$(dirname "$(realpath "$0")")/src/dependencies/bin"
 
@@ -912,7 +896,7 @@ case "${BUILD_TARGET_SDK_VERSION}" in
 	;;
 esac
 
-[[ ${BUILD_TARGET_SDK_VERSION} -ge 28 && ${BUILD_TARGET_SDK_VERSION} -le 30 ]] && applyDiffPatches "${SYSTEM_DIR}/etc/init/freecess.rc" "${DIFF_UNIFIED_PATCHES[22]}"
+[[ ${BUILD_TARGET_SDK_VERSION} -ge 28 && ${BUILD_TARGET_SDK_VERSION} -le 30 ]] && applyDiffPatches "${SYSTEM_DIR}/etc/init/freecess.rc" "${DIFF_UNIFIED_PATCHES[23]}"
 [[ ${BUILD_TARGET_SDK_VERSION} -ge 28 && ${BUILD_TARGET_SDK_VERSION} -le 34 ]] && applyDiffPatches "${SYSTEM_DIR}/etc/init/init.rilcommon.rc" "${DIFF_UNIFIED_PATCHES[21]}"
 [[ ${BUILD_TARGET_SDK_VERSION} -ge 29 && ${BUILD_TARGET_SDK_VERSION} -le 35 ]] && applyDiffPatches "${SYSTEM_DIR}/etc/restart_radio_process.sh" "${DIFF_UNIFIED_PATCHES[19]}"
 if [ "${BUILD_TARGET_ENABLE_VULKAN_UI_RENDERING}" == "true" ]; then
