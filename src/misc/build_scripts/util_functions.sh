@@ -545,7 +545,10 @@ function applyDiffPatches() {
             rm -rf ${tempFile}
             abort "❌ Failed to cd into $theFilePath" "applyDiffPatches()"
         }
-        if sudo patch -p0 --batch < "$tempFile" &> "$tempLog"; then
+        # we need to manually type "y|yes" to proceed patching but 
+        # we can use this "yes" to the pipeline sudo command to skip typing and
+        # patch the file.
+        if yes | sudo patch -p0 --batch < "$tempFile" &> "$tempLog"; then
             console_print "✔️ ${strippedFilePathOfPatchFile} got patched without errors"
         else
             console_print "❌ Failed to patch ${strippedFilePathOfPatchFile}"
