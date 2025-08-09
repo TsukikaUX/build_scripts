@@ -178,3 +178,10 @@ TARGET_DISABLE_SAMSUNG_ASKS_SIGNATURE_VERFICATION=false
 # btw i can remove this if you want to remove this from this repo, croc!
 # i gave credits but i didnt ask you to get permissions, sorry for that though🙏🏻
 TARGET_BUILD_ADD_RAM_MANAGEMENT_FIX=false
+
+# un1ca updater for your Tsukika fork but the thing is that you 
+# can have your own ota's with a xml file, take a look at https://github.com/ayumi-aiko/Tsukika/blob/main/updaterConfigs/ref/README.md
+TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER=false
+
+# the url for your xml, replace it with your own URL.
+TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL=https://example.com

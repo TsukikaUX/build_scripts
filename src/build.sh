@@ -834,6 +834,14 @@ if [[ "${TARGET_BUILD_ADD_RAM_MANAGEMENT_FIX}" == "true" && "${BUILD_TARGET_SDK_
 	sudo chcon u:object_r:system_file:s0 "${SYSTEM_DIR}/etc/init/init.drmgmt.rc"
 fi
 
+# ota implementation.
+if [[ "${TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER}" == "true" && ! -z "${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" ]]; then
+	makeAFuckingDirectory "${SYSTEM_DIR}/app/TsukikaUpdater" "root" "root"
+	make UN1CAUpdater OTA_MANIFEST_URL="${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" SkipSign=false
+	sudo cp "./src/tsukika/packages/TsukikaUpdater/dist/TsukikaUpdater-aligned-signed.apk" "${SYSTEM_DIR}/app/TsukikaUpdater" "root" "root" || abort "Failed to copy the updater app into the ROM" "build.sh"
+	console_print "Successfully added updater app into the rom."
+fi
+
 # device customization script
 [ -f "./src/target/${TARGET_BUILD_PRODUCT_NAME}/customizer.sh" ] && . "./src/target/${TARGET_BUILD_PRODUCT_NAME}/customizer.sh"
 
