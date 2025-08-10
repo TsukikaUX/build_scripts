@@ -23,7 +23,7 @@ remove_apps() {
     local app_names=("$@")   
     for app_name in "${app_names[@]}"; do
         full_path="${base_dir}/${app_name}"
-        debugPrint "debloat_the_crap(): Removing ${full_path}..."
+        debugPrint "debloat_the_crap(): Trying to remove ${full_path}..."
         if [ -d "${full_path}" ]; then
             rm -rf "${full_path}" 2>>"${thisConsoleTempLogFile}"
         else
@@ -67,7 +67,6 @@ debloat_the_crap() {
         "PlayAutoInstallConfig"
         "SamsungOne"
         "SecFactoryPhoneTest"
-        "SilentLog"
         "SmartSwitchAgent"
         "SLocation"
         "WebManual"
@@ -96,8 +95,6 @@ debloat_the_crap() {
         "GoogleRestore"
         "HuxPlatform"
         "HwModuleTest"
-        "ImsLogger"
-        "LogWriter"
         "LTETest"
         "ModemServiceMode"
         "MemorySaver_O_Refresh"
@@ -148,9 +145,9 @@ debloat_the_crap() {
     remove_apps "${SYSTEM_EXT_DIR}/priv-app" "${system_extra_privilaged_apps[@]}"
     remove_apps "${PRODUCT_DIR}/app" "${product_apps[@]}"
     remove_apps "${PRODUCT_DIR}/priv-app" "${product_privilaged_apps[@]}"
-    for unknown in ${SYSTEM_DIR}/app/SBrowser* ${SYSTEM_DIR}/app/SamsungTTS* ${SYSTEM_DIR}/priv-app/BixbyVisionFramework* \
-    ${SYSTEM_DIR}/priv-app/GalaxyAppsWidget* ${SYSTEM_DIR}/priv-app/GalaxyApps* ${SYSTEM_DIR}/priv-app/OneDrive* \
-    ${SYSTEM_DIR}/priv-app/SecCalculator* ${SYSTEM_DIR}/priv-app/UltraDataSaving* ${PRODUCT_DIR}/app/Gmail*; do
+    for unknown in $(echo ${SYSTEM_DIR}/app/SBrowser*) $(echo ${SYSTEM_DIR}/app/SamsungTTS*) $(echo ${SYSTEM_DIR}/priv-app/BixbyVisionFramework*) \
+    $(echo ${SYSTEM_DIR}/priv-app/GalaxyAppsWidget*) $(echo ${SYSTEM_DIR}/priv-app/GalaxyApps*) $(echo ${SYSTEM_DIR}/priv-app/OneDrive*) \
+    $(echo ${SYSTEM_DIR}/priv-app/SecCalculator*) $(echo ${SYSTEM_DIR}/priv-app/UltraDataSaving*) $(echo ${PRODUCT_DIR}/app/Gmail*); do
         debugPrint "debloat_the_crap(): Removing ${unknown}..."
         [ -d "${unknown}" ] && rm -rf "${unknown}" 2>>"${thisConsoleTempLogFile}"
     done
@@ -215,7 +212,7 @@ nuke_or_ignore_these_stuffs() {
     if ask "Do you want to nuke Game Launcher and Game Tools [performance will be doomed if you let it cook]"; then
         rm -rf "${SYSTEM_DIR}/priv-app/GameHome" 2>./error_ring.log
         rm -rf "${SYSTEM_DIR}/priv-app/GameOptimizingService" 2>./error_ring.log
-        rm -rf "${SYSTEM_DIR}/priv-app/GameTools*" 2>./error_ring.log
+        rm -rf ${SYSTEM_DIR}/priv-app/GameTools* 2>./error_ring.log
     fi
 
     ask "Do you want to nuke Device Care Plugin [performance will be doomed if you let it cook]" && rm -rf "${SYSTEM_DIR}/priv-app/${privilaged_apps[8]}"
