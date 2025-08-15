@@ -5,9 +5,9 @@
 - Don't forget to change it, else the program won't get compiled or will have any random issues.
 ```bash
 cd Tsukika
-make SDK=<sdk version here> bootloop_saviour
+make SDK=<sdk version here> setupCustomizer
 ```
 
 ## What does this do?
-- This init daemon disables all Magisk modules if the Zygote process has a different PID (process id) every 5 seconds
-- Helpful for recovering from bootloops caused by unstable modules.
+- This program switches the theme of the software from Light to Dark before the setup wizard.
+- And this program spoofs some properties to spoof device status

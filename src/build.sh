@@ -36,6 +36,7 @@ quotes=(
 randomQuote="${quotes[$RANDOM % ${#quotes[@]}]}"
 BUILD_START_TIME=$(date +%s)
 sameOldFirmwarePackage=false
+TSUKIKA_BUILD_NUMBER=$(date +%Y%m%d)
 
 # Trap the SIGINT signal (Ctrl+C) and call handle_sigint when it's caught
 trap 'abort "Aborting the build....."' SIGINT
@@ -835,11 +836,32 @@ if [[ "${TARGET_BUILD_ADD_RAM_MANAGEMENT_FIX}" == "true" && "${BUILD_TARGET_SDK_
 fi
 
 # ota implementation.
-if [[ "${TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER}" == "true" && ! -z "${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" ]]; then
+if [[ "${TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER}" == "true" && ! -z "${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" && "${BUILD_TARGET_SDK_VERSION}" -ge "34" ]]; then
 	makeAFuckingDirectory "${SYSTEM_DIR}/app/TsukikaUpdater" "root" "root"
 	make UN1CAUpdater OTA_MANIFEST_URL="${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" SkipSign=false
-	sudo cp "./src/tsukika/packages/TsukikaUpdater/dist/TsukikaUpdater-aligned-signed.apk" "${SYSTEM_DIR}/app/TsukikaUpdater" "root" "root" || abort "Failed to copy the updater app into the ROM" "build.sh"
+	sudo cp "./src/tsukika/packages/TsukikaUpdater/dist/TsukikaUpdater-aligned-signed.apk" "${SYSTEM_DIR}/app/TsukikaUpdater" || abort "Failed to copy the updater app into the ROM" "build.sh"
 	console_print "Successfully added updater app into the rom."
+	console_print "Trying to mod SecSettings.."
+	if [[ -f "./src/diff_patches/system/priv-app/SecSettings/${BUILD_TARGET_SDK_VERSION}_sec_software_info_settings.xml" && \ 
+		"./src/diff_patches/system/priv-app/SecSettings/${BUILD_TARGET_SDK_VERSION}_sec_top_level_settings.xml" ]]; then
+			java -jar ./src/dependencies/bin/apktool.jar if ${SYSTEM_DIR}/framework/framework-res.apk &>/dev/null
+			java -jar ./src/dependencies/bin/apktool.jar --only-main-classes decode ${SYSTEM_DIR}/priv-app/SecSettings/SecSettings.apk -o ./SecSettingsMOD &>/dev/null || abort "Failed to decompile the System Settings app" "build.sh"
+			cp -af "./src/diff_patches/system/priv-app/SecSettings/${BUILD_TARGET_SDK_VERSION}_sec_software_info_settings.xml" ./SecSettingsMOD/res/xml/sec_software_info_settings.xml
+			cp -af "./src/diff_patches/system/priv-app/SecSettings/${BUILD_TARGET_SDK_VERSION}_sec_top_level_settings.xml" ./SecSettingsMOD/res/xml/sec_top_level_settings.xml
+			# change the default placeholder values
+			xmlstarlet ed -L -N a="http://schemas.android.com/apk/res/android" -N s="http://schemas.android.com/apk/res-auto" \ 
+				-u "//*[@a:key='tsukika_changelogs']/*[@a:data]/@a:data" -v "https://github.com/ayumi-aiko/Tsukika/updaterConfigs/changelogs/${TSUKIKA_BUILD_NUMBER}/CHANGELOGS.md" "./SecSettingsMOD/res/xml/sec_software_info_settings.xml"
+			xmlstarlet ed -L -N a="http://schemas.android.com/apk/res/android" -u "//*[@a:key='tsukika_codename']/@a:summary" -v "${CODENAME}" \
+				-u "//*[@a:key='tsukika_version']/@a:summary" -v "${CODENAME_VERSION_REFERENCE_ID}" \
+				-u "//*[@a:key='tsukika_builder']/@a:summary" -v "${BUILD_USERNAME}" \
+				-u "//*[@a:key='tsukika_build_number']/@a:summary" -v "${TSUKIKA_BUILD_NUMBER}" "./SecSettingsMOD/res/xml/sec_top_level_settings.xml"
+			for i in "./SecSettingsMOD/res/xml/sec_top_level_settings.xml" "./SecSettingsMOD/res/xml/sec_software_info_settings.xml"; do
+				xmllint --noout ${i} &>/dev/null || abort "$(basename $i) has bad XML structure" "build.sh"
+			done
+			buildAndSignThePackage "./SecSettingsMOD/" "${SYSTEM_DIR}/priv-app/SecSettings/SecSettings.apk" false --skip-editing-version-info
+	else
+		console_print "Can't modify system settings, required modified XML files are not found!"
+	fi
 fi
 
 # device customization script

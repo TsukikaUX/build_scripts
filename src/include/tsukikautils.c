@@ -119,9 +119,7 @@ int searchBlockListedStrings(const char *__filename, const char *__search_str) {
 // this ensures that the chosen is a bash script and if it's not one
 // it'll return 1 to make the program to stop from executing that bastard
 int verifyScriptStatusUsingShell(const char *__filename) {
-    char command[512];
-    snprintf(command, sizeof(command), "file \"%s\" | grep -q 'ASCII text executable'", __filename);
-    return system(command);
+    return system(combineStringsFormatted("file %s | grep -q 'ASCII text executable'", __filename));
 }
 
 // Checks if a given string contains blacklisted substrings
@@ -190,6 +188,31 @@ char *cStringToUpper(char *str) {
         i++;
     }
     return str;
+}
+
+char *combineStringsFormatted(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    va_list args_copy;
+    va_copy(args_copy, args);
+    int len = vsnprintf(NULL, 0, format, args_copy);
+    va_end(args_copy);
+    if(len < 0) {
+        va_end(args);
+        return NULL;
+    }
+    char *result = malloc(len + 1);
+    if(!result) {
+        va_end(args);
+        return NULL;
+    }
+    vsnprintf(result, len + 1, format, args);
+    va_end(args);
+    if(!result) {
+        va_end(args);
+        return NULL;
+    }
+    return result;
 }
 
 void abort_instance(const char *format, ...) {
