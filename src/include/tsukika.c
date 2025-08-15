@@ -26,8 +26,12 @@ int isPackageInstalled(const char *packageName) {
     char string[1000];
     while(fgets(string, sizeof(string), fptr) != NULL) {
         string[strcspn(string, "\n")] = '\0';
-        if(strcmp(string, packageName) == 0) return 0;
+        if(strcmp(string, packageName) == 0) {
+            fclose(fptr);
+            return 0;
+        }
     }
+    fclose(fptr);
     return 1;
 }
 
@@ -48,9 +52,19 @@ int getSystemProperty__(const char *propertyVariableName) {
         return atoi(ctx.propertyValue);
     }
     else {
-        consoleLog(LOG_LEVEL_ERROR, "%s not found in system.", propertyVariableName);
-        return -1;
+        consoleLog(LOG_LEVEL_ERROR, "%s not found in system, trying to gather property value from resetprop...", propertyVariableName);
+        FILE *fptr = popen(combineStringsFormatted("/system/bin/resetprop %s", propertyVariableName), "r");
+        if(!fptr) {
+            consoleLog(LOG_LEVEL_ERROR, "uh, major hiccup, failed to open resetprop in popen()");
+            return -1;
+        }
+        char eval[1000];
+        // remove the dawn newline char to get a clear value.
+        while(fgets(eval, sizeof(eval), fptr) != NULL) eval[strcspn(eval, "\n")] = '\0';
+        fclose(fptr);
+        return atoi(eval);
     }
+    return -1;
 }
 
 int maybeSetProp(const char *property, void *expectedPropertyValue, void *typeShyt, enum expectedDataType Type) {
@@ -78,7 +92,7 @@ int maybeSetProp(const char *property, void *expectedPropertyValue, void *typeSh
             for(int i = 10; i < 0; i--) consoleLog(LOG_LEVEL_DEBUG, "maybeSetProp(): Undefined behaviour!!!!!!!!! crashing the application in: %d", i);
             abort_instance("maybeSetProp(): Force crash due to undefined behaviour, hope abort cleans the memory.");
     }
-    if(strcmp(getSystemProperty(property), castValueStr) == 0) return executeCommands("resetprop", (char *const[]){"resetprop", (char *)typeShyt, NULL}, 0);
+    if(strcmp(getSystemProperty(property), castValueStr) == 0) return executeCommands(resetprop, (char *const[]){resetprop, (char *)typeShyt, NULL}, 0);
     return 1;
 }
 
@@ -139,9 +153,21 @@ int setprop(const char *property, void *propertyValue, enum expectedDataType Typ
             for(int i = 10; i < 0; i--) consoleLog(LOG_LEVEL_DEBUG, "maybeSetProp(): Undefined behaviour!!!!!!!!! crashing the application in: %d", i);
             abort_instance("maybeSetProp(): Force crash due to undefined behaviour, hope abort cleans the memory.");
     }
-    if(executeCommands("resetprop", (char *const[]) {"resetprop", (char *)property, (char *)castValueStr, NULL}, false) == 0) return 0;
+    if(executeCommands(resetprop, (char *const[]) {resetprop, (char *)property, (char *)castValueStr, NULL}, false) == 0) return 0;
     consoleLog(LOG_LEVEL_WARN, "setprop(): Failed to set requested property!");
     return 1;
+}
+
+int isSetupOver() {
+    char *currentSetupWizardMode = getSystemProperty("ro.setupwizard.mode");
+    if(strcmp(getSystemProperty("persist.sys.setupwizard"), "FINISH") == 0) {
+        if(strcmp(currentSetupWizardMode, "OPTIONAL" == 0 || strcmp(currentSetupWizardMode, "DISABLED" == 0) return 0;
+    }
+    return 1;
+}
+
+int removeProperty(const char *property) {
+    return executeCommands(resetprop, (char *const[]){resetprop, "-d", property}, false);
 }
 
 bool isTheDeviceBootCompleted() {
@@ -190,9 +216,18 @@ char *getSystemProperty(const char *propertyVariableName) {
         return global_property_value_buffer;
     }
     else {
-        consoleLog(LOG_LEVEL_ERROR, "%s not found in system.", propertyVariableName);
-        return NULL;
+        consoleLog(LOG_LEVEL_ERROR, "%s not found in system, trying to gather property value from resetprop...", propertyVariableName);
+        FILE *fptr = popen(combineStringsFormatted("%s %s", resetprop, propertyVariableName), "r");
+        if(!fptr) {
+            consoleLog(LOG_LEVEL_ERROR, "uh, major hiccup, failed to open resetprop in popen()");
+            return NULL;
+        }
+        // remove the dawn newline char to get a clear value.
+        while(fgets(global_property_value_buffer, sizeof(global_property_value_buffer), fptr) != NULL) global_property_value_buffer[strcspn(global_property_value_buffer, "\n")] = '\0';
+        fclose(fptr);
+        return global_property_value_buffer;
     }
+    return NULL;
 }
 
 char *grep_prop(const char *variableName, const char *propFile) {
@@ -211,6 +246,7 @@ char *grep_prop(const char *variableName, const char *propFile) {
             return value;
         }
     }
+    fclose(filePointer);
     return "NULL";
 }
 

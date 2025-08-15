@@ -16,5 +16,6 @@
 - mkfs.erofs
 - mkdtimg
 - imjtool
+- libxml2-utils
 
 > ⚠️ **WARNING:** Just know that the build will fail if the required dependencies are not available on your host.

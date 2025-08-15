@@ -170,6 +170,8 @@ function buildAndSignThePackage() {
 
     # Modify manifest and apktool.yml if editing not skipped
     if [[ "$arg" == "--skip-editing-version-info" ]]; then
+        debugPrint "buildAndSignThePackage(): Skipping editing the version info...."
+    elif [[ "$arg" == "--edit-version-info" ]]; then
         changeXMLValues "compileSdkVersion" "${BUILD_TARGET_SDK_VERSION}" "${extracted_dir_path}/AndroidManifest.xml"
         changeXMLValues "platformBuildVersionCode" "${BUILD_TARGET_SDK_VERSION}" "${extracted_dir_path}/AndroidManifest.xml" 
         changeXMLValues "compileSdkVersionCodename" "${BUILD_TARGET_ANDROID_VERSION}" "${extracted_dir_path}/AndroidManifest.xml"
@@ -793,53 +795,6 @@ function javaKeyStoreToHex() {
 
     # error checks:
     [ "$?" == 0 ] && console_print "Successfully added your key into the patch file!!" || abort "Failed to add your key into the patch file!!" "javaKeyStoreToHex"
-}
-
-function addTsukikaROMInfo() {
-    # check:
-    [ "${BUILD_TARGET_SDK_VERSION}" == "35" ] || return 1
-
-    # internal variables, let's not break stuff yk.
-    local input_file="$1"
-    local output_file="$2"
-    local needToAddAttrOnNextRun=false
-    local runs=0
-
-    # verify files:
-    [[ -f "${input_file}" && -f "${output_file}" ]] || abort "usage: addTsukikaROMInfo <input / stock xml> <output (can be anything)>" "addTsukikaROMInfo"
-
-    # nukes and recreates the output file
-    rm -f $output_file
-    touch $output_file
-
-    # Reads line by line
-    while IFS= read -r i || [[ -n "$i" ]]; do
-        # "ahem"
-        runs=$((runs + 1))
-        debugPrint "addTsukikaROMInfo(): at the $runs line of the xml"
-        
-        # Removes whitespaces:
-        i=$(echo "$i" | sed 's/^[ \t]*//;s/[ \t]*$//')
-
-        # adds whitelines:
-        echo "$i" | grep -qE "http://schemas.android.com/apk/res/android|xmlns:android" && spacing="\t"
-        echo "$i" | grep -q "</PreferenceScreen>" && spacing=""
-
-        # Skips empty lines
-        [ -z "$i" ] && continue
-
-        # Sets flag if we are in the xmlns line so we can add the stuff.
-        echo "$i" | grep -q "http://schemas.android.com/apk/res/android" && needToAddAttrOnNextRun=true
-
-        # Writes current line
-        echo -e "${spacing}$i" >> "$output_file"
-
-        # Inserts block after xmlns line, only once
-        if [ "$needToAddAttrOnNextRun" == true ]; then
-            echo -e "\t<Preference android:title=\"Tsukika Version &amp; Codename\" android:summary=\"v${CODENAME_VERSION_REFERENCE_ID} - ${CODENAME}\" android:key=\"tsukika_version\" />\n\t<Preference android:title=\"Your Device Maintainer\" android:summary=\"${BUILD_USERNAME} | Unmaintained / Unofficial Build\" android:key=\"tsukika_maintainer\" />\n\t<Preference android:title=\"OS Changelogs\" android:summary=\"View rom changelogs\" android:key=\"tsukika_changelogs\">\n\t<intent android:action=\"android.intent.action.VIEW\"\n\t\tandroid:data=\"http://github.com/ayumi-aiko/Tsukika/updaterConfigs/changelogs_placebo.html\" />\n\t</Preference>" >> $output_file
-            needToAddAttrOnNextRun=false
-        fi
-    done < "$input_file"
 }
 
 function setMakeConfigs() {

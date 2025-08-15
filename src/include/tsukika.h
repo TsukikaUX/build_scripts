@@ -29,6 +29,7 @@
 
 // extern variables.
 extern const char *filesToRemoveBeforeReboot[];
+extern const char *resetprop;
 
 // MUST ADDDDDDDDDDDDDDDDDD!
 #define VALID_TYPE(t) ((t) == TYPE_INT || (t) == TYPE_FLOAT || (t) == TYPE_STRING)
@@ -65,10 +66,12 @@ int getSystemProperty__(const char *propertyVariableName);
 int maybeSetProp(const char *property, void *expectedPropertyValue, void *typeShyt, enum expectedDataType Type);
 int DoWhenPropisinTheSameForm(const char *property, void *expectedPropertyValue, enum expectedDataType Type);
 int setprop(const char *property, void *propertyValue, enum expectedDataType Type);
+int isSetupOver();
 bool isBootAnimationExited();
 bool isTheDeviceBootCompleted();
 bool isTheDeviceisTurnedOn();
 bool bootanimStillRunning();
+char *combineStringsFormatted(const char *format, ...);
 char *getSystemProperty(const char *propertyVariableName);
 char *grep_prop(const char *string, const char *propFile);
 void sendToastMessages(const char *message);

@@ -41,12 +41,14 @@ CFLAGS = -O3 -static -I./src/include
 
 # Output binaries
 SAVIOUR_OUTPUT = ./local_build/binaries/bootloopSaviour
+STUPCUSTOMIZER_OUTPUT = ./local_build/binaries/setupCustomizer
 
 # Source files for each target
 SAVIOUR_SRCS = ./src/include/tsukika.c ./src/include/tsukikautils.c
 
 # Main source path
 SAVIOUR_MAIN = ./src/bootloopSaviour/main.c
+STUPCUSTOMIZER_MAIN = ./src/setupCustomizer/main.c
 
 # Error logs path
 ERR_LOG = ./local_build/logs/compilerErrors.log
@@ -65,7 +67,7 @@ checkDeprecated:
 # Checks if the android ndk compiler toolchain exists
 check_compiler:
 	@if [ ! -f "$(CC)" ]; then \
-		echo -e "\e[0;31mmake: Error: Android clang is not found. Please install it or edit the amkefile to proceed.\e[0;37m"; \
+		echo -e "\e[0;31mmake: Error: Android clang is not found. Please install it or edit the makefile to proceed.\e[0;37m"; \
 		exit 1; \
 	fi
 
@@ -86,6 +88,12 @@ bootloop_saviour: checkDeprecated check_compiler
 	@rm -f $(ERR_LOG)
 	@echo -e "\e[0;33mmake: Info: Building Bootloop Saviour\e[0;37m"
 	@$(CC) $(CFLAGS) -std=c23 $(SAVIOUR_SRCS) $(SAVIOUR_MAIN) -o $(SAVIOUR_OUTPUT) >$(ERR_LOG) 2>&1 && \
+	echo -e "\e[0;33mmake: Info: Build finished successfully\e[0;37m" || echo -e "\e[0;31mmake: Error: Compilation failed. Check $(ERR_LOG) for details.\e[0;37m";
+
+setupCustomizer: checkDeprecated check_compiler
+	@rm -f $(ERR_LOG)
+	@echo -e "\e[0;33mmake: Info: Building setupCustomizer\e[0;37m"
+	@$(CC) $(CFLAGS) -std=c23 $(SAVIOUR_SRCS) $(STUPCUSTOMIZER_MAIN) -o $(STUPCUSTOMIZER_OUTPUT) >$(ERR_LOG) 2>&1 && \
 	echo -e "\e[0;33mmake: Info: Build finished successfully\e[0;37m" || echo -e "\e[0;31mmake: Error: Compilation failed. Check $(ERR_LOG) for details.\e[0;37m";
 
 UN1CAUpdater: checkDeprecated checkKey checkJava
@@ -131,6 +139,22 @@ test_bootloopsaviour:
 		$(MAKE) bootloop_saviour && $(MAKE) test_bootloopsaviour; \
 	fi
 
+# Test setupCustomizer
+test_setupCustomizer:
+	@if [ -f "$(STUPCUSTOMIZER_MAIN)" ]; then \
+		if "$(STUPCUSTOMIZER_MAIN)" --test >/dev/null 2>&1; then \
+			echo -e "\e[0;33mmake: Info: Test passed: $(STUPCUSTOMIZER_MAIN) works as expected!\e[0;37m"; \
+		else \
+			echo -e "\e[0;31mmake: Error: Test failed: $(STUPCUSTOMIZER_MAIN) may not be compatible with this system."; \
+			echo -e "    Possible reasons:"; \
+			echo -e "      - Running on a non-ARM machine"; \
+			echo -e "      - Syntax Errors in the code (or) Build Failure\e[0;37m"; \
+		fi; \
+	else \
+		echo -e "\e[0;31mmake: Error: $(STUPCUSTOMIZER_MAIN) not found. Building it...\e[0;37m"; \
+		$(MAKE) setupCustomizer && $(MAKE) test_setupCustomizer; \
+	fi
+
 # help menu:
 help:
 	@echo -e "\e[1;36mUsage:\e[0m"
@@ -139,10 +163,12 @@ help:
 	@echo -e "\e[1;36mC Build Targets (requires SDK=<version>):\e[0m"
 	@echo -e "  \e[1;32mall\e[0m                       Build all components"
 	@echo -e "  \e[1;32mbootloop_saviour\e[0m          Build bootloopSaviour"
+	@echo -e "  \e[1;32msetupCustomizer\e[0m           Build setupCustomizer"
 	@echo -e ""
 	@echo -e "\e[1;36mC Test Targets (requires SDK=<version>):\e[0m"
 	@echo -e "  \e[1;32mtest\e[0m                      Test all C buildable programs"
 	@echo -e "  \e[1;32mtest_bootloopsaviour\e[0m      Test bootloopSaviour"
+	@echo -e "  \e[1;32mtest_setupCustomizer\e[0m      Test setupCustomizer"
 	@echo -e ""
 	@echo -e "\e[1;36mGeneral Targets:\e[0m"
 	@echo -e "  \e[1;33mOTA_MANIFEST_URL=<url> SkipSign=true|false UN1CAUpdater\e[0m"
