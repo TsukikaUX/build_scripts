@@ -46,7 +46,7 @@ Please provide the paths for each extracted partition:
 - **TARGET_INCLUDE_SAMSUNG_THEMING_MODULES**: Installs patched Samsung Good Lock modules.
 - **TARGET_FLOATING_FEATURE_INCLUDE_SPOTIFY_AS_ALARM**: Includes Spotify as an option for alarm tones.
 - **TARGET_FLOATING_FEATURE_INCLUDE_EASY_MODE**: Enables Easy Mode, which provides larger icons and is designed for users with visual difficulties.
-- **TARGET_FLOATING_FEATURE_INCLUDE_CLOCK_LIVE_ICON**: Enables a live clock icon in the launcher. Disable this if you prefer.
+- **TARGET_FLOATING_FEATURE_INCLUDE_CLOCK_LIVE_ICON**: Enables a live clock icon in the launcher.
 - **TARGET_FLOATING_FEATURE_ENABLE_EXTRA_SCREEN_MODES**: Requires proper or minimum mdNIE support in the ROM and possibly the device for proper functionality.
 - **TARGET_FLOATING_FEATURE_ENABLE_VOICE_MEMO_ON_NOTES**: Enables the voice memo feature in the Notes app. Only supported on UI7.
 - **TARGET_BUILD_ENABLE_SEARCLE**: Enables Searcle (Circle to search) feature. OneUI 6 and Above.
@@ -62,9 +62,9 @@ Please provide the paths for each extracted partition:
 
 ## Additional Customization
 
-- **TARGET_FLOATING_FEATURE_SUPPORTS_DOLBY_IN_GAMES**
+- **TARGET_FLOATING_FEATURE_SUPPORTS_DOLBY_IN_GAMES**: Self-explanatory
 - **TARGET_FLOATING_FEATURE_LAUNCHER_CONFIG_ANIMATION_TYPE**: Adjusts launcher animation for different performance tiers (LowEnd, LowestEnd, LowEndFast, Mass, HighEnd, CHNHighEND, HighEnd_Tablet).
-- **CUSTOM_WALLPAPER_RES_JSON_GENERATOR**: Adds multiple wallpapers easily.
+- **CUSTOM_WALLPAPER_RES_JSON_GENERATOR**: Generates json and builds wallpaper-res with custom static wallpapers.
 - **TARGET_BUILD_ADD_MOBILE_DATA_TOGGLE_IN_POWER_MENU**: Adds a mobile data toggle to the power menu.
 - **TARGET_BUILD_FORCE_FIVE_BAR_NETICON**: Forces the network icon to display 5 bars.
 - **TARGET_BUILD_ADD_CALL_RECORDING_IN_SAMSUNG_DIALER**: Enables call recording in the Samsung Dialer app. Note: You are responsible for complying with local laws.
@@ -103,6 +103,7 @@ Please provide the paths for each extracted partition:
 - **TARGET_ADD_ROUNDED_CORNERS_TO_THE_PIP_WINDOWS**: [Adds rounded corners to the PiP window.](https://github.com/ayumi-aiko/banners/blob/main/rounded_corners_tsukika_ex.png)
 - **TARGET_BUILD_FIX_ANDROID_SYSTEM_DEVICE_WARNING**: Removes Android system warning.
 - **TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER**: Adds the deprecated UN1CA Updater app. [How to set it up?](https://github.com/ayumi-aiko/Tsukika/blob/main/updaterConfigs/ref/README.md) (Fill `TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL` variable btw)
+- **TARGET_BUILD_INSTALL_KNOXPATCH_MODULE**: A module to get Samsung apps/features working again in your rooted Galaxy device. Only for Android 10 & 11
 ---
 
 ## Advanced (optional)

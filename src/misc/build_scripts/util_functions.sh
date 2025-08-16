@@ -708,18 +708,18 @@ function replaceTargetBuildProperties() {
 function copyDeviceBlobsSafely() {
     local blobFromSource="$1"
     local blobInROM="$2"
-    local backupBlob="./local_build/tmp/tsuki/${blobInROM}.bak"
+    local backupBlob="./local_build/tmp/tsuki/$(basename ${blobInROM}).bak"
     console_print "Trying to copy ${blobFromSource} to ${blobInROM}"
-    [ -f "$blobInROM" ] && cp -af "$blobInROM" "$backupBlob"; 
+    [ -f "$blobInROM" ] && sudo cp -af "$blobInROM" "$backupBlob"; 
     if [ ! -f "$blobInROM" ] && ask "${blobFromSource} is not found on the ROM, do you wanna copy this blob to the device?"; then
-        if ! cp -af "${blobFromSource}" "${blobInROM}" 2>>${thisConsoleTempLogFile}; then
+        if ! sudo cp -af "${blobFromSource}" "${blobInROM}" 2>>${thisConsoleTempLogFile}; then
             warns "Failed to copy ${blobFromSource}, this might cause a bootloop, attempting to restore original blob." "copyDeviceBlobsSafely()"
-            [ -f "$backupBlob" ] && cp -af "$backupBlob" "$blobInROM"
+            [ -f "$backupBlob" ] && sudo cp -af "$backupBlob" "$blobInROM"
         fi
     else
-        if ! cp -af "${blobFromSource}" "${blobInROM}"; then
+        if ! sudo cp -af "${blobFromSource}" "${blobInROM}"; then
             warns "Failed to copy ${blobFromSource}, this might cause a bootloop, attempting to restore original blob." "copyDeviceBlobsSafely()"
-            [ -f "$backupBlob" ] && cp -af "$backupBlob" "$blobInROM"
+            [ -f "$backupBlob" ] && sudo cp -af "$backupBlob" "$blobInROM"
         fi
     fi
     console_print "Finished copying given blobs!"
@@ -1003,4 +1003,49 @@ function getLatestReleaseFromGithub() {
         return 1
     fi
     echo "$latestRelease"
+}
+
+function setPerm() {
+    local file="$1"
+    local ownerShip="$2"
+    local group="$3"
+    local mod="$4"
+    local context="$5"
+    if [ $# -lt 4 ]; then
+        console_print "usage: setPerm <file> <ownership> <group> <mod> <context>"
+        abort "Not enough arguments" "setPerm"
+    fi
+    sudo chown "$ownerShip":"$group" "$file"
+    sudo chmod "$mod" "$file"
+    # OPTIONAL ASF:
+    [ -z "$context" ] || sudo chcon "$context" "$file"
+}
+
+function verify256Checksum() {
+    local file="$1"
+    local checksumHash="$2"
+    [ -f "$checksumHash" ] && [ "$(sudo sha256sum "${file}" | awk '{print $1}')" == "$(cat "${checksumHash}")" ] && return 0 || return 1
+    # we dont need to use the return commands here:
+    [ "$(sudo sha256sum "${file}" | awk '{print $1}')" == "${checksumHash}" ]
+}
+
+function runModule() {
+    local moduleName="$1"
+    local moduleProp="./src/outskirts/addon-modules/${moduleName}/module.prop"
+    local moduleBlobRootMap="./src/outskirts/addon-modules/${moduleName}/module_blob_files.rootMap"
+    if [[ -f "./src/outskirts/addon-modules/${moduleName}" && -f "./src/outskirts/addon-modules/${moduleName}/LICENSE" ]]; then
+        [ "$(grep_prop license "${moduleProp}")" == "GNU General Public License v3.0" ] || abort "Can't run this module with unsupported license, only GNU GPL v3 is currently supported as of now." "runModule"
+        [ -f "${moduleProp}" ] || abort "Can't fetch module property file, check the sources and try running again." "runModule"
+        [ -f "${moduleBlobRootMap}" ] || abort "Can't fetch module blob root map file, check the sources and try running again." "runModule"
+        if [[ "$(grep_prop hasSDKVersionRestrictions "${moduleProp}")" == "true" && "${BUILD_TARGET_SDK_VERSION}" -ge "$(grep_prop leastSupportedSDKVersion "${moduleProp}")" && "${BUILD_TARGET_SDK_VERSION}" -le "$(grep_prop maxSupportedSDKVersion "${moduleProp}")" ]]; then
+            abort "This module is not supported on your current SDK version (${BUILD_TARGET_SDK_VERSION})." "runModule"
+        fi
+        # perfect use of cURL and brain gng 🤑🤑
+        curl "$(grep_prop baseModuleURL "${moduleProp}")" &>/dev/null | grep -q "Not Found" && abort "Can't run this module with unknown link, please download the module again or find one with proper source link." "runModule" || debugPrint "runModule(): Module source link is valid, proceeding with the module run."
+        . "./src/outskirts/addon-modules/${moduleName}/customize.sh" "${moduleProp}" "./src/outskirts/addon-modules/${moduleName}/module_blob_files.rootMap"
+        return $?
+    fi
+    console_print "runModule(): Unknown module or name, here's the available modules from source:"
+    ls -w 1 "./src/outskirts/addon-modules"
+    abort "Failed to get proper information." "runModule"
 }

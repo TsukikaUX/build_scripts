@@ -259,6 +259,20 @@ BUILD_TARGET_VENDOR_SDK_VERSION=$(grep_prop "ro.vndk.version" "${TSUKIKA_VENDOR_
 BUILD_TARGET_MODEL="$(grep_prop "ro.product.system.model" "${TSUKIKA_SYSTEM_PROPERTY_FILE}")"
 TARGET_BUILD_PRODUCT_NAME="$(grep_prop "ro.product.system.device" "${TSUKIKA_SYSTEM_PROPERTY_FILE}")"
 
+# COMMON DEVICE VARIABLES: do not edit!
+BUILD_TARGET_ARCH=$(
+    arch="ARM" # default
+    for props in "$TSUKIKA_PRODUCT_PROPERTY_FILE" \
+                 "$TSUKIKA_SYSTEM_PROPERTY_FILE" \
+                 "$TSUKIKA_VENDOR_PROPERTY_FILE"; do
+        [ -f "$props" ] || continue
+        if grep -q 'arm64-v8a' "$props"; then
+    		echo "ARM64"
+            break
+        fi
+    done
+)
+
 # device specific customization:
 if [ -d "./target/${TARGET_BUILD_PRODUCT_NAME}" ]; then
 	debugPrint "build.sh: Device specific config and blobs are found, customizing the rom...."
@@ -864,6 +878,12 @@ if [[ "${TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER}" == "true" && ! -z "${TARGET
 	fi
 fi
 
+# knoxpatch
+if [[ "${TARGET_BUILD_ADD_KNOXPATCH}" == "true" ]]; then
+	console_print "Trying to run KnoxPatch module..."
+	runModule "KnoxPatch" && console_print "Ran KnoxPatch module successfully!" || console_print "Failed to run KnoxPatch module."
+fi
+
 # device customization script
 [ -f "./src/target/${TARGET_BUILD_PRODUCT_NAME}/customizer.sh" ] && . "./src/target/${TARGET_BUILD_PRODUCT_NAME}/customizer.sh"
 
@@ -889,7 +909,6 @@ sudo rm -rf "${SYSTEM_DIR}/hidden" "${SYSTEM_DIR}/preload" "${SYSTEM_DIR}/recove
 cp -af ./src/misc/etc/ringtones_and_etc/media/audio/* "${SYSTEM_DIR}/media/audio/"
 addFloatXMLValues "SEC_FLOATING_FEATURE_COMMON_SUPPORT_SAMSUNG_MARKETING_INFO" "FALSE"
 [ "$TARGET_INCLUDE_CUSTOM_BRAND_NAME" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_SETTINGS_CONFIG_BRAND_NAME" "${BUILD_TARGET_CUSTOM_BRAND_NAME}"
-[ -f "${SYSTEM_DIR}/$(fetchRomArch --libpath)/libhal.wsm.samsung.so" ] && touch "${SYSTEM_DIR}/$(fetchRomArch --libpath)/libhal.wsm.samsung.so"
 for i in "logcat.live disable" "sys.dropdump.on Off" "profiler.force_disable_err_rpt 1" "profiler.force_disable_ulog 1" \
 		 "sys.lpdumpd 0" "persist.device_config.global_settings.sys_traced 0" "persist.traced.enable 0" "persist.sys.lmk.reportkills false" \
 		 "log.tag.ConnectivityManager S" "log.tag.ConnectivityService S" "log.tag.NetworkLogger S" \

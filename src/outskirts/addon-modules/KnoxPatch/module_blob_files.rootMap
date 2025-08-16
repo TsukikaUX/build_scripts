@@ -1,0 +1,13 @@
+SYSTEM_BLOBS=(
+    "system/bin/vold"
+    "system/etc/permissions/knoxpatch_enhancer.xml"
+    "system/lib/libepm.so"
+    "system/lib64/libepm.so"
+)
+
+SYSTEM_BLOBS_CHECKSUM=(
+    "system/bin/vold.sha256"
+    "system/etc/permissions/knoxpatch_enhancer.xml.sha256"
+    "system/lib/libepm.so.sha256"
+    "system/lib64/libepm.so.sha256"
+)
