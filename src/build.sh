@@ -960,7 +960,7 @@ fi
 #    prop_name: "ro.surface_flinger.game_default_frame_rate_override"
 #}
 # to be honest it would work on games which doesn't have it's max frame rate set.
-[[ ${BUILD_TARGET_SDK_VERSION} -eq 35 ]] && setprop --vendor "ro.surface_flinger.game_default_frame_rate_override" "$BUILD_TARGET_HIGHEST_DEVICE_REFRESH_RATE"
+[[ ${BUILD_TARGET_SDK_VERSION} -eq 35 && ! -z "${BUILD_TARGET_HIGHEST_DEVICE_REFRESH_RATE}" ]] && setprop --vendor "ro.surface_flinger.game_default_frame_rate_override" "$BUILD_TARGET_HIGHEST_DEVICE_REFRESH_RATE"
 tinkerWithCSCFeaturesFile --encode
 debugPrint "CSC feature file(s) successfully encoded."
 sudo rm -rf "$TMPDIR"

@@ -5,13 +5,13 @@ char *LOGFILE = "/data/adb/Tsukika/logs/Tsukika.log";
 bool useStdoutForAllLogs = false;
 
 // resetprop path:
-const char *resetprop = "/data/adb/Tsukika/bin/resetprop";
+char *const resetprop = "/data/adb/Tsukika/bin/resetprop";
 
 int main() {
-    consoleLog(LOG_LEVEL_DEBUG, "setupCustomizer: main(): Started initialization!");
+    consoleLog(LOG_LEVEL_DEBUG, "setupCustomizer", "main(): Started initialization!");
     if(isSetupOver() == 1 && bootanimStillRunning()) {
-        if(executeCommands("settings", (char *const[]){"settings", "put", "secure", "ui_night_mode", "1"}, false) == 0) consoleLog(LOG_LEVEL_DEBUG, "setupCustomizer: main(): Attempt to set the theme to dark passed.");
-        else consoleLog(LOG_LEVEL_DEBUG, "setupCustomizer: main(): Attempt to set the theme to dark failed.");
+        if(executeCommands("settings", (char *const[]){"settings", "put", "secure", "ui_night_mode", "1"}, false) == 0) consoleLog(LOG_LEVEL_DEBUG, "setupCustomizer", "main(): Attempt to set the theme to dark passed.");
+        else consoleLog(LOG_LEVEL_DEBUG, "setupCustomizer", "main(): Attempt to set the theme to dark failed.");
         return 0;
     }
     char *propertyVariableNameStrSpoofs[] = {
@@ -60,18 +60,18 @@ int main() {
         "persist.log.tag.LSPosed-Bridge",
         "ro.build.selinux"
     };
-    consoleLog(LOG_LEVEL_DEBUG, "setupCustomizer: main(): Trying to set properties for spoofing device locked status..");
+    consoleLog(LOG_LEVEL_DEBUG, "setupCustomizer", "main(): Trying to set properties for spoofing device locked status..");
     for(int i = 0; i < sizeof(propertyVariableNameStrSpoofs) / sizeof(propertyVariableNameStrSpoofs[0]); i++) {
         // int setprop(const char *property, void *propertyValue, enum expectedDataType Type);
-        if(setprop(propertyVariableNameStrSpoofs[i], propertyVariableValueStrSpoofs[i], TYPE_STRING) != 0) consoleLog(LOG_LEVEL_ERROR, "setupCustomizer: main(): Cannot set property %s to %s", propertyVariableNameStrSpoofs[i], propertyVariableValueStrSpoofs[i]);
+        if(setprop(propertyVariableNameStrSpoofs[i], propertyVariableValueStrSpoofs[i], TYPE_STRING) != 0) consoleLog(LOG_LEVEL_ERROR, "setupCustomizer", "main(): Cannot set property %s to %s", propertyVariableNameStrSpoofs[i], propertyVariableValueStrSpoofs[i]);
     }
-    consoleLog(LOG_LEVEL_DEBUG, "setupCustomizer: main(): Trying to set properties for spoofing previous boot mode..");
+    consoleLog(LOG_LEVEL_DEBUG, "setupCustomizer", "main(): Trying to set properties for spoofing previous boot mode..");
     for(int i = 0; i < sizeof(propertyVariableNameStrMB) / sizeof(propertyVariableNameStrMB[0]); i++) {
-        if(maybeSetProp(propertyVariableNameStrMB[i], "recovery", "unknown", TYPE_STRING) != 0) consoleLog(LOG_LEVEL_ERROR, "setupCustomizer: main(): Cannot set property %s to %s", propertyVariableNameStrSpoofs[i], propertyVariableValueStrSpoofs[i]);
+        if(maybeSetProp(propertyVariableNameStrMB[i], "recovery", "unknown", TYPE_STRING) != 0) consoleLog(LOG_LEVEL_ERROR, "setupCustomizer", "main(): Cannot set property %s to %s", propertyVariableNameStrSpoofs[i], propertyVariableValueStrSpoofs[i]);
     }
-    consoleLog(LOG_LEVEL_DEBUG, "setupCustomizer: main(): Trying to delete LSPosed and misc properties..");
+    consoleLog(LOG_LEVEL_DEBUG, "setupCustomizer", "main(): Trying to delete LSPosed and misc properties..");
     for(int i = 0; i < sizeof(propertiesToRemove) / sizeof(propertiesToRemove[0]); i++) {
-        if(removeProperty(propertiesToRemove[i]) != NULL) consoleLog(LOG_LEVEL_ERROR, "setupCustomizer: main(): Cannot set property %s to %s", propertiesToRemove[i], propertiesToRemove[i]);
+        if(removeProperty(propertiesToRemove[i]) != 0) consoleLog(LOG_LEVEL_ERROR, "setupCustomizer", "main(): Cannot set property %s to %s", propertiesToRemove[i], propertiesToRemove[i]);
     }
     system("for U in $(ls /data/user); do "
            "for C in \"auth.managed.admin.DeviceAdminReceiver\" \"mdm.receivers.MdmDeviceAdminReceiver\"; do "
@@ -96,5 +96,5 @@ int main() {
              GMS0, GMS0, GMS0, GMS0);
     system(cmd);
     system("dumpsys deviceidle whitelist com.google.android.gms");
-    consoleLog(LOG_LEVEL_DEBUG, "setupCustomizer: main(): Finalized!");
+    consoleLog(LOG_LEVEL_DEBUG, "setupCustomizer", "main(): Finalized!");
 }
