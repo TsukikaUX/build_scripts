@@ -185,3 +185,7 @@ TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER=false
 
 # the url for your xml, replace it with your own URL.
 TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL=https://example.com
+
+# installs KnoxPatch module, checkout https://github.com/salvogiangri/KnoxPatch
+# only android 10 and 11 is supported. Use KnoxPatch Enhancer LSPosed/Xposed module instead.
+TARGET_BUILD_INSTALL_KNOXPATCH_MODULE=false

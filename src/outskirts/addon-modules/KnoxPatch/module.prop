@@ -1,0 +1,12 @@
+name=KnoxPatch Enhancer
+version=v0.4
+versionCode=4
+author=Salvo Giangreco
+description=Get Samsung apps/features working again in your rooted Galaxy device.
+baseModuleURL=https://github.com/salvogiangri/KnoxPatch
+license="GNU General Public License v3.0"
+source=released-module
+modulePath="./src/outskirts/addon-modules/KnoxPatch"
+hasSDKVersionRestrictions=true
+leastSupportedSDKVersion=29
+maxSupportedSDKVersion=30
