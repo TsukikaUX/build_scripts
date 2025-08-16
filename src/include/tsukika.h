@@ -29,7 +29,7 @@
 
 // extern variables.
 extern const char *filesToRemoveBeforeReboot[];
-extern const char *resetprop;
+extern char *const resetprop;
 
 // MUST ADDDDDDDDDDDDDDDDDD!
 #define VALID_TYPE(t) ((t) == TYPE_INT || (t) == TYPE_FLOAT || (t) == TYPE_STRING)
@@ -67,6 +67,7 @@ int maybeSetProp(const char *property, void *expectedPropertyValue, void *typeSh
 int DoWhenPropisinTheSameForm(const char *property, void *expectedPropertyValue, enum expectedDataType Type);
 int setprop(const char *property, void *propertyValue, enum expectedDataType Type);
 int isSetupOver();
+int removeProperty(char *const property);
 bool isBootAnimationExited();
 bool isTheDeviceBootCompleted();
 bool isTheDeviceisTurnedOn();

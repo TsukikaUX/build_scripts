@@ -20,7 +20,7 @@
 
 int isPackageInstalled(const char *packageName) {
     // Prevents command injection attempts
-    if(strchr(packageName, ';') != NULL || strcmp(packageName, "&&") == 0 || strcmp(packageName, "||") == 0) abort_instance("isPackageInstalled(): Malicious intent in the given argument detected!");
+    if(strchr(packageName, ';') != NULL || strcmp(packageName, "&&") == 0 || strcmp(packageName, "||") == 0) abort_instance("isPackageInstalled", "isPackageInstalled(): Malicious intent in the given argument detected!");
     FILE *fptr = popen("pm list packages | cut -d ':' -f 2", "r");
     if(!fptr) return -1;
     char string[1000];
@@ -52,10 +52,10 @@ int getSystemProperty__(const char *propertyVariableName) {
         return atoi(ctx.propertyValue);
     }
     else {
-        consoleLog(LOG_LEVEL_ERROR, "%s not found in system, trying to gather property value from resetprop...", propertyVariableName);
+        consoleLog(LOG_LEVEL_ERROR, "getSystemProperty__", "%s not found in system, trying to gather property value from resetprop...", propertyVariableName);
         FILE *fptr = popen(combineStringsFormatted("/system/bin/resetprop %s", propertyVariableName), "r");
         if(!fptr) {
-            consoleLog(LOG_LEVEL_ERROR, "uh, major hiccup, failed to open resetprop in popen()");
+            consoleLog(LOG_LEVEL_ERROR, "getSystemProperty__", "uh, major hiccup, failed to open resetprop in popen()");
             return -1;
         }
         char eval[1000];
@@ -89,8 +89,8 @@ int maybeSetProp(const char *property, void *expectedPropertyValue, void *typeSh
         break;
         default:
             _Static_assert(VALID_TYPE(TYPE_INT), "Requested type must be valid, this leads to an undefined behaviour.");
-            for(int i = 10; i < 0; i--) consoleLog(LOG_LEVEL_DEBUG, "maybeSetProp(): Undefined behaviour!!!!!!!!! crashing the application in: %d", i);
-            abort_instance("maybeSetProp(): Force crash due to undefined behaviour, hope abort cleans the memory.");
+            for(int i = 10; i < 0; i--) consoleLog(LOG_LEVEL_DEBUG, "maybeSetProp", "maybeSetProp(): Undefined behaviour!!!!!!!!! crashing the application in: %d", i);
+            abort_instance("maybeSetProp", "maybeSetProp(): Force crash due to undefined behaviour, hope abort cleans the memory.");
     }
     if(strcmp(getSystemProperty(property), castValueStr) == 0) return executeCommands(resetprop, (char *const[]){resetprop, (char *)typeShyt, NULL}, 0);
     return 1;
@@ -118,8 +118,8 @@ int DoWhenPropisinTheSameForm(const char *property, void *expectedPropertyValue,
         break;
         default:
             _Static_assert(VALID_TYPE(TYPE_INT), "Requested type must be valid, this leads to an undefined behaviour.");
-            for(int i = 10; i < 0; i--) consoleLog(LOG_LEVEL_DEBUG, "maybeSetProp(): Undefined behaviour!!!!!!!!! crashing the application in: %d", i);
-            abort_instance("maybeSetProp(): Force crash due to undefined behaviour, hope abort cleans the memory.");
+            for(int i = 10; i < 0; i--) consoleLog(LOG_LEVEL_DEBUG, "DoWhenPropisinTheSameForm", "DoWhenPropisinTheSameForm(): Undefined behaviour!!!!!!!!! crashing the application in: %d", i);
+            abort_instance("DoWhenPropisinTheSameForm", "DoWhenPropisinTheSameForm(): Force crash due to undefined behaviour, hope abort cleans the memory.");
     }
     return strcmp(getSystemProperty(property), castValueStr);
 }
@@ -127,46 +127,46 @@ int DoWhenPropisinTheSameForm(const char *property, void *expectedPropertyValue,
 int setprop(const char *property, void *propertyValue, enum expectedDataType Type) {
     char buffer[PROP_VALUE_MAX];
     const char *castValueStr = NULL;
-    consoleLog(LOG_LEVEL_DEBUG, "setprop(): Trying to change the requested prop's value...");
+    consoleLog(LOG_LEVEL_DEBUG, "setprop", "setprop(): Trying to change the requested prop's value...");
     switch(Type) {
         case TYPE_INT: {
             int castValue = *(int *)propertyValue;
             snprintf(buffer, sizeof(buffer), "%d", castValue);
             castValueStr = buffer;
-            consoleLog(LOG_LEVEL_DEBUG, "setprop(): %s with %d", property, castValueStr);
+            consoleLog(LOG_LEVEL_DEBUG, "setprop", "setprop(): %s with %d", property, castValueStr);
         }
         break;
         case TYPE_FLOAT: {
             float castValue = *(float *)propertyValue;
             snprintf(buffer, sizeof(buffer), "%.2f", castValue);
             castValueStr = buffer;
-            consoleLog(LOG_LEVEL_DEBUG, "setprop(): %s with %.2f", property, castValueStr);
+            consoleLog(LOG_LEVEL_DEBUG, "setprop", "setprop(): %s with %.2f", property, castValueStr);
         }
         break;
         case TYPE_STRING: {
             castValueStr = (const char *)propertyValue;
-            consoleLog(LOG_LEVEL_DEBUG, "setprop(): %s with %s", property, castValueStr);
+            consoleLog(LOG_LEVEL_DEBUG, "setprop", "setprop(): %s with %s", property, castValueStr);
         }
         break;
         default:
             _Static_assert(VALID_TYPE(TYPE_INT), "Requested type must be valid, this leads to an undefined behaviour.");
-            for(int i = 10; i < 0; i--) consoleLog(LOG_LEVEL_DEBUG, "maybeSetProp(): Undefined behaviour!!!!!!!!! crashing the application in: %d", i);
-            abort_instance("maybeSetProp(): Force crash due to undefined behaviour, hope abort cleans the memory.");
+            for(int i = 10; i < 0; i--) consoleLog(LOG_LEVEL_DEBUG, "setprop", "setprop(): Undefined behaviour!!!!!!!!! crashing the application in: %d", i);
+            abort_instance("setprop", "setprop(): Force crash due to undefined behaviour, hope abort cleans the memory.");
     }
     if(executeCommands(resetprop, (char *const[]) {resetprop, (char *)property, (char *)castValueStr, NULL}, false) == 0) return 0;
-    consoleLog(LOG_LEVEL_WARN, "setprop(): Failed to set requested property!");
+    consoleLog(LOG_LEVEL_WARN, "setprop", "setprop(): Failed to set requested property!");
     return 1;
 }
 
 int isSetupOver() {
     char *currentSetupWizardMode = getSystemProperty("ro.setupwizard.mode");
     if(strcmp(getSystemProperty("persist.sys.setupwizard"), "FINISH") == 0) {
-        if(strcmp(currentSetupWizardMode, "OPTIONAL" == 0 || strcmp(currentSetupWizardMode, "DISABLED" == 0) return 0;
+        if(strcmp(currentSetupWizardMode, "OPTIONAL")  == 0 || strcmp(currentSetupWizardMode, "DISABLED") == 0) return 0;
     }
     return 1;
 }
 
-int removeProperty(const char *property) {
+int removeProperty(char *const property) {
     return executeCommands(resetprop, (char *const[]){resetprop, "-d", property}, false);
 }
 
@@ -188,7 +188,7 @@ bool bootanimStillRunning() {
 bool isTheDeviceisTurnedOn() {
     FILE *fp = popen("dumpsys power | grep 'Display Power'", "r"); 
     if(!fp) {
-        consoleLog(LOG_LEVEL_ERROR, "isTheDeviceisTurnedOn(): Failed to open stdout to gather information about the device display power status.");
+        consoleLog(LOG_LEVEL_ERROR, "isTheDeviceisTurnedOn", "isTheDeviceisTurnedOn(): Failed to open stdout to gather information about the device display power status.");
         return false;
     }
     char buffer[4];
@@ -216,10 +216,10 @@ char *getSystemProperty(const char *propertyVariableName) {
         return global_property_value_buffer;
     }
     else {
-        consoleLog(LOG_LEVEL_ERROR, "%s not found in system, trying to gather property value from resetprop...", propertyVariableName);
+        consoleLog(LOG_LEVEL_ERROR, "getSystemProperty", "%s not found in system, trying to gather property value from resetprop...", propertyVariableName);
         FILE *fptr = popen(combineStringsFormatted("%s %s", resetprop, propertyVariableName), "r");
         if(!fptr) {
-            consoleLog(LOG_LEVEL_ERROR, "uh, major hiccup, failed to open resetprop in popen()");
+            consoleLog(LOG_LEVEL_ERROR, "getSystemProperty", "uh, major hiccup, failed to open resetprop in popen()");
             return NULL;
         }
         // remove the dawn newline char to get a clear value.
@@ -233,7 +233,7 @@ char *getSystemProperty(const char *propertyVariableName) {
 char *grep_prop(const char *variableName, const char *propFile) {
     FILE *filePointer = fopen(propFile, "r");
     if(!filePointer) {
-        consoleLog(LOG_LEVEL_ERROR, "grep_prop(): Failed to open properties file: %s", propFile);
+        consoleLog(LOG_LEVEL_ERROR, "grep_prop", "grep_prop(): Failed to open properties file: %s", propFile);
         return "NULL";
     }
     char theLine[8000];
@@ -261,7 +261,7 @@ void sendNotification(const char *message) {
 void prepareStockRecoveryCommandList(char *action, char *actionArg, char *actionArgExt) {
     mkdir("/cache/recovery/", 0755);
     FILE *recoveryCommand = fopen("/cache/recovery/command", "w");
-    if(!recoveryCommand) abort_instance("prepareStockRecoveryCommandList(): Failed to open recovery command file for writing to prepare command list.");
+    if(!recoveryCommand) abort_instance("prepareStockRecoveryCommandList", "prepareStockRecoveryCommandList(): Failed to open recovery command file for writing to prepare command list.");
     if(strcmp(action, "wipe") == 0 && strcmp(actionArg, "cache") == 0) fputs("--wipe_cache\n", recoveryCommand);
     else if(strcmp(action, "wipe") == 0 && strcmp(actionArg, "data") == 0) fputs("--wipe_data\n", recoveryCommand);
     else if(strcmp(action, "install") == 0) fprintf(recoveryCommand, "--update_package=%s\n", actionArg);
@@ -272,7 +272,7 @@ void prepareStockRecoveryCommandList(char *action, char *actionArg, char *action
 void prepareTWRPRecoveryCommandList(char *action, char *actionArg, char *actionArgExt) {
     mkdir("/cache/recovery/", 0755);
     FILE *recoveryCommand = fopen("/cache/recovery/openrecoveryscript", "a");
-    if(!recoveryCommand) abort_instance("prepareTWRPRecoveryCommandList(): Failed to open recovery command file for writing to prepare command list.");
+    if(!recoveryCommand) abort_instance("prepareTWRPRecoveryCommandList", "prepareTWRPRecoveryCommandList(): Failed to open recovery command file for writing to prepare command list.");
     if(strcmp(action, "wipe") == 0 && strcmp(actionArg, "cache") == 0) fputs("wipe cache\n", recoveryCommand);
     else if(strcmp(action, "wipe") == 0 && strcmp(actionArg, "data") == 0) fputs("wipe data\n", recoveryCommand);
     else if(strcmp(action, "format data") == 0) fputs("format data\n", recoveryCommand);
@@ -282,13 +282,13 @@ void prepareTWRPRecoveryCommandList(char *action, char *actionArg, char *actionA
 }
 
 void startDaemon(const char *daemonName) {
-    if(setprop("ctl.start", (void *)daemonName, TYPE_STRING) == 0) consoleLog(LOG_LEVEL_INFO, "startDaemon(): Daemon %s started successfully.", daemonName);
-    else consoleLog(LOG_LEVEL_WARN, "startDaemon(): Failed to start daemon %s.", daemonName);
+    if(setprop("ctl.start", (void *)daemonName, TYPE_STRING) == 0) consoleLog(LOG_LEVEL_INFO, "startDaemon", "startDaemon(): Daemon %s started successfully.", daemonName);
+    else consoleLog(LOG_LEVEL_WARN, "startDaemon", "startDaemon(): Failed to start daemon %s.", daemonName);
 }
 
 void stopDaemon(const char *daemonName) {
-    if(setprop("ctl.stop", (void *)daemonName, TYPE_STRING) == 0) consoleLog(LOG_LEVEL_INFO, "stopDaemon(): Daemon %s stopped successfully.", daemonName);
-    else consoleLog(LOG_LEVEL_WARN, "stopDaemon(): Failed to stop daemon %s.", daemonName);
+    if(setprop("ctl.stop", (void *)daemonName, TYPE_STRING) == 0) consoleLog(LOG_LEVEL_INFO, "startDaemon", "stopDaemon(): Daemon %s stopped successfully.", daemonName);
+    else consoleLog(LOG_LEVEL_WARN, "startDaemon", "stopDaemon(): Failed to stop daemon %s.", daemonName);
 }
 
 void androidPropertyCallback(void* cookie, const char* name, const char* value, uint32_t serial) {

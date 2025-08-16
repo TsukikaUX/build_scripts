@@ -19,15 +19,15 @@
 
 int executeCommands(const char *command, char *const args[], bool requiresOutput) {
     for(int i = 0; args[i] != NULL; i++) {
-        if(strstr(args[i], ";") || strstr(args[i], "&&") || strstr(args[i], "$(")) abort_instance("executeCommands(): Malicious command detected: %s", args[i]);
+        if(strstr(args[i], ";") || strstr(args[i], "&&") || strstr(args[i], "$(")) abort_instance("executeCommands", "executeCommands(): Malicious command detected: %s", args[i]);
     }
-    if(command && (strstr(command, ";") || strstr(command, "&&") || strstr(command, "|") || strstr(command, "`") || strstr(command, "$(") || strstr(command, "dd"))) abort_instance("executeCommands(): Malicious command detected: %s", command);
+    if(command && (strstr(command, ";") || strstr(command, "&&") || strstr(command, "|") || strstr(command, "`") || strstr(command, "$(") || strstr(command, "dd"))) abort_instance("executeCommands", "executeCommands(): Malicious command detected: %s", command);
     pid_t ProcessID = fork();
-    consoleLog(LOG_LEVEL_DEBUG, "executeCommands(): Trying to create a child process for a shell command: %s", command);
-    consoleLog(LOG_LEVEL_DEBUG, "executeCommands(): Child process ID: %d", ProcessID);
+    consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "executeCommands(): Trying to create a child process for a shell command: %s", command);
+    consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "executeCommands(): Child process ID: %d", ProcessID);
     switch(ProcessID) {
         case -1:
-            consoleLog(LOG_LEVEL_ERROR, "executeCommands(): Failed to fork process.");
+            consoleLog(LOG_LEVEL_ERROR, "executeCommands", "executeCommands(): Failed to fork process.");
             return 1;
         break;
         case 0:
@@ -39,29 +39,29 @@ int executeCommands(const char *command, char *const args[], bool requiresOutput
                 close(devNull);
             }
             execvp(command, args);
-            consoleLog(LOG_LEVEL_ERROR, "executeCommands(): Failed to execute command: %s", command);
+            consoleLog(LOG_LEVEL_ERROR, "executeCommands", "executeCommands(): Failed to execute command: %s", command);
             return 1;
         break;
         default:
-            consoleLog(LOG_LEVEL_DEBUG, "executeCommands(): Waiting for %s to finish it's process.", command);
+            consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "executeCommands(): Waiting for %s to finish it's process.", command);
             int exitStatus;
             wait(&exitStatus);
-            consoleLog(LOG_LEVEL_DEBUG, "executeCommands(): %s successfully executed.", command);
+            consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "executeCommands(): %s successfully executed.", command);
             return (WIFEXITED(exitStatus)) ? WEXITSTATUS(exitStatus) : 1;
     }
 }
 
 int executeScripts(const char *__script__file, char *const args[], bool requiresOutput) {
     for(int i = 0; args[i] != NULL; i++) {
-        if(strstr(args[i], ";") || strstr(args[i], "&&") || strstr(args[i], "|") || strstr(args[i], "$(")) abort_instance("executeScripts(): Malicious command detected: %s", args[i]);
+        if(strstr(args[i], ";") || strstr(args[i], "&&") || strstr(args[i], "|") || strstr(args[i], "$(")) abort_instance("executeScripts", "executeScripts(): Malicious command detected: %s", args[i]);
     }
-    if(checkBlocklistedStringsNChar(__script__file) == 1) abort_instance("executeScripts(): Malicious command(s) are found in %s, please verify and report the source if it's not valid.", __script__file);
+    if(checkBlocklistedStringsNChar(__script__file) == 1) abort_instance("executeScripts", "executeScripts", "executeScripts(): Malicious command(s) are found in %s, please verify and report the source if it's not valid.", __script__file);
     pid_t ProcessID = fork();
-    consoleLog(LOG_LEVEL_DEBUG, "executeScripts(): Trying to create a child process for a shell script execution, path to the script: %s", __script__file);
-    consoleLog(LOG_LEVEL_DEBUG, "executeScripts(): Child process ID: %d", ProcessID);
+    consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "executeScripts(): Trying to create a child process for a shell script execution, path to the script: %s", __script__file);
+    consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "executeScripts(): Child process ID: %d", ProcessID);
     switch(ProcessID) {
         case -1:
-            consoleLog(LOG_LEVEL_ERROR, "executeScripts(): Failed to fork process.");
+            consoleLog(LOG_LEVEL_ERROR, "executeScripts", "executeScripts(): Failed to fork process.");
             return 1;
         break;
         case 0:
@@ -73,14 +73,14 @@ int executeScripts(const char *__script__file, char *const args[], bool requires
                 close(devNull);
             }
             execv(__script__file, args);
-            consoleLog(LOG_LEVEL_ERROR, "executeScripts(): Failed to execute %s", __script__file);
+            consoleLog(LOG_LEVEL_ERROR, "executeScripts", "executeScripts(): Failed to execute %s", __script__file);
             return 1;
         break;
         default:
-            consoleLog(LOG_LEVEL_DEBUG, "executeScripts(): Waiting for script to finish it's process.");
+            consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "executeScripts(): Waiting for script to finish it's process.");
             int exitStatus;
             wait(&exitStatus);
-            consoleLog(LOG_LEVEL_DEBUG, "executeScripts(): Script successfully executed.");
+            consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "executeScripts(): Script successfully executed.");
             return (WIFEXITED(exitStatus)) ? WEXITSTATUS(exitStatus) : 1;
     }
 }
@@ -92,14 +92,14 @@ int searchBlockListedStrings(const char *__filename, const char *__search_str) {
     size_t sizeOfTheseCraps = strlen(__filename) + strlen(__search_str) + 3;
     char *command = malloc(sizeOfTheseCraps);
     if(!command) {
-        consoleLog(LOG_LEVEL_ERROR, "searchBlockListedStrings(): Failed to allocate memory for searching blocklisted strings.");
+        consoleLog(LOG_LEVEL_ERROR, "searchBlockListedStrings", "searchBlockListedStrings(): Failed to allocate memory for searching blocklisted strings.");
         exit(1);
     }
     snprintf(command, sizeOfTheseCraps, "grep -q '%s' '%s'", __search_str, __filename);
     FILE *file = popen(command, "r");
     free(command);
     if(!file) {
-        consoleLog(LOG_LEVEL_ERROR, "searchBlockListedStrings(): Failed to open file for reading: %s", __filename);
+        consoleLog(LOG_LEVEL_ERROR, "searchBlockListedStrings", "searchBlockListedStrings(): Failed to open file for reading: %s", __filename);
         return 1;
     }
     char haystack[1028];
@@ -107,7 +107,7 @@ int searchBlockListedStrings(const char *__filename, const char *__search_str) {
         haystack[strcspn(haystack, "\n")] = '\0';
         if(strstr(haystack, __search_str) != NULL) {
             fclose(file);
-            consoleLog(LOG_LEVEL_ERROR, "searchBlockListedStrings(): Malicious code execution detected in the script file: %s", __filename);
+            consoleLog(LOG_LEVEL_ERROR, "searchBlockListedStrings", "searchBlockListedStrings(): Malicious code execution detected in the script file: %s", __filename);
             return 1;
         }
     }
@@ -157,8 +157,8 @@ int checkBlocklistedStringsNChar(const char *__haystack) {
     size_t blocklistedStringArraySize = sizeof(blocklistedStrings) / sizeof(blocklistedStrings[0]);
     for(int i = 0; i < blocklistedStringArraySize; i++) {
         if(searchBlockListedStrings(__haystack, blocklistedStrings[i]) == 1) {
-            consoleLog(LOG_LEVEL_ERROR, "checkBlocklistedStringsNChar(): Found Blocklisted string: %s", blocklistedStrings[i]);
-            consoleLog(LOG_LEVEL_ERROR, "checkBlocklistedStringsNChar(): The script is not safe to execute! Stopping execution process...");
+            consoleLog(LOG_LEVEL_ERROR, "checkBlocklistedStringsNChar", "checkBlocklistedStringsNChar(): Found Blocklisted string: %s", blocklistedStrings[i]);
+            consoleLog(LOG_LEVEL_ERROR, "checkBlocklistedStringsNChar", "checkBlocklistedStringsNChar(): The script is not safe to execute! Stopping execution process...");
             return 1;
         }
     }
@@ -215,15 +215,15 @@ char *combineStringsFormatted(const char *format, ...) {
     return result;
 }
 
-void abort_instance(const char *format, ...) {
+void abort_instance(const char *service, const char *format, ...) {
     va_list args;
     va_start(args, format);
-    consoleLog(LOG_LEVEL_ERROR, "abort_instance(): %s %s", format, args);
+    consoleLog(LOG_LEVEL_ERROR, "%s", "abort_instance(): %s %s", service, format, args);
     va_end(args);
     exit(1);
 }
 
-void consoleLog(enum elogLevel loglevel, const char *message, ...) {
+void consoleLog(enum elogLevel loglevel, const char *service, const char *message, ...) {
     va_list args;
     va_start(args, message);
     FILE *out = NULL;
@@ -240,33 +240,24 @@ void consoleLog(enum elogLevel loglevel, const char *message, ...) {
     switch(loglevel) {
         case LOG_LEVEL_INFO:
             if(!toFile) fprintf(out, "\033[2;30;47mINFO: ");
-            else fprintf(out, "INFO: ");
-            vfprintf(out, message, args);
-            if(!toFile) fprintf(out, "\033[0m\n");
-            else fprintf(out, "\n");
-            break;
+            else fprintf(out, "INFO: %s: ", service);
+        break;
         case LOG_LEVEL_WARN:
             if(!toFile) fprintf(out, "\033[1;33mWARNING: ");
-            else fprintf(out, "WARNING: ");
-            vfprintf(out, message, args);
-            if(!toFile) fprintf(out, "\033[0m\n");
-            else fprintf(out, "\n");
-            break;
+            else fprintf(out, "WARNING: %s: ", service);
+        break;
         case LOG_LEVEL_DEBUG:
             if(!toFile) fprintf(out, "\033[0;36mDEBUG: ");
-            else fprintf(out, "DEBUG: ");
-            vfprintf(out, message, args);
-            if(!toFile) fprintf(out, "\033[0m\n");
-            else fprintf(out, "\n");
-            break;
+            else fprintf(out, "DEBUG: %s: ", service);
+        break;
         case LOG_LEVEL_ERROR:
             if(!toFile) fprintf(out, "\033[0;31mERROR: ");
-            else fprintf(out, "ERROR: ");
-            vfprintf(out, message, args);
-            if(!toFile) fprintf(out, "\033[0m\n");
-            else fprintf(out, "\n");
-            break;
+            else fprintf(out, "ERROR: %s: ", service);
+        break;
     }
+    vfprintf(out, message, args);
+    if(!toFile) fprintf(out, "\033[0m\n");
+    else fprintf(out, "\n");
     if(!useStdoutForAllLogs && out) fclose(out);
     va_end(args);
 }

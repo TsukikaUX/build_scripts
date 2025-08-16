@@ -182,6 +182,6 @@ test: test_bootloopsaviour
 
 # Clean up
 clean:
-	@rm -f $(SAVIOUR_OUTPUT) $(ERR_LOG) ./src/tsukika/packages/TsukikaUpdater/dist/ ./src/tsukika/packages/TsukikaUpdater/original/ ./src/tsukika/packages/TsukikaUpdater/build/
+	@rm -f $(SAVIOUR_OUTPUT) $(ERR_LOG) $(STUPCUSTOMIZER_OUTPUT) ./src/tsukika/packages/TsukikaUpdater/dist/ ./src/tsukika/packages/TsukikaUpdater/original/ ./src/tsukika/packages/TsukikaUpdater/build/
 
 .PHONY: all bootloop_saviour UN1CAUpdater test_bootloopsaviour check_compiler test clean help

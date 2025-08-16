@@ -765,10 +765,6 @@ function javaKeyStoreToHex() {
 
     # override if prebuilt key exists:
     if [ -f ${MY_KEYSTORE_PATH} ]; then
-        if [ "$MY_KEYSTORE_PATH" == "./test-keys/tsukika.jks" ]; then
-            console_print "PLEASE DONT USE THIS KEY, GENERATE YOUR OWN KEY!!"
-            ask "By using this key on your release builds, the release builds will become vulnerable. Do you want to continue?" || return 1
-        fi
         keytool -exportcert -alias ${MY_KEYSTORE_ALIAS} -keystore ${MY_KEYSTORE_PATH} -storepass ${MY_KEYSTORE_PASSWORD} -rfc > ${keystoreKeyFileNameString}.x509.pem
         ( openssl x509 -inform PEM -in ${keystoreKeyFileNameString}.x509.pem -outform DER | xxd -p | tr -d '\n' ) > hex.key
         hexKey=$(cat hex.key)

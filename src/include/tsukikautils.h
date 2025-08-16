@@ -52,7 +52,7 @@ bool erase_file_content(const char *__file);
 char *cStringToLower(char *str);
 char *cStringToUpper(char *str);
 char *combineStringsFormatted(const char *format, ...);
-void abort_instance(const char *format, ...);
-void consoleLog(enum elogLevel loglevel, const char *message, ...);
+void abort_instance(const char *service, const char *format, ...);
+void consoleLog(enum elogLevel loglevel, const char *service, const char *message, ...);
 
 #endif
