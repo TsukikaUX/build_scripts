@@ -16,4 +16,7 @@ You can check that out in the website mentioned below the about section of this 
 If you are not okay with me using your stuff or if you want your goodie(s) to be like
 as you want in this repository, make an github issue.
 
+## 🌸 Contributors
+Contributors are listed in the "Contributors" section of the website mentioned iin the about section. Thank you 💖
+
 ---

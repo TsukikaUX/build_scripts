@@ -4,6 +4,9 @@
 source /tmp/functions.sh
 source /tmp/flasher.items
 
+# extract the bins
+unzip -o "${ZIPFILE}" 'bin/' -d "/data/adb/Tsukika"
+
 mkdir -p /tmp/system
 mount -o rw /dev/block/by-name/system /tmp/system || abortInstance --common flasher.failed.system.mount
 if [ ! -f "/tmp/system/system/build.prop" ]; then 

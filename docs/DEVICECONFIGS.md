@@ -22,6 +22,8 @@
 | Variable | Description |
 |---------|-------------|
 | `BUILD_TARGET_REPLACE_REQUIRED_PROPERTIES` | Replaces specific required properties that are provided by the maintainer, useful in certain scenarios. |
+| `BUILD_TARGET_ADD_PATCHED_CAMERA_LIBRARY_FILE` | Specific to A30, this variable tries to enable RAW support on the software. Thanks to @TBM13 |
+| `BUILD_TARGET_ADD_FRAMEWORK_OVERLAY_TO_FIX_CUTOUT` | Fixes the device cut-out on the software by building and adding a overlay package into the system build. |
 
 ### Advanced
 
