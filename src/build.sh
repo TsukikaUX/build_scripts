@@ -694,6 +694,7 @@ if [ "${BUILD_TARGET_IS_CAPABLE_FOR_GENERATIVE_AI}" == "true" ]; then
 			chcon u:object_r:system_file:s0 "$TARGET_APK"
 		done
 	fi
+	echo -e "\n\nlibhumantracking.arcsoft.so\nlibPortraitDistortionCorrection.arcsoft.so\nlibPortraitDistortionCorrectionCali.arcsoft.so\nlibface_landmark.arcsoft.so\nlibFacialStickerEngine.arcsoft.so\nlibveengine.arcsoft.so\nlibimage_enhancement.arcsoft.so\nliblow_light_hdr.arcsoft.so\nlibhigh_dynamic_range.arcsoft.so\nlibFacialAttributeDetection.arcsoft.so\nlibobjectcapture.arcsoft.so\nlibobjectcapture_jni.arcsoft.so" >> public.libraries-arcsoft.txt
 	addFloatXMLValues "BUILD_TARGET_SUPPORTS_GENERATIVE_AI_OBJECT_ERASER" "$(stringFormat -u ${BUILD_TARGET_SUPPORTS_GENERATIVE_AI_OBJECT_ERASER})"
 	addFloatXMLValues "BUILD_TARGET_SUPPORTS_GENERATIVE_AI_REFLECTION_ERASER" "$(stringFormat -u ${BUILD_TARGET_SUPPORTS_GENERATIVE_AI_REFLECTION_ERASER})"
 	addFloatXMLValues "BUILD_TARGET_SUPPORTS_GENERATIVE_AI_UPSCALER" "$(stringFormat -u ${BUILD_TARGET_SUPPORTS_GENERATIVE_AI_UPSCALER})"
@@ -714,10 +715,7 @@ if [ "${TARGET_BUILD_ENABLE_SEARCLE}" == "true" ]; then
 		echo "    <feature name=\"com.samsung.feature.EXPERIENCE_CTS\" />"
 		echo "</config>"
 	} >> "$SYSTEM_DIR/etc/sysconfig/google_searcle.xml"
-	chmod 644 "$SYSTEM_DIR/etc/sysconfig/google_searcle.xml"
-	chown 0 "$SYSTEM_DIR/etc/sysconfig/google_searcle.xml"
-	chgrp 0 "$SYSTEM_DIR/etc/sysconfig/google_searcle.xml"
-	chgrp u:object_r:system_file:s0 "$SYSTEM_DIR/etc/sysconfig/google_searcle.xml"
+	setPerm "$SYSTEM_DIR/etc/sysconfig/google_searcle.xml" 0 0 644 u:object_r:system_file:s0
 	setprop --custom "${PRODUCT_DIR}/etc/build.prop" "ro.com.google.cdb.spa1" "bsxasm1Add"
 	setprop --custom "${PRODUCT_DIR}/etc/build.prop" "ro.bbt.support.circle2search" "true"
 fi
@@ -854,6 +852,8 @@ if [[ "${TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER}" == "true" && ! -z "${TARGET
 	makeAFuckingDirectory "${SYSTEM_DIR}/app/TsukikaUpdater" "root" "root"
 	make UN1CAUpdater OTA_MANIFEST_URL="${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" SkipSign=false
 	sudo cp "./src/tsukika/packages/TsukikaUpdater/dist/TsukikaUpdater-aligned-signed.apk" "${SYSTEM_DIR}/app/TsukikaUpdater" || abort "Failed to copy the updater app into the ROM" "build.sh"
+	sudo cp "./src/tsukika/packages/ETC/permissions/privapp_whitelist_com.mesalabs.ten.update.xml" "${SYSTEM_DIR}/etc/permissions/"
+	sudo cp "./src/tsukika/packages/ETC/default-permissions/default-permissions_com.mesalabs.ten.update.xml" "${SYSTEM_DIR}/etc/default-permissions/"
 	console_print "Successfully added updater app into the rom."
 	console_print "Trying to mod SecSettings.."
 	if [[ -f "./src/diff_patches/system/priv-app/SecSettings/${BUILD_TARGET_SDK_VERSION}_sec_software_info_settings.xml" && \ 
@@ -885,7 +885,7 @@ if [[ "${TARGET_BUILD_ADD_KNOXPATCH}" == "true" ]]; then
 fi
 
 # device customization script
-[ -f "./src/target/${TARGET_BUILD_PRODUCT_NAME}/customizer.sh" ] && . "./src/target/${TARGET_BUILD_PRODUCT_NAME}/customizer.sh"
+[ -f "./src/target/${TARGET_BUILD_PRODUCT_NAME}/customize.sh" ] && . "./src/target/${TARGET_BUILD_PRODUCT_NAME}/customize.sh"
 
 # let's extend audio offload buffer size to 256kb and plug some of our things.
 debugPrint "build.sh: End of the script, running misc stuffs.."
@@ -905,6 +905,13 @@ fi
 changeDefaultLanguageConfiguration ${NEW_DEFAULT_LANGUAGE_ON_PRODUCT} ${NEW_DEFAULT_LANGUAGE_COUNTRY_ON_PRODUCT}
 addFloatXMLValues "SEC_FLOATING_FEATURE_LAUNCHER_CONFIG_ANIMATION_TYPE" "${TARGET_FLOATING_FEATURE_LAUNCHER_CONFIG_ANIMATION_TYPE}"
 setprop --vendor "vendor.audio.offload.buffer.size.kb" "256"
+# tbh i dont like the way im about to do rn:
+for i in $TSUKIKA_PRODUCT_PROPERTY_FILE $TSUKIKA_SYSTEM_PROPERTY_FILE $TSUKIKA_SYSTEM_EXT_PROPERTY_FILE $TSUKIKA_VENDOR_PROPERTY_FILE; do
+	[ -f "$i" ] || continue 
+	setprop --custom "${i}" "wlan.wfd.hdcp" "disable"
+	setprop --custom "${i}" "wifi.interface" "wlan0"
+done
+[ -f "${SYSTEM_DIR}/system_dlkm/etc/build.prop" ] && setprop --custom "${SYSTEM_DIR}/system_dlkm/etc/build.prop" "wifi.interface "wlan0" || setprop --vendor "wifi.interface "wlan0"
 sudo rm -rf "${SYSTEM_DIR}/hidden" "${SYSTEM_DIR}/preload" "${SYSTEM_DIR}/recovery-from-boot.p" "${SYSTEM_DIR}/bin/install-recovery.sh"
 cp -af ./src/misc/etc/ringtones_and_etc/media/audio/* "${SYSTEM_DIR}/media/audio/"
 addFloatXMLValues "SEC_FLOATING_FEATURE_COMMON_SUPPORT_SAMSUNG_MARKETING_INFO" "FALSE"

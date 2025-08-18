@@ -694,7 +694,7 @@ function replaceTargetBuildProperties() {
     local BUILD_TARGET="$1"
     local scope file key value
     console_print "Replacing properties for your device...."
-    for entry in "vendor ./src/target/${BUILD_TARGET}/replaceableVendorProps.prop" "system ./src/target/${BUILD_TARGET}/replaceableSystemProps.prop"; do
+    for entry in "vendor ./src/target/devices/${BUILD_TARGET}/replaceableVendorProps.prop" "system ./src/target/devices/${BUILD_TARGET}/replaceableSystemProps.prop"; do
         read -r scope file <<< "$entry"
         [[ ! -f "$file" || $(grep -c "nothing to replace" "$file") -ne 0 ]] && continue
         while read -r key value; do

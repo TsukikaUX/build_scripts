@@ -1,3 +1,3 @@
 # Licensing
 
-Some files in this directory does **not** fall under the GPL v3 license.
+Some files in the following directory / directories does **not** fall under the GPL v3 license.
