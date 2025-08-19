@@ -8,7 +8,7 @@
 
 | Variable | Description |
 |---------|-------------|
-| `BUILD_TARGET_INCLUDE_FASTBOOTD_PATCH` | Adds fastbootd support to the stock recovery. Make sure `RECOVERY_IMAGE_PATH` is set correctly in `src/makeconfigs.prop`. |
+| `BUILD_TARGET_INCLUDE_FASTBOOTD_PATCH` | Adds fastbootd support to the stock recovery. Make sure `RECOVERY_IMAGE_PATH` is set correctly in `src/makeconfigs.prop`. Thanks to @ravindu644 for his <a href="https://github.com/ravindu644/patch-recovery-revived">patch-recovery-revived</a> tool. (un{stable,tested} because he released new patches) |
 | `BUILD_TARGET_DISABLE_KNOX_PROPERTIES` | For Android <= 11, use at your own risk as it disables Knox via untested properties. |
 | `BUILD_TARGET_BOOT_ANIMATION_FPS` | Sets the frame rate for boot animations (must be ≤ 60). |
 | `BUILD_TARGET_SHUTDOWN_ANIMATION_FPS` | Sets the frame rate for shutdown animations (must be ≤ 60). |

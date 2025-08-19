@@ -728,18 +728,26 @@ function copyDeviceBlobsSafely() {
 
 function magiskboot() {
     local localMachineArchitecture=$(uname -m)
+    local binaryPath="../../src/dependencies/bin/"
+    # mb path could change so sybau terminal
+    if [ ! -f "${binaryPath}/magiskbootX32" ]; then
+        binaryPath="../../../src/dependencies/bin/"
+        if [ ! -f "${binaryPath}/magiskbootX32" ]; then
+            binaryPath=""
+        fi
+    fi
     case "${localMachineArchitecture}" in 
         "i686")
-            magiskbootX32 "$@"
+            ${binaryPath}magiskbootX32 "$@"
         ;;
         "x86_64")
-            magiskbootX64 "$@"
+            ${binaryPath}magiskbootX64 "$@"
         ;;
         "armv7l")
-            magiskbootA32 "$@"
+            ${binaryPath}magiskbootA32 "$@"
         ;;
         "aarch64"|"armv8l")
-            magiskbootA64 "$@"
+            ${binaryPath}magiskbootA64 "$@"
         ;;
         *)
             abort "Undefined architecture ${localMachineArchitecture}" "magiskboot"
@@ -1034,7 +1042,7 @@ function runModule() {
     local moduleProp="./src/outskirts/addon-modules/${moduleName}/module.prop"
     local moduleBlobRootMap="./src/outskirts/addon-modules/${moduleName}/module_blob_files.rootMap"
     if [[ -f "./src/outskirts/addon-modules/${moduleName}" && -f "./src/outskirts/addon-modules/${moduleName}/LICENSE" ]]; then
-        [ "$(grep_prop license "${moduleProp}")" == "GNU General Public License v3.0" ] || abort "Can't run this module with unsupported license, only GNU GPL v3 is currently supported as of now." "runModule"
+        [[ "$(grep_prop license "${moduleProp}")" == "GNU General Public License v3.0" || "$(grep_prop license "${moduleProp}")" == "unlicensed" ]] || abort "Can't run this module with unsupported license" "runModule"
         [ -f "${moduleProp}" ] || abort "Can't fetch module property file, check the sources and try running again." "runModule"
         [ -f "${moduleBlobRootMap}" ] || abort "Can't fetch module blob root map file, check the sources and try running again." "runModule"
         if [[ "$(grep_prop hasSDKVersionRestrictions "${moduleProp}")" == "true" && "${BUILD_TARGET_SDK_VERSION}" -ge "$(grep_prop leastSupportedSDKVersion "${moduleProp}")" && "${BUILD_TARGET_SDK_VERSION}" -le "$(grep_prop maxSupportedSDKVersion "${moduleProp}")" ]]; then
