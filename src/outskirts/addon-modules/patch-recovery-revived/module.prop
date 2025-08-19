@@ -1,0 +1,12 @@
+name=# Patch Recovery Revived
+version=v3.0
+versionCode=300
+author=Ravindu Deshan
+description=A \"Working\" Fastbootd recovery patcher for Samsung devices.
+baseModuleURL=https://github.com/ravindu644/patch-recovery-revived
+license="unlicensed"
+source=released-module
+modulePath="./src/outskirts/addon-modules/patch-recovery-revived"
+hasSDKVersionRestrictions=false
+leastSupportedSDKVersion=xx
+maxSupportedSDKVersion=xx
