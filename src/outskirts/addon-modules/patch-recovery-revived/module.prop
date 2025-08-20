@@ -10,3 +10,4 @@ modulePath="./src/outskirts/addon-modules/patch-recovery-revived"
 hasSDKVersionRestrictions=false
 leastSupportedSDKVersion=xx
 maxSupportedSDKVersion=xx
+moduleContainsFiles=false

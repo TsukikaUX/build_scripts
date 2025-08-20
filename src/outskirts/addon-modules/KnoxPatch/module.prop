@@ -10,3 +10,4 @@ modulePath="./src/outskirts/addon-modules/KnoxPatch"
 hasSDKVersionRestrictions=true
 leastSupportedSDKVersion=29
 maxSupportedSDKVersion=30
+moduleContainsFiles=true

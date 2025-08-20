@@ -1044,7 +1044,7 @@ function runModule() {
     if [[ -f "./src/outskirts/addon-modules/${moduleName}" && -f "./src/outskirts/addon-modules/${moduleName}/LICENSE" ]]; then
         [[ "$(grep_prop license "${moduleProp}")" == "GNU General Public License v3.0" || "$(grep_prop license "${moduleProp}")" == "unlicensed" ]] || abort "Can't run this module with unsupported license" "runModule"
         [ -f "${moduleProp}" ] || abort "Can't fetch module property file, check the sources and try running again." "runModule"
-        [ -f "${moduleBlobRootMap}" ] || abort "Can't fetch module blob root map file, check the sources and try running again." "runModule"
+        [[ "$(grep_prop moduleContainsFiles "${moduleProp}")" == "true" && ! -f "${moduleBlobRootMap}" ]] && abort "Can't fetch module blob root map file, check the sources and try running again." "runModule"
         if [[ "$(grep_prop hasSDKVersionRestrictions "${moduleProp}")" == "true" && "${BUILD_TARGET_SDK_VERSION}" -ge "$(grep_prop leastSupportedSDKVersion "${moduleProp}")" && "${BUILD_TARGET_SDK_VERSION}" -le "$(grep_prop maxSupportedSDKVersion "${moduleProp}")" ]]; then
             abort "This module is not supported on your current SDK version (${BUILD_TARGET_SDK_VERSION})." "runModule"
         fi
@@ -1056,4 +1056,35 @@ function runModule() {
     console_print "runModule(): Unknown module or name, here's the available modules from source:"
     ls -w 1 "./src/outskirts/addon-modules"
     abort "Failed to get proper information." "runModule"
+}
+
+function applyHexPatches() {
+    local binary_file="$1"
+    local patches_applied=0
+    local total_patches=${#HEX_PATCHES[@]}
+    
+    # Temporarily disable exit on error for individual patch attempts
+    console_print "Trying to apply hex patches to ${binary_file}..."
+    set +e
+    for patch in "${HEX_PATCHES[@]}"; do
+        # Split the patch string into search and replace patterns
+        local search_pattern="${patch%%:*}"
+        local replace_pattern="${patch##*:}"
+        debugPrint "applyHexPatches(): Trying to apply patch: ${search_pattern} -> ${replace_pattern}"
+
+        # Apply the patch and capture the exit code
+        if magiskboot hexpatch "${binary_file}" "${search_pattern}" "${replace_pattern}"; then
+            debugPrint "applyHexPatches(): Patch applied successfully: ${search_pattern} -> ${replace_pattern}"
+            ((patches_applied++))
+        else
+            debugPrint "applyHexPatches(): Patch failed: ${search_pattern} -> ${replace_pattern}"
+            warns "Failed to apply patch: ${search_pattern} -> ${replace_pattern}\n" "applyHexPatches"
+        fi
+    done
+    # Re-enable exit on error
+    set -e
+    console_print "Applied ${patches_applied}/${total_patches} patches\n"
+    
+    # Return success if at least one patch was applied
+    [ $patches_applied -gt 0 ]
 }
