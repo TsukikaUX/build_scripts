@@ -209,7 +209,7 @@ if [ -n "$argOne" ]; then
 					setupLocalImage ./local_build/etc/extract/${androidOS}.img ./local_build/etc/imageSetup/${androidOS}
 				fi
 			done
-			if [[ "$BUILD_TARGET_RECOVERY_IMAGE_PATH" == "true" || "$BUILD_TARGET_ENABLE_DISPLAY_OVERCLOCKING" == "true" ]]; then
+			if [[ "$BUILD_TARGET_INCLUDE_FASTBOOTD_PATCH" == "true" || "$BUILD_TARGET_ENABLE_DISPLAY_OVERCLOCKING" == "true" ]]; then
 				for patchableImages in recovery.img.lz4 dtbo.img.lz4; do
 					tar -C ./local_build/etc/extract "${extractedAPFilePath}" "${patchableImages}" &>>${thisConsoleTempLogFile} || abort "Failed to extract ${patchableImages} from the archive." "build.sh"
 					logInterpreter "Trying to extract $(basename ${patchableImages} .lz4) from an LZ4 archive..." "lz4 -d ./local_build/etc/extract/dtbo.img.lz4 ./local_build/etc/extract/$(basename ${patchableImages} .lz4)" || abort "Failed to extract $(basename ${patchableImages} .img.lz4) image from an lz4 archive." "build.sh"
