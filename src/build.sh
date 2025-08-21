@@ -763,10 +763,6 @@ if [[ "${BUILD_TARGET_SDK_VERSION}" =~ ^(34|35)$ && "$BRINGUP_CN_SMARTMANAGER_DE
 		sudo mv ${SYSTEM_DIR}/priv-app/SmartManager_v6_DeviceSecurity_CN/* "./local_build/etc/priv-app/SmartManager_v6_DeviceSecurity_CN"
 		sudo mv ${SYSTEM_DIR}/priv-app/SAppLock/* "./local_build/etc/priv-app/SAppLock"
 		sudo mv ${SYSTEM_DIR}/priv-app/Firewall/* "./local_build/etc/priv-app/Firewall"
-		# change float values, as per updater-script from @saadelasfur/SmartManager/Installers/SmartManagerCN/updater-script.
-		# https://github.com/saadelasfur/SmartManager/blob/5a547850d8049ce0bfd6528d660b2735d6a18291/Installers/SmartManagerCN/updater-script#L87
-		#                                                          -                                                                           #
-		# https://github.com/saadelasfur/SmartManager/blob/5a547850d8049ce0bfd6528d660b2735d6a18291/Installers/SmartManagerCN/updater-script#L99
 	} &>>$thisConsoleTempLogFile
 	debugPrint "build.sh: Moved SmartManager and Device Care to a temporary directory.."
 	for i in ${SMARTMANAGER_CN_DOWNLOADABLE_CONTENTS[@]}; do
@@ -799,6 +795,10 @@ if [[ "${BUILD_TARGET_SDK_VERSION}" =~ ^(34|35)$ && "$BRINGUP_CN_SMARTMANAGER_DE
 			}
 		done
 	done
+	# change float values, as per updater-script from @saadelasfur/SmartManager/Installers/SmartManagerCN/updater-script.
+	# https://github.com/saadelasfur/SmartManager/blob/5a547850d8049ce0bfd6528d660b2735d6a18291/Installers/SmartManagerCN/updater-script#L87
+	#                                                          -                                                                           #
+	# https://github.com/saadelasfur/SmartManager/blob/5a547850d8049ce0bfd6528d660b2735d6a18291/Installers/SmartManagerCN/updater-script#L99
 	addFloatXMLValues "SEC_FLOATING_FEATURE_SMARTMANAGER_CONFIG_PACKAGE_NAME" "com.samsung.android.sm_cn"
 	addFloatXMLValues "SEC_FLOATING_FEATURE_SECURITY_CONFIG_DEVICEMONITOR_PACKAGE_NAME" "com.samsung.android.sm.devicesecurity.tcm"
 	addFloatXMLValues "SEC_FLOATING_FEATURE_COMMON_SUPPORT_NAL_PRELOADAPP_REGULATION" "true"
@@ -848,7 +848,7 @@ if [[ "${TARGET_BUILD_ADD_RAM_MANAGEMENT_FIX}" == "true" && "${BUILD_TARGET_SDK_
 fi
 
 # ota implementation.
-if [[ "${TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER}" == "true" && ! -z "${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" && "${BUILD_TARGET_SDK_VERSION}" -ge "34" ]]; then
+if [[ "${TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER}" == "true" && ! -z "${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" && "${BUILD_TARGET_SDK_VERSION}" -ge "29" ]]; then
 	makeAFuckingDirectory "${SYSTEM_DIR}/app/TsukikaUpdater" "root" "root"
 	make UN1CAUpdater OTA_MANIFEST_URL="${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" SkipSign=false
 	sudo cp "./src/tsukika/packages/TsukikaUpdater/dist/TsukikaUpdater-aligned-signed.apk" "${SYSTEM_DIR}/app/TsukikaUpdater" || abort "Failed to copy the updater app into the ROM" "build.sh"

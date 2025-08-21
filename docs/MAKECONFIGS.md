@@ -102,7 +102,7 @@ Please provide the paths for each extracted partition:
 - **TARGET_DISABLE_SAMSUNG_ASKS_SIGNATURE_VERFICATION**: Disables Samsung ASKS signature check.
 - **TARGET_ADD_ROUNDED_CORNERS_TO_THE_PIP_WINDOWS**: [Adds rounded corners to the PiP window.](https://github.com/ayumi-aiko/banners/blob/main/rounded_corners_tsukika_ex.png)
 - **TARGET_BUILD_FIX_ANDROID_SYSTEM_DEVICE_WARNING**: Removes Android system warning.
-- **TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER**: Adds the deprecated UN1CA Updater app. [How to set it up?](https://github.com/ayumi-aiko/Tsukika/blob/main/updaterConfigs/ref/README.md) (Fill `TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL` variable btw)
+- **TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER**: Adds the deprecated UN1CA Updater app. [How to set it up?](https://github.com/ayumi-aiko/Tsukika/blob/main/updaterConfigs/a30/README.md) (Fill `TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL` variable. 29 is the least supported.)
 - **TARGET_BUILD_INSTALL_KNOXPATCH_MODULE**: A module to get Samsung apps/features working again in your rooted Galaxy device. Only for Android 10 & 11
 ---
 
