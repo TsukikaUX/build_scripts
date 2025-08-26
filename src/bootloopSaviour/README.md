@@ -5,7 +5,7 @@
 - Don't forget to change it, else the program won't get compiled or will have any random issues.
 ```bash
 cd Tsukika
-make SDK=<sdk version here> bootloop_saviour
+make SDK=<sdk version here> ARCH=<arch here> bootloop_saviour
 ```
 
 ## What does this do?

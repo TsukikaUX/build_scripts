@@ -36,7 +36,19 @@ MY_KEYSTORE_PATH = ./test-keys/tsukika.jks
 MY_KEYSTORE_ALIAS_KEY_PASSWORD = theDawnJKSPass
 
 # compiler and it's arguments.
-CC = android-ndk-r27d/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android$(SDK)-clang
+CC_ROOT = android-ndk-r27d/toolchains/llvm/prebuilt/linux-x86_64/bin
+ifeq ($(ARCH),arm64)
+	CC := $(CC_ROOT)/aarch64-linux-android$(SDK)-clang
+endif
+ifeq ($(ARCH),arm)
+	CC := $(CC_ROOT)/armv7a-linux-androideabi$(SDK)-clang
+endif
+ifeq ($(ARCH),x86)
+	CC := $(CC_ROOT)/i686-linux-android$(SDK)-clang
+endif
+ifeq ($(ARCH),x86_64)
+	CC := $(CC_ROOT)/x86_64-linux-android$(SDK)-clang
+endif
 CFLAGS = -O3 -static -I./src/include
 
 # Output binaries
@@ -56,6 +68,17 @@ ERR_LOG = ./local_build/logs/compilerErrors.log
 # Default: Build both
 all: bootloop_saviour
 
+# checks args
+checkArgs:
+	@if [ -z "$(SDK)" ]; then \
+	  printf "\033[0;31mmake: Error: SDK is not set. Please specify the Android API level, e.g., 'SDK=30'\033[0m\n"; \
+	  exit 1; \
+	fi; \
+	if [ -z "$(ARCH)" ]; then \
+	  printf "\033[0;31mmake: Error: ARCH is not set. Please specify the target architecture, e.g., 'ARCH=arm64'\033[0m\n"; \
+	  exit 1; \
+	fi
+
 # checks if given sdk version deprecated or not.
 checkDeprecated:
 	@if [ "$(SDK)" -le "27" ]; then \
@@ -65,11 +88,11 @@ checkDeprecated:
 	fi
 
 # Checks if the android ndk compiler toolchain exists
-check_compiler:
-	@if [ ! -f "$(CC)" ]; then \
-		echo -e "\e[0;31mmake: Error: Android clang is not found. Please install it or edit the makefile to proceed.\e[0;37m"; \
+check_compiler: checkArgs
+	@[ -x "$(CC)" ] || { \
+		printf "\033[0;31mmake: Error: Compiler '%s' not found or not executable. Please check the path or install it.\033[0m\n" "$(shell basename $(CC))"; \
 		exit 1; \
-	fi
+	}
 
 # Checks if the android ndk compiler toolchain exists
 checkJava:
@@ -160,12 +183,12 @@ help:
 	@echo -e "\e[1;36mUsage:\e[0m"
 	@echo -e "  \e[1;33mmake <target> [VARIABLE=value]\e[0m"
 	@echo -e ""
-	@echo -e "\e[1;36mC Build Targets (requires SDK=<version>):\e[0m"
+	@echo -e "\e[1;36mC Build Targets (requires SDK=<version> & ARCH=<arch>):\e[0m"
 	@echo -e "  \e[1;32mall\e[0m                       Build all components"
 	@echo -e "  \e[1;32mbootloop_saviour\e[0m          Build bootloopSaviour"
 	@echo -e "  \e[1;32msetupCustomizer\e[0m           Build setupCustomizer"
 	@echo -e ""
-	@echo -e "\e[1;36mC Test Targets (requires SDK=<version>):\e[0m"
+	@echo -e "\e[1;36mC Test Targets (requires SDK=<version> & ARCH=<arch>):\e[0m"
 	@echo -e "  \e[1;32mtest\e[0m                      Test all C buildable programs"
 	@echo -e "  \e[1;32mtest_bootloopsaviour\e[0m      Test bootloopSaviour"
 	@echo -e "  \e[1;32mtest_setupCustomizer\e[0m      Test setupCustomizer"

@@ -23,7 +23,7 @@ int isPackageInstalled(const char *packageName) {
     if(strchr(packageName, ';') != NULL || strcmp(packageName, "&&") == 0 || strcmp(packageName, "||") == 0) abort_instance("isPackageInstalled", "isPackageInstalled(): Malicious intent in the given argument detected!");
     FILE *fptr = popen("pm list packages | cut -d ':' -f 2", "r");
     if(!fptr) return -1;
-    char string[1000];
+    char string[8000];
     while(fgets(string, sizeof(string), fptr) != NULL) {
         string[strcspn(string, "\n")] = '\0';
         if(strcmp(string, packageName) == 0) {
@@ -234,7 +234,7 @@ char *grep_prop(const char *variableName, const char *propFile) {
     FILE *filePointer = fopen(propFile, "r");
     if(!filePointer) {
         consoleLog(LOG_LEVEL_ERROR, "grep_prop", "grep_prop(): Failed to open properties file: %s", propFile);
-        return "NULL";
+        return NULL;
     }
     char theLine[8000];
     size_t lengthOfTheString = strlen(variableName);
@@ -247,7 +247,7 @@ char *grep_prop(const char *variableName, const char *propFile) {
         }
     }
     fclose(filePointer);
-    return "NULL";
+    return NULL;
 }
 
 void sendToastMessages(const char *message) {
