@@ -93,7 +93,7 @@ int searchBlockListedStrings(const char *__filename, const char *__search_str) {
     char *command = malloc(sizeOfTheseCraps);
     if(!command) {
         consoleLog(LOG_LEVEL_ERROR, "searchBlockListedStrings", "searchBlockListedStrings(): Failed to allocate memory for searching blocklisted strings.");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     snprintf(command, sizeOfTheseCraps, "grep -q '%s' '%s'", __search_str, __filename);
     FILE *file = popen(command, "r");
@@ -208,10 +208,7 @@ char *combineStringsFormatted(const char *format, ...) {
     }
     vsnprintf(result, len + 1, format, args);
     va_end(args);
-    if(!result) {
-        va_end(args);
-        return NULL;
-    }
+    if(!result) return NULL;
     return result;
 }
 
@@ -220,7 +217,7 @@ void abort_instance(const char *service, const char *format, ...) {
     va_start(args, format);
     consoleLog(LOG_LEVEL_ERROR, "%s", "abort_instance(): %s %s", service, format, args);
     va_end(args);
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
 void consoleLog(enum elogLevel loglevel, const char *service, const char *message, ...) {
