@@ -9,6 +9,8 @@ const char *filesToRemoveBeforeReboot[] = {
 };
 char *LOGFILE = "/data/adb/Tsukika/logs/Tsukika.log";
 char *const resetprop = "/data/adb/Tsukika/bin/resetprop";
+const char *base_path = "/data/adb/modules/";
+const char *suffix = "/disable";
 bool useStdoutForAllLogs = false;
 
 void disableMagiskModules() {
@@ -18,8 +20,6 @@ void disableMagiskModules() {
     while((entry = readdir(dirptr)) != NULL) {
         if(entry->d_type == DT_DIR) {
             if(strcmp(entry->d_name, "..") == 0 || strcmp(entry->d_name, ".") == 0) continue;
-            const char *base_path = "/data/adb/modules/";
-            const char *suffix = "/disable";
             size_t sizeOfTheString = strlen(base_path) + strlen(entry->d_name) + strlen(suffix) + 1;
             char *alllocatedChar = malloc(sizeOfTheString);
             if(!alllocatedChar) {

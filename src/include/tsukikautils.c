@@ -18,16 +18,13 @@
 #include <tsukikautils.h>
 
 int executeCommands(const char *command, char *const args[], bool requiresOutput) {
-    for(int i = 0; args[i] != NULL; i++) {
-        if(strstr(args[i], ";") || strstr(args[i], "&&") || strstr(args[i], "$(")) abort_instance("executeCommands", "executeCommands(): Malicious command detected: %s", args[i]);
-    }
-    if(command && (strstr(command, ";") || strstr(command, "&&") || strstr(command, "|") || strstr(command, "`") || strstr(command, "$(") || strstr(command, "dd"))) abort_instance("executeCommands", "executeCommands(): Malicious command detected: %s", command);
+    if(command && (strstr(command, ";") || strstr(command, "&&") || strstr(command, "|") || strstr(command, "`") || strstr(command, "$(") || strstr(command, "dd"))) abort_instance("executeCommands", "Malicious command detected: %s", command);
     pid_t ProcessID = fork();
-    consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "executeCommands(): Trying to create a child process for a shell command: %s", command);
-    consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "executeCommands(): Child process ID: %d", ProcessID);
+    consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "Trying to create a child process for a shell command: %s", command);
+    consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "Child process ID: %d", ProcessID);
     switch(ProcessID) {
         case -1:
-            consoleLog(LOG_LEVEL_ERROR, "executeCommands", "executeCommands(): Failed to fork process.");
+            consoleLog(LOG_LEVEL_ERROR, "executeCommands", "Failed to fork process.");
             return 1;
         break;
         case 0:
@@ -39,29 +36,30 @@ int executeCommands(const char *command, char *const args[], bool requiresOutput
                 close(devNull);
             }
             execvp(command, args);
-            consoleLog(LOG_LEVEL_ERROR, "executeCommands", "executeCommands(): Failed to execute command: %s", command);
+            consoleLog(LOG_LEVEL_ERROR, "executeCommands", "Failed to execute command: %s", command);
             return 1;
         break;
         default:
-            consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "executeCommands(): Waiting for %s to finish it's process.", command);
+            consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "Waiting for %s to finish it's process.", command);
             int exitStatus;
             wait(&exitStatus);
-            consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "executeCommands(): %s successfully executed.", command);
+            consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "%s successfully executed.", command);
             return (WIFEXITED(exitStatus)) ? WEXITSTATUS(exitStatus) : 1;
     }
 }
 
-int executeScripts(const char *__script__file, char *const args[], bool requiresOutput) {
+int executeScripts(const char *script_file, char *const args[], bool requiresOutput) {
+    // verify and execute.
     for(int i = 0; args[i] != NULL; i++) {
-        if(strstr(args[i], ";") || strstr(args[i], "&&") || strstr(args[i], "|") || strstr(args[i], "$(")) abort_instance("executeScripts", "executeScripts(): Malicious command detected: %s", args[i]);
+        if(strstr(args[i], ";") || strstr(args[i], "&&") || strstr(args[i], "|") || strstr(args[i], "$(")) abort_instance("executeScripts", "Malicious hijack attempts detected: %s", args[i]);
     }
-    if(checkBlocklistedStringsNChar(__script__file) == 1) abort_instance("executeScripts", "executeScripts", "executeScripts(): Malicious command(s) are found in %s, please verify and report the source if it's not valid.", __script__file);
+    if(checkBlocklistedStringsNChar(script_file) != 0 && verifyScriptStatusUsingShell(script_file) != 0) abort_instance("executeScripts", "The given script either doesn't have executable permission or it contains malicious commands. Please report this issue immediately. (%s)", script_file);
     pid_t ProcessID = fork();
-    consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "executeScripts(): Trying to create a child process for a shell script execution, path to the script: %s", __script__file);
-    consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "executeScripts(): Child process ID: %d", ProcessID);
+    consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "Trying to create a child process for a shell script execution, path to the script: %s", script_file);
+    consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "Child process ID: %d", ProcessID);
     switch(ProcessID) {
         case -1:
-            consoleLog(LOG_LEVEL_ERROR, "executeScripts", "executeScripts(): Failed to fork process.");
+            consoleLog(LOG_LEVEL_ERROR, "executeScripts", "Failed to fork process.");
             return 1;
         break;
         case 0:
@@ -72,58 +70,57 @@ int executeScripts(const char *__script__file, char *const args[], bool requires
                 dup2(devNull, STDERR_FILENO);
                 close(devNull);
             }
-            execv(__script__file, args);
-            consoleLog(LOG_LEVEL_ERROR, "executeScripts", "executeScripts(): Failed to execute %s", __script__file);
+            execv(script_file, args);
+            consoleLog(LOG_LEVEL_ERROR, "executeScripts", "Failed to execute %s", script_file);
             return 1;
         break;
         default:
-            consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "executeScripts(): Waiting for script to finish it's process.");
+            consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "Waiting for script to finish it's process.");
             int exitStatus;
             wait(&exitStatus);
-            consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "executeScripts(): Script successfully executed.");
+            consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "Script successfully executed.");
             return (WIFEXITED(exitStatus)) ? WEXITSTATUS(exitStatus) : 1;
     }
 }
 
+// -----------------------------------------------------------------------------
 // prevents bastards from running any malicious commands
 // this searches some sensitive strings to ensure that the script is safe
 // please verify your scripts before running it PLEASE 🙏
-int searchBlockListedStrings(const char *__filename, const char *__search_str) {
-    size_t sizeOfTheseCraps = strlen(__filename) + strlen(__search_str) + 3;
+// -----------------------------------------------------------------------------
+// Hi! i don't think i'm good at C, so please don't trash talk about me and just 
+// help me to improve myself if you can or otherwise don't be a bad guy on me.
+// -----------------------------------------------------------------------------
+int searchBlockListedStrings(const char *filename, const char *search_str) {
+    size_t sizeOfTheseCraps = strlen(filename) + strlen(search_str) + 3;
     char *command = malloc(sizeOfTheseCraps);
-    if(!command) {
-        consoleLog(LOG_LEVEL_ERROR, "searchBlockListedStrings", "searchBlockListedStrings(): Failed to allocate memory for searching blocklisted strings.");
-        exit(EXIT_FAILURE);
-    }
-    snprintf(command, sizeOfTheseCraps, "grep -q '%s' '%s'", __search_str, __filename);
-    FILE *file = popen(command, "r");
-    free(command);
-    if(!file) {
-        consoleLog(LOG_LEVEL_ERROR, "searchBlockListedStrings", "searchBlockListedStrings(): Failed to open file for reading: %s", __filename);
-        return 1;
-    }
-    char haystack[1028];
-    while(fgets(haystack, sizeof(haystack), file) != NULL) {
-        haystack[strcspn(haystack, "\n")] = '\0';
-        if(strstr(haystack, __search_str) != NULL) {
-            fclose(file);
-            consoleLog(LOG_LEVEL_ERROR, "searchBlockListedStrings", "searchBlockListedStrings(): Malicious code execution detected in the script file: %s", __filename);
+    // we failed to get the memory we want.
+    if(!command) abort_instance("searchBlockListedStrings", "Failed to allocate memory for searching blocklisted strings.");
+    // let's grab the shell exitCode from the command. it's better to use native C but- nvm let's just use native C instead.
+    char boii[8000];
+    FILE *fptr = fopen(filename, "r"); 
+    if(!fptr) abort_instance("searchBlockListedStrings", "Failed to open file for reading: %s", filename);
+    while(fgets(boii, sizeof(boii), fptr) != NULL) {
+        boii[strcspn(boii, "\n")] = '\0';
+        if(strstr(boii, search_str)) {
+            fclose(fptr);
+            consoleLog(LOG_LEVEL_ERROR, "searchBlockListedStrings", "Malicious code execution detected in the script file: %s", filename);
             return 1;
         }
     }
-    fclose(file);
+    fclose(fptr);
     return 0;
 }
 
 // yet another thing to protect good peoples from getting fucked
 // this ensures that the chosen is a bash script and if it's not one
 // it'll return 1 to make the program to stop from executing that bastard
-int verifyScriptStatusUsingShell(const char *__filename) {
-    return system(combineStringsFormatted("file %s | grep -q 'ASCII text executable'", __filename));
+int verifyScriptStatusUsingShell(const char *filename) {
+    return executeCommands("file", (char *const[]) {"file", combineStringsFormatted("file %s | grep -q 'ASCII text executable'", filename), NULL}, false) == 0;
 }
 
 // Checks if a given string contains blacklisted substrings
-int checkBlocklistedStringsNChar(const char *__haystack) {
+int checkBlocklistedStringsNChar(const char *haystack) {
     static const char *blocklistedStrings[] = {
         "/xbl_config",
         "/fsc",
@@ -154,9 +151,8 @@ int checkBlocklistedStringsNChar(const char *__haystack) {
         "/dev/block/mmcblk",
         "/dev/mmcblk"
     };
-    size_t blocklistedStringArraySize = sizeof(blocklistedStrings) / sizeof(blocklistedStrings[0]);
-    for(int i = 0; i < blocklistedStringArraySize; i++) {
-        if(searchBlockListedStrings(__haystack, blocklistedStrings[i]) == 1) {
+    for(int i = 0; i < sizeof(blocklistedStrings) / sizeof(blocklistedStrings[0]); i++) {
+        if(searchBlockListedStrings(haystack, blocklistedStrings[i]) == 1) {
             consoleLog(LOG_LEVEL_ERROR, "checkBlocklistedStringsNChar", "checkBlocklistedStringsNChar(): Found Blocklisted string: %s", blocklistedStrings[i]);
             consoleLog(LOG_LEVEL_ERROR, "checkBlocklistedStringsNChar", "checkBlocklistedStringsNChar(): The script is not safe to execute! Stopping execution process...");
             return 1;
@@ -165,8 +161,8 @@ int checkBlocklistedStringsNChar(const char *__haystack) {
     return 0;
 }
 
-bool erase_file_content(const char *__file) {
-    FILE *fileConstantAgain = fopen(__file, "w");
+bool erase_file_content(const char *file) {
+    FILE *fileConstantAgain = fopen(file, "w");
     if(!fileConstantAgain) return false;
     fclose(fileConstantAgain);
     return true;
@@ -190,6 +186,7 @@ char *cStringToUpper(char *str) {
     return str;
 }
 
+// NOTE: THIS FUNCTION RETURNS STACK AND SHOULD BE CLEARED!!
 char *combineStringsFormatted(const char *format, ...) {
     va_list args;
     va_start(args, format);

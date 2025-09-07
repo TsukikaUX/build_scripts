@@ -20,7 +20,7 @@
 
 int isPackageInstalled(const char *packageName) {
     // Prevents command injection attempts
-    if(strchr(packageName, ';') != NULL || strcmp(packageName, "&&") == 0 || strcmp(packageName, "||") == 0) abort_instance("isPackageInstalled", "isPackageInstalled(): Malicious intent in the given argument detected!");
+    if(strchr(packageName, ';') != NULL || strcmp(packageName, "&&") == 0 || strcmp(packageName, "||") == 0) abort_instance("isPackageInstalled", "Malicious intent in the given argument detected!");
     FILE *fptr = popen("pm list packages | cut -d ':' -f 2", "r");
     if(!fptr) return -1;
     char string[8000];
@@ -67,33 +67,36 @@ int getSystemProperty__(const char *propertyVariableName) {
     return -1;
 }
 
-int maybeSetProp(const char *property, void *expectedPropertyValue, void *typeShyt, enum expectedDataType Type) {
+int maybeSetProp(const char* property, void* expectedPropertyValue, enum expectedDataType Type) {
+    if(!property || !expectedPropertyValue) return -1;
     char buffer[PROP_VALUE_MAX];
-    const char *castValueStr = NULL;
+    const char* castValueStr = NULL;
     switch(Type) {
         case TYPE_INT: {
-            int castValue = *(int *)expectedPropertyValue;
+            int castValue = *(int*)expectedPropertyValue;
             snprintf(buffer, sizeof(buffer), "%d", castValue);
             castValueStr = buffer;
         }
         break;
         case TYPE_FLOAT: {
-            float castValue = *(float *)expectedPropertyValue;
-            snprintf(buffer, sizeof(buffer), "%.2f", castValue);
+            float castValue = *(float*)expectedPropertyValue;
+            snprintf(buffer, sizeof(buffer), "%g", castValue);
             castValueStr = buffer;
         }
         break;
         case TYPE_STRING: {
-            castValueStr = (const char *)expectedPropertyValue;
+            castValueStr = (const char*)expectedPropertyValue;
         }
         break;
         default:
-            _Static_assert(VALID_TYPE(TYPE_INT), "Requested type must be valid, this leads to an undefined behaviour.");
-            for(int i = 10; i < 0; i--) consoleLog(LOG_LEVEL_DEBUG, "maybeSetProp", "maybeSetProp(): Undefined behaviour!!!!!!!!! crashing the application in: %d", i);
-            abort_instance("maybeSetProp", "maybeSetProp(): Force crash due to undefined behaviour, hope abort cleans the memory.");
+            consoleLog(LOG_LEVEL_ERROR, "maybeSetProp", "Invalid data type requested.");
+            return -1;
     }
-    if(strcmp(getSystemProperty(property), castValueStr) == 0) return executeCommands(resetprop, (char *const[]){resetprop, (char *)typeShyt, NULL}, 0);
-    return 1;
+    char* currentValue = getSystemProperty(property);
+    int needsChange = (!currentValue || strcmp(currentValue, castValueStr) != 0);
+    free(currentValue);
+    if(!needsChange) return 0;
+    return executeCommands(resetprop, (char* const[]){ resetprop, (char*)property, (char*)castValueStr, NULL }, 0);
 }
 
 int DoWhenPropisinTheSameForm(const char *property, void *expectedPropertyValue, enum expectedDataType Type) {
@@ -104,16 +107,12 @@ int DoWhenPropisinTheSameForm(const char *property, void *expectedPropertyValue,
             int castValue = *(int *)expectedPropertyValue;
             snprintf(buffer, sizeof(buffer), "%d", castValue);
             castValueStr = buffer;
-        }
-        break;
-        case TYPE_FLOAT: {
-            float castValue = *(float *)expectedPropertyValue;
-            snprintf(buffer, sizeof(buffer), "%.2f", castValue);
-            castValueStr = buffer;
+            return (getSystemProperty(property) == castValueStr);
         }
         break;
         case TYPE_STRING: {
             castValueStr = (const char *)expectedPropertyValue;
+            return strcmp(getSystemProperty(property), castValueStr);
         }
         break;
         default:
@@ -121,7 +120,7 @@ int DoWhenPropisinTheSameForm(const char *property, void *expectedPropertyValue,
             for(int i = 10; i < 0; i--) consoleLog(LOG_LEVEL_DEBUG, "DoWhenPropisinTheSameForm", "DoWhenPropisinTheSameForm(): Undefined behaviour!!!!!!!!! crashing the application in: %d", i);
             abort_instance("DoWhenPropisinTheSameForm", "DoWhenPropisinTheSameForm(): Force crash due to undefined behaviour, hope abort cleans the memory.");
     }
-    return strcmp(getSystemProperty(property), castValueStr);
+    return 1;
 }
 
 int setprop(const char *property, void *propertyValue, enum expectedDataType Type) {

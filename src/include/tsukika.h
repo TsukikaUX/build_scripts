@@ -63,7 +63,7 @@ enum expectedDataType {
 // function declarations.
 int isPackageInstalled(const char packageName[250]);
 int getSystemProperty__(const char *propertyVariableName);
-int maybeSetProp(const char *property, void *expectedPropertyValue, void *typeShyt, enum expectedDataType Type);
+int maybeSetProp(const char* property, void* expectedPropertyValue, enum expectedDataType Type);
 int DoWhenPropisinTheSameForm(const char *property, void *expectedPropertyValue, enum expectedDataType Type);
 int setprop(const char *property, void *propertyValue, enum expectedDataType Type);
 int isSetupOver();
