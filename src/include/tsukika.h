@@ -28,7 +28,7 @@
 #include <tsukikautils.h>
 
 // extern variables.
-extern const char *filesToRemoveBeforeReboot[];
+extern const char *batteryPercentageBlobFilePaths[];
 extern char *const resetprop;
 
 // MUST ADDDDDDDDDDDDDDDDDD!
@@ -68,6 +68,8 @@ int DoWhenPropisinTheSameForm(const char *property, void *expectedPropertyValue,
 int setprop(const char *property, void *propertyValue, enum expectedDataType Type);
 int isSetupOver();
 int removeProperty(char *const property);
+int getBatteryPercentage();
+int getPidOf(const char *proc);
 bool isBootAnimationExited();
 bool isTheDeviceBootCompleted();
 bool isTheDeviceisTurnedOn();
@@ -82,5 +84,5 @@ void prepareTWRPRecoveryCommandList(char *action, char *actionArg, char *actionA
 void startDaemon(const char *daemonName);
 void stopDaemon(const char *daemonName);
 void androidPropertyCallback(void* cookie, const char* name, const char* value, uint32_t serial);
-
+//void checkArch();
 #endif

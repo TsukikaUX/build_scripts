@@ -7,6 +7,10 @@ const char *filesToRemoveBeforeReboot[] = {
     "/persist/.system_booting",
     "/mnt/vendor/persist/.system_booting"
 };
+const char *batteryPercentageBlobFilePaths[] = {
+    "/sys/bus/platform/devices/battery/power_supply/battery/capacity", 
+    NULL
+};
 char *LOGFILE = "/data/adb/Tsukika/logs/Tsukika.log";
 char *const resetprop = "/data/adb/Tsukika/bin/resetprop";
 const char *base_path = "/data/adb/modules/";

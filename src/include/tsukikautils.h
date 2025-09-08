@@ -35,7 +35,8 @@ enum elogLevel {
     LOG_LEVEL_INFO,
     LOG_LEVEL_WARN,
     LOG_LEVEL_ERROR,
-    LOG_LEVEL_DEBUG
+    LOG_LEVEL_DEBUG,
+    LOG_LEVEL_ABORT
 };
 
 // extern vars. VERY IMPORTANT!!
@@ -49,6 +50,7 @@ int searchBlockListedStrings(const char *__filename, const char *__search_str);
 int verifyScriptStatusUsingShell(const char *__filename);
 int checkBlocklistedStringsNChar(const char *__haystack);
 bool erase_file_content(const char *__file);
+bool doesFileExist(const char *filePath);
 char *cStringToLower(char *str);
 char *cStringToUpper(char *str);
 char *combineStringsFormatted(const char *format, ...);
