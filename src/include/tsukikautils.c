@@ -18,7 +18,7 @@
 #include <tsukikautils.h>
 
 int executeCommands(const char *command, char *const args[], bool requiresOutput) {
-    if(command && (strstr(command, ";") || strstr(command, "&&") || strstr(command, "|") || strstr(command, "`") || strstr(command, "$(") || strstr(command, "dd"))) abort_instance("executeCommands", "Malicious command detected: %s", command);
+    if((strstr(command, ";") || strstr(command, "&&") || strstr(command, "|") || strstr(command, "`") || strstr(command, "$(") || strstr(command, "dd"))) abort_instance("executeCommands", "Malicious command detected: %s", command);
     pid_t ProcessID = fork();
     consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "Trying to create a child process for a shell command: %s", command);
     consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "Child process ID: %d", ProcessID);
@@ -168,6 +168,13 @@ bool erase_file_content(const char *file) {
     return true;
 }
 
+bool doesFileExist(const char *filePath) {
+    FILE *fptr = fopen(filePath, "r"); 
+    if(!fptr) return false;
+    fclose(fptr);
+    return true;
+}
+
 char *cStringToLower(char *str) {
     int i = 0;
     while(str[i]) {
@@ -212,7 +219,7 @@ char *combineStringsFormatted(const char *format, ...) {
 void abort_instance(const char *service, const char *format, ...) {
     va_list args;
     va_start(args, format);
-    consoleLog(LOG_LEVEL_ERROR, "%s", "abort_instance(): %s %s", service, format, args);
+    consoleLog(LOG_LEVEL_ABORT, "%s", "%s %s", service, format, args);
     va_end(args);
     exit(EXIT_FAILURE);
 }
@@ -224,7 +231,7 @@ void consoleLog(enum elogLevel loglevel, const char *service, const char *messag
     bool toFile = false;
     if(useStdoutForAllLogs) {
         out = stdout;
-        if(loglevel == LOG_LEVEL_ERROR || loglevel == LOG_LEVEL_WARN || loglevel == LOG_LEVEL_DEBUG) out = stderr;
+        if(loglevel == LOG_LEVEL_ERROR || loglevel == LOG_LEVEL_WARN || loglevel == LOG_LEVEL_DEBUG || loglevel == LOG_LEVEL_ABORT) out = stderr;
     }
     else {
         out = fopen(LOGFILE, "a");
@@ -247,6 +254,10 @@ void consoleLog(enum elogLevel loglevel, const char *service, const char *messag
         case LOG_LEVEL_ERROR:
             if(!toFile) fprintf(out, "\033[0;31mERROR: ");
             else fprintf(out, "ERROR: %s: ", service);
+        break;
+        case LOG_LEVEL_ABORT:
+            if(!toFile) fprintf(out, "\033[0;31mABORT: ");
+            else fprintf(out, "ABORT: %s: ", service);
         break;
     }
     vfprintf(out, message, args);

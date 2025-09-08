@@ -161,12 +161,48 @@ int isSetupOver() {
     char *currentSetupWizardMode = getSystemProperty("ro.setupwizard.mode");
     if(strcmp(getSystemProperty("persist.sys.setupwizard"), "FINISH") == 0) {
         if(strcmp(currentSetupWizardMode, "OPTIONAL")  == 0 || strcmp(currentSetupWizardMode, "DISABLED") == 0) return 0;
+        return 0;
     }
     return 1;
 }
 
 int removeProperty(char *const property) {
     return executeCommands(resetprop, (char *const[]){resetprop, "-d", property}, false);
+}
+
+int getBatteryPercentage() {
+    const char *blobPath;
+    int sizeTea = sizeof((char *)batteryPercentageBlobFilePaths) / sizeof((char *)batteryPercentageBlobFilePaths[0]);
+    for(int i = 0; i < sizeTea; i++) {
+        if(doesFileExist(batteryPercentageBlobFilePaths[i])) {
+            blobPath = batteryPercentageBlobFilePaths[i];
+            break;
+        }
+        // return -1 if we cannot find the correct blob.
+        else if(i == sizeTea) return -1;
+    }
+    FILE *fptr = fopen(blobPath, "r");
+    // return -1 if we cannot open the file.
+    if(!fptr) return -1;
+    // localhost@christian:~$ echo "10" | wc -c
+    // 3
+    // localhost@christian:~$ echo "100" | wc -c
+    // 4
+    // uh, 5-6 should be more than enough i guess...
+    char percent[6];
+    fgets(percent, sizeof(percent), fptr);
+    percent[strcspn(percent, "\n")] = '\0';
+    fclose(fptr);
+    return atoi(percent);
+}
+
+int getPidOf(const char *proc) {
+    FILE *fptr = popen(combineStringsFormatted("pidof %s", proc), "r");
+    if(!fptr) return -1;
+    char procID[8];
+    fgets(procID, sizeof(procID), fptr);
+    fclose(fptr);
+    return atoi(procID);
 }
 
 bool isTheDeviceBootCompleted() {
@@ -298,3 +334,9 @@ void androidPropertyCallback(void* cookie, const char* name, const char* value, 
     handler->propertySerial = serial;
     handler->found = 1;
 }
+
+//void checkArch() {
+//    if(android_getCpuFamily() = ANDROID_CPU_FAMILY_ARM
+//    || android_getCpuFamily() == ANDROID_CPU_FAMILY_ARM64) return;
+//    abort_instance("checkArch", "Undefined architecture! This pre-compiled binary cannot run on this platform.");
+//}
