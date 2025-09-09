@@ -205,19 +205,20 @@ int getPidOf(const char *proc) {
     return atoi(procID);
 }
 
+bool killProcess(pid_t procID) {
+    return (executeCommands("su", (char *const[]) {"su", "-c", "kill", combineStringsFormatted("%d", procID)}, false) == 0);
+}
+
 bool isTheDeviceBootCompleted() {
-    if(getSystemProperty__("sys.boot_completed") == 1) return true;
-    return false;
+    return (getSystemProperty__("sys.boot_completed") == 1);
 }
 
 bool isBootAnimationExited() {
-    if(getSystemProperty__("service.bootanim.exit") == 1) return true;
-    return false;
+    return (getSystemProperty__("service.bootanim.exit") == 1);
 }
 
 bool bootanimStillRunning() {
-    if(getSystemProperty__("service.bootanim.progress") == 1) return true;
-    return false;
+    return (getSystemProperty__("service.bootanim.progress") == 1);
 }
 
 bool isTheDeviceisTurnedOn() {

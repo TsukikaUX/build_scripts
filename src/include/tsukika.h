@@ -70,6 +70,7 @@ int isSetupOver();
 int removeProperty(char *const property);
 int getBatteryPercentage();
 int getPidOf(const char *proc);
+bool killProcess(pid_t procID);
 bool isBootAnimationExited();
 bool isTheDeviceBootCompleted();
 bool isTheDeviceisTurnedOn();
