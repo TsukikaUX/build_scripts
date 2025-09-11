@@ -104,10 +104,12 @@ int searchBlockListedStrings(const char *filename, const char *search_str) {
         boii[strcspn(boii, "\n")] = '\0';
         if(strstr(boii, search_str)) {
             fclose(fptr);
+            free(command);
             consoleLog(LOG_LEVEL_ERROR, "searchBlockListedStrings", "Malicious code execution detected in the script file: %s", filename);
             return 1;
         }
     }
+    free(command);
     fclose(fptr);
     return 0;
 }
