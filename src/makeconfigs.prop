@@ -47,6 +47,9 @@ TARGET_BUILD_SETUP_WIZARD_INTRO_TEXT="Welcome to Tsukika🌸"
 TARGET_BUILD_SETUP_WIZARD_OUTRO_TEXT="You're all set up, Thanks🥰"
 :setup wizard customization:
 
+# disables gboard's app icon from home via an overlay.
+TARGET_BUILD_DISABLE_GBOARD_HOME_ICON=false
+
 # just changes the brand name in the settings app, ig
 TARGET_INCLUDE_CUSTOM_BRAND_NAME=false
 

@@ -672,6 +672,9 @@ fi
 # should enable voice Memo on Samsung Notes:
 [[ "${TARGET_FLOATING_FEATURE_ENABLE_VOICE_MEMO_ON_NOTES}" == "true" && ${BUILD_TARGET_SDK_VERSION} == 35 ]] && addFloatXMLValues "SEC_FLOATING_FEATURE_VOICERECORDER_CONFIG_DEF_MODE" "normal,interview,voicememo"
 
+# hahahah
+[  "${TARGET_BUILD_DISABLE_GBOARD_HOME_ICON}" == "true" ] && buildAndSignThePackage "${DECODEDAPKTOOLPATHS[6]}" "${TSUKIKA_VENDOR_OVERLAY}" "false"
+
 # verify if the device is capable of running Generative AI and it's related actions.
 if [ "${BUILD_TARGET_IS_CAPABLE_FOR_GENERATIVE_AI}" == "true" ]; then
 	sudo rm -rf "${SYSTEM_DIR}/priv-app/PhotoEditor_Full/PhotoEditor_Full.apk"
