@@ -117,5 +117,6 @@ Please provide the paths for each extracted partition:
 - **TARGET_BUILD_MAKE_DEODEXED_ROM**: Deodexes the ROM. [What is ODEX and DEODEX?](https://xdaforums.com/t/complete-guide-what-is-odex-and-deodex-rom.2200349)
 - **TARGET_DISABLE_FILE_BASED_ENCRYPTION**: Disables FBE on internal storage.
 - **TARGET_BUILD_ADD_RAM_MANAGEMENT_FIX**: Android RAM management fixes by [@crok](https://github.com/crok). Android 9 and above.
+- **TARGET_BUILD_DISABLE_GBOARD_HOME_ICON**: Disables gboard's app icon from home via an overlay.
 
 ---
