@@ -9,7 +9,7 @@
         android:minSdkVersion="21"
         android:targetSdkVersion="30" />
     <application
-        android:label="Tsukika Wallpapers"
+        android:label="月華 - Wallpapers"
         android:extractNativeLibs="false"
         android:usesNonSdkApi="true">
     </application>

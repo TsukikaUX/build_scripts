@@ -8,7 +8,7 @@
     platformBuildVersionName="11">
     <application
         android:hasCode="false"
-        android:title="月華 - Settings / Security Overlay">
+        android:label="月華 - Settings / Security Overlay">
         <overlay
             android:targetPackage="com.android.settings"
             android:isStatic="true"
