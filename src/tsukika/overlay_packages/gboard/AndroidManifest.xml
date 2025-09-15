@@ -8,7 +8,7 @@
     platformBuildVersionName="11">
     <application
         android:hasCode="false"
-        android:title="月華 - Misc / GBoard Home Activity Hider Overlay">
+        android:label="月華 - Misc / GBoard Home Activity Hider Overlay">
         <overlay
             android:targetPackage="com.google.android.inputmethod.latin"
             android:isStatic="true"

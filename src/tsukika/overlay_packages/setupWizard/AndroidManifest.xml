@@ -8,7 +8,7 @@
     platformBuildVersionName="11">
     <application
         android:hasCode="false"
-        android:title="月華 - setupWizardOverlay">
+        android:label="月華 - setupWizardOverlay">
         <overlay
             android:isStatic="true"
             android:priority="1"
