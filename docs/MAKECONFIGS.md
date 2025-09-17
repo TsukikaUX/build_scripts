@@ -118,5 +118,13 @@ Please provide the paths for each extracted partition:
 - **TARGET_DISABLE_FILE_BASED_ENCRYPTION**: Disables FBE on internal storage.
 - **TARGET_BUILD_ADD_RAM_MANAGEMENT_FIX**: Android RAM management fixes by [@crok](https://github.com/crok). Android 9 and above.
 - **TARGET_BUILD_DISABLE_GBOARD_HOME_ICON**: Disables gboard's app icon from home via an overlay.
+- **TARGET_BUILD_CUSTOMGIFLOADER**: So basically an overlay will get built and with that overlay, we can change the default gifs inside the AODService without modding that app in anyway. Look at the explanatory below and edit the makeconfig before building.
 
 ---
+
+### For customGIFLoader
+
+| Variable      | Description                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------------ |
+| `maxGIFIndex` | The last GIF index number (starts from 0). Example: 2 GIFs → `1`, 10 GIFs → `9`, 20 GIFs → `19` |
+| `gifPaths`    | A list of GIF file paths. The first one is index `0`, the second is index `1`, and so on.        |
