@@ -192,3 +192,22 @@ TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL=https://example.com
 # installs KnoxPatch module, checkout https://github.com/salvogiangri/KnoxPatch
 # only android 10 and 11 is supported. Use KnoxPatch Enhancer LSPosed/Xposed module instead.
 TARGET_BUILD_INSTALL_KNOXPATCH_MODULE=false
+
+# include customGIFLoader, refer ts: https://github.com/ayumi-aiko/Leaflit
+# so basically an overlay will get built and with that overlay, we can change
+# the default gifs inside the AODService without modding that app in anyway.
+TARGET_BUILD_CUSTOMGIFLOADER=false
+
+########## customGIFLoader configs: ######## 
+
+# enter max gif index here:
+# for 10, you'd need to enter 9 and vice versa. 20 is the max.
+maxGIFIndex=1
+
+# enter the gif paths here:
+gifPaths=(
+    "./src/app/customGIFLoader/res/raw/preload_gif_0.gif"
+    "./src/app/customGIFLoader/res/raw/preload_gif_1.gif"
+)
+
+########## :customGIFLoader configs ######## 
