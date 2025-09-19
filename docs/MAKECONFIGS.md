@@ -118,7 +118,7 @@ Please provide the paths for each extracted partition:
 - **TARGET_DISABLE_FILE_BASED_ENCRYPTION**: Disables FBE on internal storage.
 - **TARGET_BUILD_ADD_RAM_MANAGEMENT_FIX**: Android RAM management fixes by [@crok](https://github.com/crok). Android 9 and above.
 - **TARGET_BUILD_DISABLE_GBOARD_HOME_ICON**: Disables gboard's app icon from home via an overlay.
-- **TARGET_BUILD_CUSTOMGIFLOADER**: So basically an overlay will get built and with that overlay, we can change the default gifs inside the AODService without modding that app in anyway. Look at the explanatory below and edit the makeconfig before building.
+- **TARGET_BUILD_OVERLAY_CUSTOMGIFLOADER**: So basically an overlay will get built and with that overlay, we can change the default gifs inside the AODService without modding that app in anyway. Look at the explanatory below and edit the makeconfig before building.
 
 ---
 

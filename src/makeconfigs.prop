@@ -196,7 +196,7 @@ TARGET_BUILD_INSTALL_KNOXPATCH_MODULE=false
 # include customGIFLoader, refer ts: https://github.com/ayumi-aiko/Leaflit
 # so basically an overlay will get built and with that overlay, we can change
 # the default gifs inside the AODService without modding that app in anyway.
-TARGET_BUILD_CUSTOMGIFLOADER=false
+TARGET_BUILD_OVERLAY_CUSTOMGIFLOADER=false
 
 ########## customGIFLoader configs: ######## 
 
