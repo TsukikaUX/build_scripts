@@ -676,7 +676,7 @@ fi
 [  "${TARGET_BUILD_DISABLE_GBOARD_HOME_ICON}" == "true" ] && buildAndSignThePackage "${DECODEDAPKTOOLPATHS[6]}" "${TSUKIKA_VENDOR_OVERLAY}" "false"
 
 # hehe~
-if [ "${TARGET_BUILD_CUSTOMGIFLOADER}" == "true" ]; then
+if [ "${TARGET_BUILD_OVERLAY_CUSTOMGIFLOADER}" == "true" ]; then
 	maxGIFLoadables=19
 	gifIndexSuffix="preload_gif_"
 	overlayGIFIndexPath="${DECODEDAPKTOOLPATHS[7]}/res/raw"

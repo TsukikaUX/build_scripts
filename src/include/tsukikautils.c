@@ -177,24 +177,6 @@ bool doesFileExist(const char *filePath) {
     return true;
 }
 
-char *cStringToLower(char *str) {
-    int i = 0;
-    while(str[i]) {
-        str[i] = tolower((unsigned char)str[i]);
-        i++;
-    }
-    return str;
-}
-
-char *cStringToUpper(char *str) {
-    int i = 0;
-    while(str[i]) {
-        str[i] = toupper((unsigned char)str[i]);
-        i++;
-    }
-    return str;
-}
-
 // NOTE: THIS FUNCTION RETURNS STACK AND SHOULD BE CLEARED!!
 char *combineStringsFormatted(const char *format, ...) {
     va_list args;
