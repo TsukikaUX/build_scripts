@@ -92,4 +92,4 @@ Then build the updater:
    am start -n com.mesalabs.ten.update/com.mesalabs.ten.update.activity.home.MainActivity
    ```
 
-   The app does not appear in the app drawer, but will notify you when updates are available.
+   The app does not appear in the app drawer, but it will notify you when updates are available.
