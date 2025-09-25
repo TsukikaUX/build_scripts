@@ -10,7 +10,7 @@
 - tar
 - file
 - unzip
-- simg2img
+- android-sdk-libsparse-utils
 - make
 - xmlstarlet
 - mkfs.erofs

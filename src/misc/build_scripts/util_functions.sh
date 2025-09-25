@@ -102,7 +102,7 @@ function abort() {
     debugPrint "$2(): $1"
     sleep 0.5
     # i dont want this to run when i run abort on makefile or even on some instances, 
-    # why $3? because i dont provide $3 on everything except makefile.
+    # why $3? because i dont provide $3 on anything except makefile.
     if [ -z "$3" ]; then
         tinkerWithCSCFeaturesFile --encode
         sudo rm -rf $TMPDIR $TMPFILE ./local_build/etc/extract/*.img ./local_build/etc/extract/*.img.lz4 ./localFirmwareBuildPending
@@ -245,7 +245,7 @@ function catchDuplicatesInXML() {
 
 function addFloatXMLValues() {
     local feature_code="$(stringFormat -u "$1")"
-    local feature_code_value="$2"   
+    local feature_code_value="$2"
 
     # floating feature conf depending on SDK version:
     case "${BUILD_TARGET_SDK_VERSION}" in
@@ -974,7 +974,7 @@ function logInterpreter() {
     local returnStatus
     debugPrint "$(echo $command | awk '{print $1}')(): $debugMessage" 
     eval "$command" &> "$TMPFILE"
-    returnStatus=$?
+    local returnStatus=$?
     [[ ! -z "$(cat "$TMPFILE")" ]] && echo "[$(date +%H:%M%p)] - $(echo $command | awk '{print $1}')() output: $(xargs < "$TMPFILE")" >> "$thisConsoleTempLogFile"
     return ${returnStatus}
 }

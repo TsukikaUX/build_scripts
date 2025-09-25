@@ -93,7 +93,7 @@ sudo ./src/build.sh <firmware zip link>
 sudo ./src/build.sh
 ```
 
-> If you have the firmware extracted in CRB/Mio tool, you can just copy the path of system, vendor, product, prism, optics and put them into the src/makeconfigs.prop
+> If you have the firmware extracted in CRB/MIO tool, you can just copy the path of system, vendor, product, prism, optics and put them into the src/makeconfigs.prop
 
 - In makeconfigs.prop, change these lines from:
 ```bash
