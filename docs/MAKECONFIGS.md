@@ -34,7 +34,7 @@ Please provide the paths for each extracted partition:
 - **TARGET_ADD_EXTRA_ANIMATION_SCALES**: Adds extra animation scales for customization.
 - **TARGET_FLOATING_FEATURE_ENABLE_BLUR_EFFECTS**: Enables live blur effects for aesthetics. Please note that this impacts battery life and performance.
 - **TARGET_FLOATING_FEATURE_ENABLE_ULTRA_POWER_SAVING**: Enables ultra power saving. This feature is generally unnecessary, but you can enable it if you want.
-- **TARGET_FLOATING_FEATURE_DISABLE_SMART_SWITCH**: Disables Smart Switch during setup.
+- **TARGET_FLOATING_FEATURE_DISABLE_SMART_SWITCH**: Disables Smart Switch and removes smart switch listener port from the init shell. Max SDK is 34, Min is 28.
 - **TARGET_INCLUDE_SAFETYCORESTUB**: include this if you really want to, <a href="https://www.reddit.com/r/technology/comments/1iy19yt/a_new_android_feature_is_scanning_your_photos_for/">learn about it from here.</a> This app is made by <a href="https://github.com/daboynb">@daboynb</a>
 
 ---
@@ -112,7 +112,6 @@ Please provide the paths for each extracted partition:
 - **MY_KEYSTORE_ALIAS_KEY_PASSWORD**: Your keystore alias password.
 - **MY_KEYSTORE_PASSWORD**: Your Keystore password.
 - **MY_KEYSTORE_PATH**: Path to Keystore.
-- **TARGET_REMOVE_SMARTSWITCH_DAEMON** Removes a smart switch listener port from the init shell.
 - **TARGET_BUILD_REMOVE_SYSTEM_LOGGING** Removes unnecessary logging stuffs, don't disable logs on public builds.
 - **TARGET_BUILD_MAKE_DEODEXED_ROM**: Deodexes the ROM. [What is ODEX and DEODEX?](https://xdaforums.com/t/complete-guide-what-is-odex-and-deodex-rom.2200349)
 - **TARGET_DISABLE_FILE_BASED_ENCRYPTION**: Disables FBE on internal storage.

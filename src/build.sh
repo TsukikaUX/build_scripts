@@ -408,7 +408,7 @@ fi
 
 [ "$TARGET_FLOATING_FEATURE_ENABLE_ULTRA_POWER_SAVING" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_COMMON_SUPPORT_ULTRA_POWER_SAVING" "true"
 
-if [ "$TARGET_FLOATING_FEATURE_DISABLE_SMART_SWITCH" == "true" ]; then
+if [[ "$TARGET_FLOATING_FEATURE_DISABLE_SMART_SWITCH" == "true" && ${BUILD_TARGET_SDK_VERSION} -ge 28 && ${BUILD_TARGET_SDK_VERSION} -le 34 ]]; then
 	addFloatXMLValues "SEC_FLOATING_FEATURE_COMMON_SUPPORT_SMART_SWITCH" "FALSE"
 	applyDiffPatches "${SYSTEM_DIR}/etc/init/init.rilcommon.rc" "${DIFF_UNIFIED_PATCHES[21]}"
 fi
@@ -518,14 +518,16 @@ if [ "$TARGET_REMOVE_USELESS_VENDOR_STUFFS" == "true" ]; then
         "${VENDOR_DIR}/overlay/AccentColorOcean" "${VENDOR_DIR}/overlay/AccentColorOrchid" "${VENDOR_DIR}/overlay/AccentColorPurple" \
         "${VENDOR_DIR}/etc/init/boringssl_self_test.rc" "${VENDOR_DIR}/etc/init/dumpstate-default.rc" "${VENDOR_DIR}/etc/init/vendor_flash_recovery.rc" \
 		"${VENDOR_DIR}/etc/vintf/manifest/dumpstate-default.xml" "${VENDOR_DIR}/overlay/AccentColorSpace" &>/dev/null
-        if [ "${TARGET_DISABLE_FILE_BASED_ENCRYPTION}" == "true" ]; then
-            for fstab__ in ${VENDOR_DIR}/etc/fstab.*; do
-				[ "${fstab__}" == "fstab.ramplus" ] && continue
-                sed -i -e 's/^\([^#].*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g' ${fstab__}
-            done
-        fi
     fi
 	console_print "Finished removing useless vendor stuff(s)"
+fi
+
+# disables file based encryption.
+if [ "${TARGET_DISABLE_FILE_BASED_ENCRYPTION}" == "true" ]; then
+    for fstab__ in ${VENDOR_DIR}/etc/fstab.*; do
+		[ "${fstab__}" == "fstab.ramplus" ] && continue
+        sed -i -e 's/^\([^#].*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g' ${fstab__}
+    done
 fi
 
 # nukes display refresh rate overrides on some video platforms.
@@ -931,7 +933,7 @@ for i in $TSUKIKA_PRODUCT_PROPERTY_FILE $TSUKIKA_SYSTEM_PROPERTY_FILE $TSUKIKA_S
 done
 [ -f "${SYSTEM_DIR}/system_dlkm/etc/build.prop" ] && setprop --custom "${SYSTEM_DIR}/system_dlkm/etc/build.prop" "wifi.interface "wlan0" || setprop --vendor "wifi.interface "wlan0"
 sudo rm -rf "${SYSTEM_DIR}/hidden" "${SYSTEM_DIR}/preload" "${SYSTEM_DIR}/recovery-from-boot.p" "${SYSTEM_DIR}/bin/install-recovery.sh"
-cp -af ./src/misc/etc/ringtones_and_etc/media/audio/* "${SYSTEM_DIR}/media/audio/"
+sudo cp -af ./src/misc/etc/ringtones_and_etc/media/audio/* "${SYSTEM_DIR}/media/audio/"
 addFloatXMLValues "SEC_FLOATING_FEATURE_COMMON_SUPPORT_SAMSUNG_MARKETING_INFO" "FALSE"
 [ "$TARGET_INCLUDE_CUSTOM_BRAND_NAME" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_SETTINGS_CONFIG_BRAND_NAME" "${BUILD_TARGET_CUSTOM_BRAND_NAME}"
 for i in "logcat.live disable" "sys.dropdump.on Off" "profiler.force_disable_err_rpt 1" "profiler.force_disable_ulog 1" \
@@ -971,7 +973,6 @@ case "${BUILD_TARGET_SDK_VERSION}" in
 esac
 
 [[ ${BUILD_TARGET_SDK_VERSION} -ge 28 && ${BUILD_TARGET_SDK_VERSION} -le 30 ]] && applyDiffPatches "${SYSTEM_DIR}/etc/init/freecess.rc" "${DIFF_UNIFIED_PATCHES[23]}"
-[[ ${BUILD_TARGET_SDK_VERSION} -ge 28 && ${BUILD_TARGET_SDK_VERSION} -le 34 ]] && applyDiffPatches "${SYSTEM_DIR}/etc/init/init.rilcommon.rc" "${DIFF_UNIFIED_PATCHES[21]}"
 [[ ${BUILD_TARGET_SDK_VERSION} -ge 29 && ${BUILD_TARGET_SDK_VERSION} -le 35 ]] && applyDiffPatches "${SYSTEM_DIR}/etc/restart_radio_process.sh" "${DIFF_UNIFIED_PATCHES[19]}"
 if [ "${BUILD_TARGET_ENABLE_VULKAN_UI_RENDERING}" == "true" ]; then
 	case ${BUILD_TARGET_GPU_VULKAN_VERSION} in

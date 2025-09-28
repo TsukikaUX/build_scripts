@@ -149,6 +149,7 @@ TARGET_FLOATING_FEATURE_ENABLE_EXTRA_SCREEN_MODES=false
 TARGET_FLOATING_FEATURE_ENABLE_ULTRA_POWER_SAVING=false
 
 # Tinker with smart switch, useless thing change it to true if you want to nuke this.
+# and also removes a smart switch listener port from the init shell.
 TARGET_FLOATING_FEATURE_DISABLE_SMART_SWITCH=false
 
 # bring dolby sound effects on games. (if supported + if the hw is capable of doing this)
@@ -165,9 +166,6 @@ TARGET_BUILD_ADD_SCREENRESOLUTION_CHANGER=false
 
 # brings searcle (circle to search)
 TARGET_BUILD_ENABLE_SEARCLE=false
-
-# removes a smart switch listener port from the init shell.
-TARGET_REMOVE_SMARTSWITCH_DAEMON=false
 
 # this allows you to add tons of wallpaper within some clicks.
 # you have to replace the auto-generated resources_info.json with the stock apk.
