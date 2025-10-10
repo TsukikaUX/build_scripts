@@ -24,11 +24,11 @@ apktool="https://api.github.com/repos/iBotPeaches/Apktool/releases/latest"
 uberApkSigner="https://api.github.com/repos/patrickfav/uber-apk-signer/releases/latest"
 
 # latest version of the dependencies from the respective GitHub repositories:
-apktoolVersion=$(curl -s "$apktool" | grep -oP '"tag_name": "\K(.*)(?=")' | sed 's/[^0-9.]//g')
+apktoolVersion=$(curl -s "$apktool" | grep -oP '"tag_name": "\K(.*)(?=")')
 uberApkSignerVersion=$(curl -s "$uberApkSigner" | grep -oP '"tag_name": "\K(.*)(?=")' | sed 's/[^0-9.]//g')
 
 # local version of those dependencies:
-apktoolLocalVersion=$(java -jar "./src/dependencies/bin/apktool.jar" --version 2>/dev/null | sed 's/[^0-9.]//g')
+apktoolLocalVersion=$(java -jar "./src/dependencies/bin/apktool.jar" --version 2>/dev/null)
 uberApkSignerLocalVersion=$(java -jar "./src/dependencies/bin/signer.jar" --version 2>/dev/null | sed 's/[^0-9.]//g')
 
 if [ "$1" == "--update-dependencies" ]; then
