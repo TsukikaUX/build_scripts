@@ -169,9 +169,7 @@ function buildAndSignThePackage() {
     apk_file="${extracted_dir_path}/dist/${apkFileName}"
 
     # Modify manifest and apktool.yml if editing not skipped
-    if [[ "$arg" == "--skip-editing-version-info" ]]; then
-        debugPrint "buildAndSignThePackage(): Skipping editing the version info...."
-    elif [[ "$arg" == "--edit-version-info" ]]; then
+    if [[ "$arg" == "--edit-version-info" ]]; then
         changeXMLValues "compileSdkVersion" "${BUILD_TARGET_SDK_VERSION}" "${extracted_dir_path}/AndroidManifest.xml"
         changeXMLValues "platformBuildVersionCode" "${BUILD_TARGET_SDK_VERSION}" "${extracted_dir_path}/AndroidManifest.xml" 
         changeXMLValues "compileSdkVersionCodename" "${BUILD_TARGET_ANDROID_VERSION}" "${extracted_dir_path}/AndroidManifest.xml"
@@ -571,17 +569,16 @@ function downloadGLmodules() {
     checkInternetConnection "GOODLOCK_MODULES" || return 1
     local i
     local SequenceValue
-    local MaximumSDKVersion=35
+    local MaximumSDKVersion=36
     local MinimumSDKVersion=28
-
     case "${BUILD_TARGET_SDK_VERSION}" in
         28) SequenceValue=13 ;;
         29|33|35) SequenceValue=15 ;;
         30|31|32) SequenceValue=14 ;;
         34) SequenceValue=16 ;;
+        36) SequenceValue=19 ;;
         *) warns "Unsupported SDK version, skipping the installation of goodlook modules..." "GOODLOCK_INSTALLER"; return 1; ;;
     esac
-
     for i in $(seq 0 $(($SequenceValue - 1))); do
         if [[ "${BUILD_TARGET_SDK_VERSION}" -ge "${MinimumSDKVersion}" && "${BUILD_TARGET_SDK_VERSION}" -le "${MaximumSDKVersion}" ]]; then
             case "${BUILD_TARGET_SDK_VERSION}" in
@@ -647,6 +644,14 @@ function downloadGLmodules() {
                         downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/35/${GOODLOOK_MODULES_FOR_35[$i]} ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_35_APP_NAMES[$i]}/
                     else 
                         rmdir ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_35_APP_NAMES[$i]}/
+                    fi
+                ;;
+                36)
+                    if ask "Do you want to download ${GOODLOOK_MODULES_FOR_36_APP_NAMES[$i]}?"; then
+                        mkdir -p ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_36_APP_NAMES[$i]}/
+                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/36/${GOODLOOK_MODULES_FOR_36[$i]} ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_36_APP_NAMES[$i]}/
+                    else 
+                        rmdir ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_36_APP_NAMES[$i]}/
                     fi
                 ;;
             esac
@@ -989,7 +994,7 @@ function compareDefaultMakeConfigs() {
     done
 }
 
-function makeAFuckingDirectory() {
+function makeADirectory() {
     local directoryName="$1"
     local owner="$2"
     local group="$3"
