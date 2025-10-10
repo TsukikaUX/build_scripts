@@ -32,6 +32,7 @@ quotes=(
 	"Good people are good because they've come to wisdom through failure."
 	"Your word is a lamp for my feet, a light for my path."
 	"The first problem for all of us, men and women, is not to learn, but to unlearn."
+	"Those who don't learn from the history are doomed to repeat it."
 )
 randomQuote="${quotes[$RANDOM % ${#quotes[@]}]}"
 BUILD_START_TIME=$(date +%s)
@@ -331,17 +332,12 @@ fi
 [[ "$TARGET_ADD_ROUNDED_CORNERS_TO_THE_PIP_WINDOWS" == "true" && $BUILD_TARGET_ANDROID_VERSION -eq 11 ]] && buildAndSignThePackage "${DECODEDAPKTOOLPATHS[2]}" "$TSUKIKA_FALLBACK_OVERLAY_PATH" "false" --skip-editing-version-info
 
 # enables game launcher.
-if [ "$TARGET_FLOATING_FEATURE_INCLUDE_GAMELAUNCHER_IN_THE_HOMESCREEN" == "true" ]; then
-	addFloatXMLValues "SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_DEFAULT_GAMELAUNCHER_ENABLE" "true"
-else
+[ "$TARGET_FLOATING_FEATURE_INCLUDE_GAMELAUNCHER_IN_THE_HOMESCREEN" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_DEFAULT_GAMELAUNCHER_ENABLE" "true" || \
 	addFloatXMLValues "SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_DEFAULT_GAMELAUNCHER_ENABLE" "FALSE"
-fi
 
-if [ "$BUILD_TARGET_HAS_HIGH_REFRESH_RATE_MODES" == "true" ]; then
-	addFloatXMLValues "SEC_FLOATING_FEATURE_LCD_CONFIG_HFR_DEFAULT_REFRESH_RATE" "${BUILD_TARGET_DEFAULT_SCREEN_REFRESH_RATE}"
-else
+# rr
+[ "$BUILD_TARGET_HAS_HIGH_REFRESH_RATE_MODES" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_LCD_CONFIG_HFR_DEFAULT_REFRESH_RATE" "${BUILD_TARGET_DEFAULT_SCREEN_REFRESH_RATE}" || \
 	addFloatXMLValues "SEC_FLOATING_FEATURE_LCD_CONFIG_HFR_DEFAULT_REFRESH_RATE" "60"
-fi
 
 # Adds spotify as an option in the clock app
 [ "$TARGET_FLOATING_FEATURE_INCLUDE_SPOTIFY_AS_ALARM" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_CLOCK_CONFIG_ALARM_SOUND" "spotify"
@@ -352,17 +348,11 @@ if [ "$TARGET_FLOATING_FEATURE_BATTERY_SUPPORT_BSOH_SETTINGS" == "true" ]; then
 	addFloatXMLValues "SEC_FLOATING_FEATURE_BATTERY_SUPPORT_BSOH_SETTINGS" "true"
 fi
 
-if [ "$TARGET_FLOATING_FEATURE_INCLUDE_CLOCK_LIVE_ICON" == "true" ]; then
-	addFloatXMLValues "SEC_FLOATING_FEATURE_LAUNCHER_SUPPORT_CLOCK_LIVE_ICON" "true"
-else
+[ "$TARGET_FLOATING_FEATURE_INCLUDE_CLOCK_LIVE_ICON" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_LAUNCHER_SUPPORT_CLOCK_LIVE_ICON" "true" || \
 	addFloatXMLValues "SEC_FLOATING_FEATURE_LAUNCHER_SUPPORT_CLOCK_LIVE_ICON" "FALSE"
-fi
 
-if [ "$TARGET_FLOATING_FEATURE_INCLUDE_EASY_MODE" == "true" ]; then
-	addFloatXMLValues "SEC_FLOATING_FEATURE_SETTINGS_SUPPORT_EASY_MODE" "true"
-else
+[ "$TARGET_FLOATING_FEATURE_INCLUDE_EASY_MODE" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_SETTINGS_SUPPORT_EASY_MODE" "true" || \
 	addFloatXMLValues "SEC_FLOATING_FEATURE_SETTINGS_SUPPORT_EASY_MODE" "FALSE"
-fi
 
 if [ "$TARGET_FLOATING_FEATURE_ENABLE_BLUR_EFFECTS" == "true" ]; then
 	for blur_effects in SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_PARTIAL_BLUR SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_CAPTURED_BLUR SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_3D_SURFACE_TRANSITION_FLAG; do
@@ -440,13 +430,7 @@ if [ "$CUSTOM_WALLPAPER_RES_JSON_GENERATOR" == "true" ]; then
 	for ((i = 1; i <= wallpaper_count; i++)); do
 		[ "${i}" -ge "10" ] && special_index=0
 		printf "\e[0;36m - Adding configurations for wallpaper_${special_index}${i}.png.\e[0;37m\n"
-		special_symbol=$(
-			if [[ $i -eq $wallpaper_count ]]; then
-				echo ","
-			else
-				echo ""
-			fi
-		)
+		special_symbol=$([[ $i -eq $wallpaper_count ]] && echo "," || echo "")
 		if [[ "$the_lockscreen_wallpaper_has_been_set" == "true" && "$the_homescreen_wallpaper_has_been_set" == "true" ]]; then
 			addTheWallpaperMetadata "${special_index}${i}" "additional" "$i"
 		else
@@ -695,13 +679,13 @@ fi
 # verify if the device is capable of running Generative AI and it's related actions.
 if [ "${BUILD_TARGET_IS_CAPABLE_FOR_GENERATIVE_AI}" == "true" ]; then
 	sudo rm -rf "${SYSTEM_DIR}/priv-app/PhotoEditor_Full/PhotoEditor_Full.apk"
-	makeAFuckingDirectory "${SYSTEM_DIR}/priv-app/PhotoEditor_AIFull" "root" "root"
+	makeADirectory "${SYSTEM_DIR}/priv-app/PhotoEditor_AIFull" "root" "root"
 	cp "${SYSTEMREPLACABLEASSETS[0]}" "${SYSTEM_DIR}/priv-app/PhotoEditor_AIFull/"
 	chmod 644 "${SYSTEM_DIR}/priv-app/PhotoEditor_AIFull/PhotoEditor_AIFull.apk"
 	chown root:root "${SYSTEM_DIR}/priv-app/PhotoEditor_AIFull/PhotoEditor_AIFull.apk"
 	chcon u:object_r:system_file:s0 "${SYSTEM_DIR}/priv-app/PhotoEditor_AIFull/PhotoEditor_AIFull.apk"
 	if [[ "${BUILD_TARGET_SUPPORTS_GENERATIVE_AI_SHADOW_ERASER}" == "true" ]]; then
-		makeAFuckingDirectory "${SYSTEM_DIR}/app/GalleryReflectionEraser ${SYSTEM_DIR}/app/GalleryShadowEraser" "root" "root"
+		makeADirectory "${SYSTEM_DIR}/app/GalleryReflectionEraser ${SYSTEM_DIR}/app/GalleryShadowEraser" "root" "root"
 		APP_NAMES=("GalleryReflectionEraser" "GalleryShadowEraser")
 		for i in "${!APP_NAMES[@]}"; do
 			APP="${APP_NAMES[$i]}"
@@ -746,7 +730,7 @@ if [ "${TARGET_BUILD_ADD_SCREENRESOLUTION_CHANGER}" == "true" ]; then
 		console_print "Trying to add screenResolution controller app into the device..."
 		. "${SCRIPTS[1]}"
 		sudo rm -rf "${SYSTEM_DIR}/priv-app/screenResolution"
-		makeAFuckingDirectory "${SYSTEM_DIR}/priv-app/screenResolution" "root" "root"
+		makeADirectory "${SYSTEM_DIR}/priv-app/screenResolution" "root" "root"
 		[ -f "${DECODEDAPKTOOLPATHS[5]}" ] || logInterpreter "Trying to extract the screenResolution app.." "tar -C ./src/tsukika/packages/ -xf ${DECODEDAPKTOOLPATHS[5]}.tar"
 		buildAndSignThePackage "${DECODEDAPKTOOLPATHS[5]}" "${SYSTEM_DIR}/priv-app/screenResolution/screenResolution.apk" "false" || abort "Failed to build screenResolution, please try again" "build.sh"
 		sudo chmod 644 ${SYSTEM_DIR}/priv-app/screenResolution/*.apk
@@ -834,7 +818,7 @@ fi
 
 # refer ts: https://www.reddit.com/r/technology/comments/1iy19yt/a_new_android_feature_is_scanning_your_photos_for/
 if [ "${TARGET_INCLUDE_SAFETYCORESTUB}" == "true" ]; then
-	makeAFuckingDirectory "$SYSTEM_DIR/app/SafetyCoreStub/" root root
+	makeADirectory "$SYSTEM_DIR/app/SafetyCoreStub/" root root
 	buildAndSignThePackage "./src/tsukika/packages/SafetyCoreStub" "$SYSTEM_DIR/app/SafetyCoreStub/" "false" --skip-editing-version-info
 fi
 
@@ -869,7 +853,7 @@ fi
 
 # ota implementation.
 if [[ "${TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER}" == "true" && ! -z "${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" && "${BUILD_TARGET_SDK_VERSION}" -ge "29" ]]; then
-	makeAFuckingDirectory "${SYSTEM_DIR}/app/TsukikaUpdater" "root" "root"
+	makeADirectory "${SYSTEM_DIR}/app/TsukikaUpdater" "root" "root"
 	make UN1CAUpdater OTA_MANIFEST_URL="${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" SkipSign=false
 	sudo cp "./src/tsukika/packages/TsukikaUpdater/dist/TsukikaUpdater-aligned-signed.apk" "${SYSTEM_DIR}/app/TsukikaUpdater" || abort "Failed to copy the updater app into the ROM" "build.sh"
 	sudo cp "./src/tsukika/packages/ETC/permissions/privapp_whitelist_com.mesalabs.ten.update.xml" "${SYSTEM_DIR}/etc/permissions/"
@@ -979,12 +963,14 @@ if [ "${BUILD_TARGET_ENABLE_VULKAN_UI_RENDERING}" == "true" ]; then
 		0x00401000|0x00401001) # Vulkan 1.1 and 1.1.1
 				console_print "Your $(stringFormat -u ${TARGET_BUILD_PRODUCT_NAME}) does have Vulkan (API v1.1/1.1.1) rendering support, but it may not perform well in UI."
 				if ask "Are you sure you want to enable Vulkan for UI rendering?"; then
+					setprop --vendor "debug.hwui.renderer" "skiavk"
 					setprop --vendor "ro.hwui.use_vulkan" "true"
 					setprop --system "ro.hwui.use_vulkan" "true"
 				fi
 			;;
 		0x00402000|0x004020A2|0x00403000|0x004030105) # Vulkan 1.2, 1.2.162, 1.3, 1.3.261
 				warns "Your device met the requirements of ui rendering in vulkan. It could render UI elements via Vulkan but may cause performance issues." "FORCE_VULKAN_UI_SHADING"
+				setprop --vendor "debug.hwui.renderer" "skiavk"
 				setprop --vendor "ro.hwui.use_vulkan" "true"
 				setprop --system "ro.hwui.use_vulkan" "true"
 			;;
