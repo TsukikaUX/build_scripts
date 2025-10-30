@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright (C) 2025 愛子あゆみ <ayumi.aiko@outlook.com>
+# Copyright (C) 2025 ぼっち <ayumi.aiko@outlook.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -734,7 +734,7 @@ function copyDeviceBlobsSafely() {
 function magiskboot() {
     local localMachineArchitecture=$(uname -m)
     local binaryPath="../../src/dependencies/bin/"
-    # mb path could change so sybau terminal
+    # mb path could change so the terminal can finally shut up about wrong path.
     if [ ! -f "${binaryPath}/magiskbootX32" ]; then
         binaryPath="../../../src/dependencies/bin/"
         if [ ! -f "${binaryPath}/magiskbootX32" ]; then
