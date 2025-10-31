@@ -1,4 +1,4 @@
-![tsukika](https://github.com/ayumi-aiko/banners/blob/main/lynette-behind-a-glass-looking-surface.jpg?raw=true)
+![tsukika](https://github.com/bocchi-the-dev/banners/blob/main/lynette-behind-a-glass-looking-surface.jpg?raw=true)
 
 # Tsukika (月華) | Build Dependencies
 

@@ -1,4 +1,4 @@
-![emergency_food](https://github.com/ayumi-aiko/banners/blob/main/notFound.png?raw=true)
+![emergency_food](https://github.com/bocchi-the-dev/banners/blob/main/notFound.png?raw=true)
 
 # To compile (Android NDK should be present):
 - Change these following variables according to the toolchain path: ANDROID_NDK_CLANG_PATH

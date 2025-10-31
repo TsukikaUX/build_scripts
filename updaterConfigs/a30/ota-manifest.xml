@@ -9,6 +9,6 @@
     <CheckMD5>5df3e06f9ecd48e78544ed2a6ba5bc1b</CheckMD5>
     <FileSize type="long">480000000</FileSize>
     <WebsiteURL>https://forum.xda-developers.com/apps/magisk/dev-magisk-canary-channel-bleeding-edge-t3839337</WebsiteURL>
-    <ChangelogHeader>https://raw.githubusercontent.com/ayumi-aiko/Tsukika/refs/heads/main/updaterConfigs/update-banner.png</ChangelogHeader>
+    <ChangelogHeader>https://raw.githubusercontent.com/bocchi-the-dev/Tsukika/refs/heads/main/updaterConfigs/update-banner.png</ChangelogHeader>
     <ChangelogURL>https://google.com</ChangelogURL>
 </OnOTAInfo>
