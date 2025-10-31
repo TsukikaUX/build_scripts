@@ -10,7 +10,7 @@
 		<Preference android:title="Changelogs" android:key="tsukika_changelogs" android:summary="View the changelogs of the current version">
 			<intent
 				android:action="android.intent.action.VIEW"
-				android:data="https://github.com/ayumi-aiko/Tsukika/updaterConfigs/changelogs/TSUKIKA_VERSION.md" />
+				android:data="https://github.com/bocchi-the-dev/Tsukika/updaterConfigs/changelogs/TSUKIKA_VERSION.md" />
 		</Preference>
 	</SecPreferenceCategory>
     <SecPreferenceCategory android:title="Device Software Information" android:key="software_information">

@@ -1,4 +1,4 @@
-![Emergency Food Again](https://github.com/ayumi-aiko/banners/blob/main/explore01.png?raw=true)
+![Emergency Food Again](https://github.com/bocchi-the-dev/banners/blob/main/explore01.png?raw=true)
 
 # AROMA Installer for Tsukika
 

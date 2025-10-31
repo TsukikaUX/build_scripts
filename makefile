@@ -22,7 +22,7 @@ endif
 
 # common-build:
 SHELL := /bin/bash
-OLD_REFERENCE_URL = https://raw.githubusercontent.com/ayumi-aiko/Tsukika/ref/ota-manifest.xml
+OLD_REFERENCE_URL = https://raw.githubusercontent.com/bocchi-the-dev/Tsukika/ref/ota-manifest.xml
 
 # dont ask anything bud:
 UBER_SIGNER_JAR = ./src/dependencies/bin/signer.jar

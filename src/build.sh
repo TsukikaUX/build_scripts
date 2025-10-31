@@ -868,7 +868,7 @@ if [[ "${TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER}" == "true" && ! -z "${TARGET
 			cp -af "./src/diff_patches/system/priv-app/SecSettings/${BUILD_TARGET_SDK_VERSION}_sec_top_level_settings.xml" ./SecSettingsMOD/res/xml/sec_top_level_settings.xml
 			# change the default placeholder values
 			xmlstarlet ed -L -N a="http://schemas.android.com/apk/res/android" -N s="http://schemas.android.com/apk/res-auto" \ 
-				-u "//*[@a:key='tsukika_changelogs']/*[@a:data]/@a:data" -v "https://github.com/ayumi-aiko/Tsukika/updaterConfigs/changelogs/${TSUKIKA_BUILD_NUMBER}/CHANGELOGS.md" "./SecSettingsMOD/res/xml/sec_software_info_settings.xml"
+				-u "//*[@a:key='tsukika_changelogs']/*[@a:data]/@a:data" -v "https://github.com/bocchi-the-dev/Tsukika/updaterConfigs/changelogs/${TSUKIKA_BUILD_NUMBER}/CHANGELOGS.md" "./SecSettingsMOD/res/xml/sec_software_info_settings.xml"
 			xmlstarlet ed -L -N a="http://schemas.android.com/apk/res/android" -u "//*[@a:key='tsukika_codename']/@a:summary" -v "${CODENAME}" \
 				-u "//*[@a:key='tsukika_version']/@a:summary" -v "${CODENAME_VERSION_REFERENCE_ID}" \
 				-u "//*[@a:key='tsukika_builder']/@a:summary" -v "${BUILD_USERNAME}" \

@@ -1,10 +1,10 @@
-![tsukika](https://github.com/ayumi-aiko/banners/blob/main/explore00.png?raw=true)
+![tsukika](https://github.com/bocchi-the-dev/banners/blob/main/explore00.png?raw=true)
 
 > NOTE: You should look into other docs to get an idea of what's happening and what to do with this "tool"
 
 # Tsukika (月華) | Build
 
-> Assuming that you have all of the mentioned dependencies in your local system, if you are not sure about dependencies, checkout [this page](https://github.com/ayumi-aiko/Tsukika/blob/main/docs/BUILD_DEPENDENCIES.md).
+> Assuming that you have all of the mentioned dependencies in your local system, if you are not sure about dependencies, checkout [this page](https://github.com/bocchi-the-dev/Tsukika/blob/main/docs/BUILD_DEPENDENCIES.md).
 
 - Switch to the cloned directory, and give the "build.sh" executable permission
 ```bash

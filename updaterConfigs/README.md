@@ -1,4 +1,4 @@
-![tsukika](https://github.com/ayumi-aiko/banners/blob/main/explore01.png?raw=true)
+![tsukika](https://github.com/bocchi-the-dev/banners/blob/main/explore01.png?raw=true)
 
 # OTA Update XML Guide
 
