@@ -18,7 +18,6 @@
 #include <tsukikautils.h>
 
 int executeCommands(const char *command, char *const args[], bool requiresOutput) {
-    if((strstr(command, ";") || strstr(command, "&&") || strstr(command, "|") || strstr(command, "`") || strstr(command, "$(") || strstr(command, "dd"))) abort_instance("executeCommands", "Malicious command detected: %s", command);
     pid_t ProcessID = fork();
     consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "Trying to create a child process for a shell command: %s", command);
     consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "Child process ID: %d", ProcessID);
