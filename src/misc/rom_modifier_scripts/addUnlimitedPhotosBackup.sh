@@ -194,7 +194,5 @@ for fileI in ${PRODUCT_DIR}/etc/sysconfig/pixel_2016_exclusive.xml ${PRODUCT_DIR
     ${PRODUCT_DIR}/etc/sysconfig/pixel_experience_2019_midyear.xml ${PRODUCT_DIR}/etc/sysconfig/pixel_experience_2020.xml ${PRODUCT_DIR}/etc/sysconfig/pixel_experience_2020_midyear.xml \
     ${PRODUCT_DIR}/etc/sysconfig/pixel_experience_2021.xml ${PRODUCT_DIR}/etc/sysconfig/pixel_experience_2021_midyear.xml ${PRODUCT_DIR}/etc/sysconfig/pixel_experience_2022.xml \
     ${PRODUCT_DIR}/etc/sysconfig/pixel_experience_2023.xml ${PRODUCT_DIR}/etc/sysconfig/pixel_experience_2023_midyear.xml ${PRODUCT_DIR}/etc/sysconfig/pixel_experience_2024.xml; do
-        chmod 644 "$fileI"
-        chown root:root "$fileI"
-        chcon u:object_r:system_file:s0 "$fileI"
+        setPerm "$fileI" 0 0 644 u:object_r:system_file:s0
 done

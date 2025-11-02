@@ -43,7 +43,7 @@ function downloadRequestedFile() {
             fi
             console_print "❌ Failed to download the file | Attempt: $tries"
         done
-        abort "⚠️ Failed to download the file after $((tries - 1)) attempts."
+        abort "⚠️ Failed to download the file after $((tries - 1)) attempts." "downloadRequestedFile"
     fi
 }
 
@@ -892,13 +892,13 @@ function repackSuperFromDump() {
 
 	# basic checks:
 	if [[ -z "${image_dir}" || -z "${output_img}" ]]; then
-        abort "❌ Invalid paths for image directory or output image."
+        abort "❌ Invalid paths for image directory or output image." "repackSuperFromDump"
 	elif [[ ! -f "$dump_file" ]]; then
-        abort "❌ Dump file not found: $dump_file"
+        abort "❌ Dump file not found: $dump_file" "repackSuperFromDump"
 	elif [[ -z "$metadata_size" ]]; then
-		abort "❌ Failed to extract metadata size from dump."
+		abort "❌ Failed to extract metadata size from dump." "repackSuperFromDump"
 	elif [[ -z "$current_slot" ]]; then
-		abort "❌ Could not detect current slot from dump."
+		abort "❌ Could not detect current slot from dump." "repackSuperFromDump"
 	fi
 
 	# main stuffs start from here:
@@ -922,7 +922,7 @@ function repackSuperFromDump() {
         fi
     done
 
-    [[ ${#partitions[@]} -eq 0 ]] && abort "❌ No valid .img files found in $image_dir"
+    [[ ${#partitions[@]} -eq 0 ]] && abort "❌ No valid .img files found in $image_dir" "repackSuperFromDump"
 
 	# dynamic buffer: 64MiB per partition
 	buffer=$((64 * 1024 * 1024 * ${#partitions[@]}))
@@ -951,7 +951,7 @@ function repackSuperFromDump() {
     cmd+=" --output \"$output_img\""
     eval "$cmd"
 
-	[ $? -eq 0 ] || abort "❌ Failed to pack image."
+	[ $? -eq 0 ] || abort "❌ Failed to pack image." "repackSuperFromDump"
 }
 
 function buildImage() {
@@ -962,12 +962,12 @@ function buildImage() {
     mkdir -p ./local_build/buildedContents/
     if [[ "$blockPath" =~ __rw$ ]]; then
         console_print "EROFS fs detected, building an EROFS image..."
-        sudo mkfs.erofs -z lz4 --mount-point="${block}" "./local_build/buildedContents/${block}_built.img" "${blockPath}/" &>>$thisConsoleTempLogFile || abort "Failed to build EROFS image from ${blockPath}"
+        sudo mkfs.erofs -z lz4 --mount-point="${block}" "./local_build/buildedContents/${block}_built.img" "${blockPath}/" &>>$thisConsoleTempLogFile || abort "Failed to build EROFS image from ${blockPath}" "buildImage"
     else 
         console_print "F2FS/EXT4 fs detected, unmounting the image..."
         sudo umount "${blockPath}" || abort "Failed to unmount ${blockPath}, aborting this instance..."
         console_print "Successfully unmounted ${blockPath}."
-        [ -f "$imagePath" ] && cp "$imagePath" "./local_build/buildedContents/${block}_built.img" &>>$thisConsoleTempLogFile || abort "Failed to copy the image to the build directory."
+        [ -f "$imagePath" ] && cp "$imagePath" "./local_build/buildedContents/${block}_built.img" &>>$thisConsoleTempLogFile || abort "Failed to copy the image to the build directory." "buildImage"
         sudo rm "$imagePath"
     fi
     console_print "Successfully built ${block}.img"

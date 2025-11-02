@@ -182,7 +182,7 @@ nuke_or_ignore_these_stuffs() {
     # ogioudheiufheiuvh
     console_print "Trying to debloat your samsung!"
     console_print "  - Type 'y' to remove and type 'n' to keep them" --clear
-    ask "Do you want to remove Samsung Weather app" && rm -rf "${SYSTEM_DIR}/app/SamsungWeather" 2>./error_ring.log 
+    ask "Do you want to remove Samsung Weather app" && rm -rf "${SYSTEM_DIR}/app/SamsungWeather" 2>"${thisConsoleTempLogFile}" 
 
     if ask "Do you want to remove Samsung Sharing tools"; then
         for ((i = 0; i < 4; i++)); do
@@ -210,9 +210,9 @@ nuke_or_ignore_these_stuffs() {
     ask "Do you want to nuke Finder [heavy ram consuption, used to search apps in homescreen]" && rm -rf "${SYSTEM_DIR}/priv-app/Finder"
 
     if ask "Do you want to nuke Game Launcher and Game Tools [performance will be doomed if you let it cook]"; then
-        rm -rf "${SYSTEM_DIR}/priv-app/GameHome" 2>./error_ring.log
-        rm -rf "${SYSTEM_DIR}/priv-app/GameOptimizingService" 2>./error_ring.log
-        rm -rf ${SYSTEM_DIR}/priv-app/GameTools* 2>./error_ring.log
+        rm -rf "${SYSTEM_DIR}/priv-app/GameHome" 2>"${thisConsoleTempLogFile}"
+        rm -rf "${SYSTEM_DIR}/priv-app/GameOptimizingService" 2>"${thisConsoleTempLogFile}"
+        rm -rf ${SYSTEM_DIR}/priv-app/GameTools* 2>"${thisConsoleTempLogFile}"
     fi
 
     ask "Do you want to nuke Device Care Plugin [performance will be doomed if you let it cook]" && rm -rf "${SYSTEM_DIR}/priv-app/${privilaged_apps[8]}"

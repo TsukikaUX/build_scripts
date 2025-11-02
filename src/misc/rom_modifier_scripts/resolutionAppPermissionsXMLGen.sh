@@ -30,6 +30,4 @@ cat >> ${SYSTEM_DIR}/etc/permissions/privapp-permissions-de.dylt.yanndroid.scree
 EOF
 
 # give perms:
-chmod 644 "${SYSTEM_DIR}/etc/permissions/privapp-permissions-de.dylt.yanndroid.screenresolution.xml"
-chown root:root "${SYSTEM_DIR}/etc/permissions/privapp-permissions-de.dylt.yanndroid.screenresolution.xml"
-chcon u:object_r:system_file:s0 "${SYSTEM_DIR}/etc/permissions/privapp-permissions-de.dylt.yanndroid.screenresolution.xml"
+setPerm "${SYSTEM_DIR}/etc/permissions/privapp-permissions-de.dylt.yanndroid.screenresolution.xml" 0 0 644 u:object_r:system_file:s0
