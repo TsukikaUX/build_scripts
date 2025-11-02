@@ -36,27 +36,33 @@ if [ "$1" == "--update-dependencies" ]; then
         console_print "Apktool is up to date with the repo."
     else
         console_print "Trying to update Apktool..."
-        rm -rf "./src/dependencies/bin/apktool.jar"
-        if downloadRequestedFile "$(getLatestReleaseFromGithub "${apktool}")" "./src/dependencies/bin/apktool.jar"; then
+        if downloadRequestedFile "$(getLatestReleaseFromGithub "${apktool}")" "./src/dependencies/bin/apktool.jarNEW"; then
             console_print "Apktool updated successfully to version ${apktoolVersion}."
         else
             abort "Failed to update Apktool."
         fi
-        git add "./src/dependencies/bin/apktool.jar"
-        textAppend[0]="apktool updated from ${apktoolLocalVersion} to version ${apktoolVersion}"
+        if [ "$(sha256sum "./src/dependencies/bin/apktool.jar" | awk '{print '$1'}')" != "$(sha256sum "./src/dependencies/bin/apktool.jarNEW" | awk '{print '$1'}')" ]; then
+            rm -rf "./src/dependencies/bin/apktool.jar"
+            mv "./src/dependencies/bin/apktool.jarNEW" "./src/dependencies/bin/apktool.jar"
+            git add "./src/dependencies/bin/apktool.jar"
+            textAppend[0]="apktool updated from ${apktoolLocalVersion} to version ${apktoolVersion}"
+        fi
     fi
     if [[ "${uberApkSignerVersion}" == "${uberApkSignerLocalVersion}" ]]; then
         console_print "Uber Apk Signer is up to date with the repo."
     else
         console_print "Trying to update Uber Apk Signer..."
-        rm -rf "./src/dependencies/bin/signer.jar"
-        if downloadRequestedFile "$(getLatestReleaseFromGithub "${uberApkSigner}")" "./src/dependencies/bin/signer.jar"; then
+        if downloadRequestedFile "$(getLatestReleaseFromGithub "${uberApkSigner}")" "./src/dependencies/bin/signer.jarNEW"; then
             console_print "Uber Apk Signer updated successfully to version ${uberApkSignerVersion}."
         else
             abort "Failed to update Uber Apk Signer."
         fi
-        git add "./src/dependencies/bin/signer.jar"
-        textAppend[1]="uber-apk-signer updated from ${uberApkSignerLocalVersion} to version ${uberApkSignerVersion}"
+        if [ "$(sha256sum "./src/dependencies/bin/signer.jar" | awk '{print '$1'}')" != "$(sha256sum "./src/dependencies/bin/signer.jarNEW" | awk '{print '$1'}')" ]; then
+            rm -rf "./src/dependencies/bin/signer.jar"
+            mv "./src/dependencies/bin/signer.jarNEW" "./src/dependencies/bin/signer.jar"
+            git add "./src/dependencies/bin/signer.jar"
+            textAppend[1]="uber-apk-signer updated from ${uberApkSignerLocalVersion} to version ${uberApkSignerVersion}"
+        fi
     fi
     # let's push the changes to the repository:
     if git diff --exit-code; then

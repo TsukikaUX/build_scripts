@@ -38,9 +38,10 @@ randomQuote="${quotes[$RANDOM % ${#quotes[@]}]}"
 BUILD_START_TIME=$(date +%s)
 sameOldFirmwarePackage=false
 TSUKIKA_BUILD_NUMBER=$(date +%Y%m%d)
+branchToFork=android10
 
 # Trap the SIGINT signal (Ctrl+C) and call handle_sigint when it's caught
-trap 'abort "Aborting the build....."' SIGINT
+trap 'abort "Aborting the build....." "build.sh"' SIGINT
 
 # jst execve ts 2 fix bugs:
 for i in ./src/misc/build_scripts/util_functions.sh ./src/makeconfigs.prop ./src/monika.conf; do
@@ -55,7 +56,7 @@ for i in ./src/misc/build_scripts/util_functions.sh ./src/makeconfigs.prop ./src
 done
 
 # ok, fbans dropped!
-for dependenciesRequiredForTheBuild in java python3 zip lz4 tar file unzip simg2img make xmlstarlet mkfs.erofs aria2c openssl; do
+for dependenciesRequiredForTheBuild in java python3 zip lz4 tar file unzip simg2img xmlstarlet mkfs.erofs aria2c openssl; do
 	command -v "${dependenciesRequiredForTheBuild}" &>/dev/null || abort "${dependenciesRequiredForTheBuild} is not found in the build environment, please check the guide again.."
 done
 
@@ -64,11 +65,11 @@ for i in system/product/priv-app system/product/etc system/product/overlay \
 		system/etc/permissions system/product/etc/permissions custom_recovery_with_fastbootd/ \
 		system/etc/init/ tmp/tsuki/ etc/extract/super_extract etc/imageSetup/product etc/imageSetup/system etc/imageSetup/vendor etc/imageSetup/optics etc/downloadedContents \
 		etc/buildedContents etc/buildNInfo; do
-			mkdir -p "./local_build/$i"
-			debugPrint "build.sh: Making ./local_build/${i} directory.."
+			mkdir -p "./local_build/$i" && debugPrint "build.sh: Making ./local_build/${i} directory.."
 done
 
 # TODO: export this to call binaries without having to deal with wrong paths and stuff.
+OLDPATH="${PATH}"
 export PATH="$PATH:$(dirname "$(realpath "$0")")/src/dependencies/bin"
 
 # bruh
@@ -92,6 +93,20 @@ console_print "Build started at $(date +%I:%M%p) on $(date +%d\ %B\ %Y)"
 
 # sets sameOldFirmwarePackage to "true" to skip some extraction steps.
 [ "$(unzip -p "$argOne" ".uuid" 2>/dev/null)" == "$(grep_prop "previousBuildZipUUID" "./local_build/etc/buildNInfo/build.prop" 2>/dev/null)" ] && sameOldFirmwarePackage="true"
+
+# testenv:
+console_print "Testing if this environment can mount images..."	
+sudo dd if=/dev/zero of=./thetenacity count=10 bs=10M &>/dev/null
+sudo mkfs.ext4 ./thetenacity &>/dev/null
+mkdir .sanitytest
+sudo mount -o rw,relatime ./thetenacity ./.sanitytest
+if ! sudo touch ./.sanitytest/test; then
+	sudo rm -rf ./.sanitytest ./thetenacity 
+	abort "[1] - Failed to mount images, please run this inside a real machine with real root privilages." "build.sh"
+fi
+sudo umount ./.sanitytest &>/dev/null
+sudo rm -rf ./.sanitytest ./thetenacity 
+debugPrint "- Passed image mount test, seems like the user is running on their own machine."
 
 # check:
 if [ -n "$argOne" ]; then
@@ -166,9 +181,8 @@ if [ -n "$argOne" ]; then
 					if [ ! -f "./local_build/lpunpack_and_lpmake" ]; then
 						checkInternetConnection &>/dev/null || abort "Please proceed with an active internet connection to build LonelyFool's lptools from source."
 						cd ./local_build/
-						branchToFork=android10
 						ask "Your build SDK version is above or equal to 30 right?" && branchToFork=android11
-						git clone --branch $branchToFork "https://github.com/LonelyFool/lpunpack_and_lpmake.git"
+						git clone --branch $branchToFork "https://github.com/LonelyFool/lpunpack_and_lpmake.git" &>/dev/null
 						cd lpunpack_and_lpmake
 						chmod +x ./make.sh
 						console_print "Building LonelyFool's lptools from source, this might take sometime..."
@@ -222,7 +236,7 @@ if [ -n "$argOne" ]; then
 					setprop --custom "./local_build/etc/buildNInfo/build.prop" "${propertyFiles}" "BUILD_TARGET_RECOVERY_IMAGE_PATH" "./local_build/etc/extract/recovery.img"
 				done
 			fi
-			# TODO: switch to device config if the ro.product.system.device is supported
+			# TODO: switch to device config if the device is supported
 			# source the props again to replace the values.
 			source "./src/makeconfigs.prop"
 			touch ./localFirmwareBuildPending
@@ -854,7 +868,7 @@ fi
 # ota implementation.
 if [[ "${TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER}" == "true" && ! -z "${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" && "${BUILD_TARGET_SDK_VERSION}" -ge "29" ]]; then
 	makeADirectory "${SYSTEM_DIR}/app/TsukikaUpdater" "root" "root"
-	make UN1CAUpdater OTA_MANIFEST_URL="${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" SkipSign=false
+	./make.sh UN1CAUpdater OTA_MANIFEST_URL="${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" SKIPSIGN=false
 	sudo cp "./src/tsukika/packages/TsukikaUpdater/dist/TsukikaUpdater-aligned-signed.apk" "${SYSTEM_DIR}/app/TsukikaUpdater" || abort "Failed to copy the updater app into the ROM" "build.sh"
 	sudo cp "./src/tsukika/packages/ETC/permissions/privapp_whitelist_com.mesalabs.ten.update.xml" "${SYSTEM_DIR}/etc/permissions/"
 	sudo cp "./src/tsukika/packages/ETC/default-permissions/default-permissions_com.mesalabs.ten.update.xml" "${SYSTEM_DIR}/etc/default-permissions/"

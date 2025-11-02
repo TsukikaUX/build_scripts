@@ -108,6 +108,7 @@ function abort() {
         sudo rm -rf $TMPDIR $TMPFILE ./local_build/etc/extract/*.img ./local_build/etc/extract/*.img.lz4 ./localFirmwareBuildPending
         sudo umount ./local_build/etc/imageSetup/* &>/dev/null
     fi
+    export PATH="${OLDPATH}"
     exit 1
 }
 
@@ -986,7 +987,7 @@ function logInterpreter() {
 
 function compareDefaultMakeConfigs() {
     local differences localValue localUntouchedValue
-    for differences in $(cat "./src/makeconfigs.prop" | grep =); do
+    for differences in $(grep "=" "./src/makeconfigs.prop"); do
         localVariableValue="$(echo "${differences}" | cut -d '=' --fields=-1)"
         localValue=$(grep_prop ${localVariableValue} ./src/makeconfigs.prop)
         localUntouchedValue=$(grep_prop ${localVariableValue} ./localUntouched)

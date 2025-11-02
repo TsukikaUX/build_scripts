@@ -11,7 +11,6 @@
 - file
 - unzip
 - android-sdk-libsparse-utils
-- make
 - xmlstarlet
 - mkfs.erofs
 - mkdtimg
