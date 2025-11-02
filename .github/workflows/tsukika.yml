@@ -41,7 +41,7 @@ on:
       installJava:
         description: "Do you want to install java for this operation?"
         required: true
-        default: "Skip"
+        default: "Install"
         type: choice
         options:
           - Install
