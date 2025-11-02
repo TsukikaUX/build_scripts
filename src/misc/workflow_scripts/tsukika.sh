@@ -28,7 +28,7 @@ apktoolVersion=$(curl -s "$apktool" | grep -oP '"tag_name": "\K(.*)(?=")')
 uberApkSignerVersion=$(curl -s "$uberApkSigner" | grep -oP '"tag_name": "\K(.*)(?=")' | sed 's/[^0-9.]//g')
 
 # local version of those dependencies:
-apktoolLocalVersion=$(java -jar "./src/dependencies/bin/apktool.jar" --version 2>/dev/null)
+apktoolLocalVersion=v$(java -jar "./src/dependencies/bin/apktool.jar" --version 2>/dev/null)
 uberApkSignerLocalVersion=$(java -jar "./src/dependencies/bin/signer.jar" --version 2>/dev/null | sed 's/[^0-9.]//g')
 
 if [ "$1" == "--update-dependencies" ]; then
@@ -77,6 +77,9 @@ if [ "$1" == "--update-dependencies" ]; then
         console_print "Workflow completed successfully."
     fi
 fi
+
+# cleanup:
+rm -rf "./src/dependencies/bin/apktool.jarNEW" "./src/dependencies/bin/signer.jarNEW"
 
 # fix failure:
 exit 0
