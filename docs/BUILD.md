@@ -39,22 +39,6 @@ Copy the keystore file named tsukika-USER.jks and put it in test-keys directory 
 
 You need to edit the mentioned files to switch signing keys from Tsukika's public Key to your own Tsukika private key.
 
-- In makefile, change the following variables value from this:
-```ini
-MY_KEYSTORE_ALIAS = tsukika-public
-MY_KEYSTORE_PASSWORD = theDawnJKSPass
-MY_KEYSTORE_PATH = ./test-keys/tsukika.jks
-MY_KEYSTORE_ALIAS_KEY_PASSWORD = theDawnJKSPass
-```
-
-- To this:
-```ini
-MY_KEYSTORE_ALIAS = Tsukika-USER-private
-MY_KEYSTORE_PASSWORD = <password here>
-MY_KEYSTORE_PATH = ./test-keys/tsukika-USER.jks
-MY_KEYSTORE_ALIAS_KEY_PASSWORD = <password here again>
-```
-
 - In makeconfigs.prop, change the following variables value from this:
 ```bash
 MY_KEYSTORE_ALIAS="tsukika-public"
@@ -120,6 +104,6 @@ OPTICS_DIR=/home/joshua/a40/optics
 > Remember, you can change the value to your own need. This is just an example.
 
 ## Doubts
-Upload `local_build/logs/tsuki_build.log` `./local_build/logs/compilerErrors.log` in the discussion tab if you are having any issues.
+Upload `local_build/logs/tsuki_build.log` `./local_build/logs/makeErrors.log` in the discussion tab if you are having any issues.
 
 Thank you 🥰
