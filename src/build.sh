@@ -291,7 +291,7 @@ BUILD_TARGET_ARCH=$(
 )
 
 # TODO: check the arch and start building.
-[ -z "${BUILD_TARGET_ARCH}" ] && abort "Unknown ROM architecture ${BUILD_TARGET_ARCH}, since when did samsung started making ROMS for unknown architectures? i don't knowwwwwwww and i won't letting you in!" "build.sh"
+[ -z "${BUILD_TARGET_ARCH}" ] && abort "Unknown ROM architecture, since when did samsung started making ROMS for unknown architectures? i don't knowwwwwwww and i won't letting you in!" "build.sh"
 
 # device specific customization:
 if [ -d "./target/${TARGET_BUILD_PRODUCT_NAME}" ]; then
@@ -351,7 +351,7 @@ fi
 [[ "$TARGET_ADD_ROUNDED_CORNERS_TO_THE_PIP_WINDOWS" == "true" && $BUILD_TARGET_ANDROID_VERSION -eq 11 ]] && buildAndSignThePackage "${DECODEDAPKTOOLPATHS[2]}" "$TSUKIKA_FALLBACK_OVERLAY_PATH" "false" --skip-editing-version-info
 
 # enables game launcher.
-[ "$TARGET_FLOATING_FEATURE_INCLUDE_GAMELAUNCHER_IN_THE_HOMESCREEN" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_DEFAULT_GAMELAUNCHER_ENABLE" "true" || \
+[ "$TARGET_FLOATING_FEATURE_INCLUDE_GAMELAUNCHER_IN_THE_HOMESCREEN" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_DEFAULT_GAMELAUNCHER_ENABLE" "TRUE" || \
 	addFloatXMLValues "SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_DEFAULT_GAMELAUNCHER_ENABLE" "FALSE"
 
 # rr
@@ -364,18 +364,18 @@ fi
 if [ "$TARGET_FLOATING_FEATURE_BATTERY_SUPPORT_BSOH_SETTINGS" == "true" ]; then
 	console_print "This feature needs some patches to work on some roms, if you dont"
 	console_print "see anything in the settings, please remove this on the next build."
-	addFloatXMLValues "SEC_FLOATING_FEATURE_BATTERY_SUPPORT_BSOH_SETTINGS" "true"
+	addFloatXMLValues "SEC_FLOATING_FEATURE_BATTERY_SUPPORT_BSOH_SETTINGS" "TRUE"
 fi
 
-[ "$TARGET_FLOATING_FEATURE_INCLUDE_CLOCK_LIVE_ICON" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_LAUNCHER_SUPPORT_CLOCK_LIVE_ICON" "true" || \
+[ "$TARGET_FLOATING_FEATURE_INCLUDE_CLOCK_LIVE_ICON" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_LAUNCHER_SUPPORT_CLOCK_LIVE_ICON" "TRUE" || \
 	addFloatXMLValues "SEC_FLOATING_FEATURE_LAUNCHER_SUPPORT_CLOCK_LIVE_ICON" "FALSE"
 
-[ "$TARGET_FLOATING_FEATURE_INCLUDE_EASY_MODE" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_SETTINGS_SUPPORT_EASY_MODE" "true" || \
+[ "$TARGET_FLOATING_FEATURE_INCLUDE_EASY_MODE" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_SETTINGS_SUPPORT_EASY_MODE" "TRUE" || \
 	addFloatXMLValues "SEC_FLOATING_FEATURE_SETTINGS_SUPPORT_EASY_MODE" "FALSE"
 
 if [ "$TARGET_FLOATING_FEATURE_ENABLE_BLUR_EFFECTS" == "true" ]; then
 	for blur_effects in SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_PARTIAL_BLUR SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_CAPTURED_BLUR SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_3D_SURFACE_TRANSITION_FLAG; do
-		addFloatXMLValues "$blur_effects" "true"
+		addFloatXMLValues "$blur_effects" "TRUE"
 	done
 	if [ -f "${VENDOR_DIR}/etc/fstab.qcom" ]; then
 		if echo "${BUILD_TARGET_SDK_VERSION}" | grep -qE "33|34"; then
@@ -398,7 +398,7 @@ fi
 
 if [ "$TARGET_FLOATING_FEATURE_ENABLE_ENHANCED_PROCESSING" == "true" ]; then
 	for enhanced_gaming in SEC_FLOATING_FEATURE_SYSTEM_SUPPORT_LOW_HEAT_MODE SEC_FLOATING_FEATURE_COMMON_SUPPORT_HIGH_PERFORMANCE_MODE SEC_FLOATING_FEATURE_SYSTEM_SUPPORT_ENHANCED_CPU_RESPONSIVENESS; do
-		addFloatXMLValues "${enhanced_gaming}" "true"
+		addFloatXMLValues "${enhanced_gaming}" "TRUE"
 	done
 fi
 
@@ -411,11 +411,11 @@ fi
 if [ "$BUILD_TARGET_SUPPORTS_WIRELESS_POWER_SHARING" == "true" ]; then
 	for wireless_power_sharing_core in SEC_FLOATING_FEATURE_BATTERY_SUPPORT_HV SEC_FLOATING_FEATURE_BATTERY_SUPPORT_WIRELESS_HV SEC_FLOATING_FEATURE_BATTERY_SUPPORT_WIRELESS_NIGHT_MODE \
 		SEC_FLOATING_FEATURE_BATTERY_SUPPORT_WIRELESS_TX; do
-		addFloatXMLValues "${wireless_power_sharing_core}" "true"
+		addFloatXMLValues "${wireless_power_sharing_core}" "TRUE"
 	done
 fi
 
-[ "$TARGET_FLOATING_FEATURE_ENABLE_ULTRA_POWER_SAVING" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_COMMON_SUPPORT_ULTRA_POWER_SAVING" "true"
+[ "$TARGET_FLOATING_FEATURE_ENABLE_ULTRA_POWER_SAVING" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_COMMON_SUPPORT_ULTRA_POWER_SAVING" "TRUE"
 
 if [[ "$TARGET_FLOATING_FEATURE_DISABLE_SMART_SWITCH" == "true" && ${BUILD_TARGET_SDK_VERSION} -ge 28 && ${BUILD_TARGET_SDK_VERSION} -le 34 ]]; then
 	addFloatXMLValues "SEC_FLOATING_FEATURE_COMMON_SUPPORT_SMART_SWITCH" "FALSE"
@@ -424,7 +424,7 @@ fi
 
 if [ "$TARGET_FLOATING_FEATURE_SUPPORTS_DOLBY_IN_GAMES" == "true" ]; then
 	for dolby_in_games in SEC_FLOATING_FEATURE_AUDIO_SUPPORT_DEFAULT_ON_DOLBY_IN_GAME SEC_FLOATING_FEATURE_AUDIO_SUPPORT_DOLBY_GAME_PROFILE; do
-		addFloatXMLValues "${dolby_in_games}" "true"
+		addFloatXMLValues "${dolby_in_games}" "TRUE"
 	done
 fi
 
@@ -814,7 +814,7 @@ if [[ "${BUILD_TARGET_SDK_VERSION}" =~ ^(34|35)$ && "$BRINGUP_CN_SMARTMANAGER_DE
 	# https://github.com/saadelasfur/SmartManager/blob/5a547850d8049ce0bfd6528d660b2735d6a18291/Installers/SmartManagerCN/updater-script#L99
 	addFloatXMLValues "SEC_FLOATING_FEATURE_SMARTMANAGER_CONFIG_PACKAGE_NAME" "com.samsung.android.sm_cn"
 	addFloatXMLValues "SEC_FLOATING_FEATURE_SECURITY_CONFIG_DEVICEMONITOR_PACKAGE_NAME" "com.samsung.android.sm.devicesecurity.tcm"
-	addFloatXMLValues "SEC_FLOATING_FEATURE_COMMON_SUPPORT_NAL_PRELOADAPP_REGULATION" "true"
+	addFloatXMLValues "SEC_FLOATING_FEATURE_COMMON_SUPPORT_NAL_PRELOADAPP_REGULATION" "TRUE"
 fi
 
 if [ "${BUILD_TARGET_ENABLE_DISPLAY_OVERCLOCKING}" == "true" ]; then
@@ -839,7 +839,7 @@ if [ "$TARGET_BUILD_CUSTOMIZE_SETUP_WIZARD_STRINGS" == "true" ]; then
 	xmlstarlet sel -t -v "//string[@name='outro_title']" ./src/tsukika/overlay_packages/setupWizard/res/values/strings.xml | grep -q '^".*"$' && \
 		xmlstarlet ed -L -u '//string[@name="outro_title"]' -v "\"${TARGET_BUILD_SETUP_WIZARD_OUTRO_TEXT}\"" ./src/tsukika/overlay_packages/setupWizard/res/values/strings.xml || \
 		xmlstarlet ed -L -u '//string[@name="outro_title"]' -v "${TARGET_BUILD_SETUP_WIZARD_OUTRO_TEXT}" ./src/tsukika/overlay_packages/setupWizard/res/values/strings.xml
-	logInterpreter "Building overlay package..." "buildAndSignThePackage ./src/tsukika/overlay_packages/setupWizard ${TSUKIKA_FALLBACK_OVERLAY_PATH}/" "false" --skip-editing-version-info || abort "Failed to build overlay package."
+	logInterpreter "Building overlay package..." "buildAndSignThePackage ./src/tsukika/overlay_packages/setupWizard ${TSUKIKA_FALLBACK_OVERLAY_PATH}/" "false" || abort "Failed to build overlay package."
 fi
 
 # oh boy.
@@ -865,8 +865,8 @@ if [[ "${TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER}" == "true" && ! -z "${TARGET
 	makeADirectory "${SYSTEM_DIR}/app/TsukikaUpdater" "root" "root"
 	./make.sh UN1CAUpdater OTA_MANIFEST_URL="${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" SKIPSIGN=false
 	sudo cp "./src/tsukika/packages/TsukikaUpdater/dist/TsukikaUpdater-aligned-signed.apk" "${SYSTEM_DIR}/app/TsukikaUpdater" || abort "Failed to copy the updater app into the ROM" "build.sh"
-	sudo cp "./src/tsukika/packages/ETC/permissions/privapp_whitelist_com.mesalabs.ten.update.xml" "${SYSTEM_DIR}/etc/permissions/"
-	sudo cp "./src/tsukika/packages/ETC/default-permissions/default-permissions_com.mesalabs.ten.update.xml" "${SYSTEM_DIR}/etc/default-permissions/"
+	sudo cp "./src/tsukika/packages/etc/permissions/privapp_whitelist_com.mesalabs.ten.update.xml" "${SYSTEM_DIR}/etc/permissions/"
+	sudo cp "./src/tsukika/packages/etc/default-permissions/default-permissions_com.mesalabs.ten.update.xml" "${SYSTEM_DIR}/etc/default-permissions/"
 	console_print "Successfully added updater app into the rom."
 	console_print "Trying to mod SecSettings.."
 	if [[ -f "./src/diff_patches/system/priv-app/SecSettings/${BUILD_TARGET_SDK_VERSION}_sec_software_info_settings.xml" && \ 
@@ -999,10 +999,10 @@ fi
 #    access: Readonly
 #    prop_name: "ro.surface_flinger.game_default_frame_rate_override"
 #}
-# to be honest it would work on games which doesn't have it's max frame rate set.
+# to be honest this might work on games which doesn't have it's max frame rate set and i don't know
+# if this would work or not.. i hope one day somebody just tells me if this worked or not.
 [[ ${BUILD_TARGET_SDK_VERSION} -eq 35 && ! -z "${BUILD_TARGET_HIGHEST_DEVICE_REFRESH_RATE}" ]] && setprop --vendor "ro.surface_flinger.game_default_frame_rate_override" "$BUILD_TARGET_HIGHEST_DEVICE_REFRESH_RATE"
-tinkerWithCSCFeaturesFile --encode
-debugPrint "CSC feature file(s) successfully encoded."
+tinkerWithCSCFeaturesFile --encode && debugPrint "CSC feature file(s) successfully encoded." || abort "Failed to encode the CSC files!"
 sudo rm -rf "$TMPDIR"
 
 if [ -f "./localFirmwareBuildPending" ]; then
