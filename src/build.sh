@@ -179,7 +179,7 @@ if [ -n "$argOne" ]; then
 				if [ "${androidOS}" == "super" ]; then
 					tar -tf "$extractedAPFilePath" | grep -q "super.img.lz4" || continue
 					if [ ! -f "./local_build/lpunpack_and_lpmake" ]; then
-						checkInternetConnection &>/dev/null || abort "Please proceed with an active internet connection to build LonelyFool's lptools from source."
+						checkInternetConnection "build.sh" &>/dev/null || abort "Please proceed with an active internet connection to build LonelyFool's lptools from source." "build.sh"
 						cd ./local_build/
 						ask "Your build SDK version is above or equal to 30 right?" && branchToFork=android11
 						git clone --branch $branchToFork "https://github.com/LonelyFool/lpunpack_and_lpmake.git" &>/dev/null
@@ -241,7 +241,7 @@ if [ -n "$argOne" ]; then
 			source "./src/makeconfigs.prop"
 			touch ./localFirmwareBuildPending
 		elif echo "$argOne" | grep -qE "samfw|samfwpremium"; then
-			checkInternetConnection &>/dev/null || abort "I don't have internet access to download given samfw firmware package." "build.sh"
+			checkInternetConnection "build.sh" &>/dev/null || abort "I don't have internet access to download given samfw firmware package." "build.sh"
 			downloadRequestedFile "${argOne}" "./local_build/etc/downloadedContents/firmware.zip" && touch ./local_build/etc/FirmwareZipDownloadedWithoutErrors
 			# re-exec because we alr have code to manage with zip files.
 			./src/build.sh "./local_build/etc/downloadedContents/firmware.zip"
@@ -276,7 +276,6 @@ TARGET_BUILD_PRODUCT_NAME="$(grep_prop "ro.product.system.device" "${TSUKIKA_SYS
 
 # COMMON DEVICE VARIABLES: do not edit!
 BUILD_TARGET_ARCH=$(
-    arch="ARM" # default
     for props in "$TSUKIKA_PRODUCT_PROPERTY_FILE" \
                  "$TSUKIKA_SYSTEM_PROPERTY_FILE" \
                  "$TSUKIKA_VENDOR_PROPERTY_FILE"; do
@@ -284,9 +283,15 @@ BUILD_TARGET_ARCH=$(
         if grep -q 'arm64-v8a' "$props"; then
     		echo "ARM64"
             break
+        elif grep -q 'arm64-v8a' "$props"; then
+    		echo "ARM"
+            break
         fi
     done
 )
+
+# TODO: check the arch and start building.
+[ -z "${BUILD_TARGET_ARCH}" ] && abort "Unknown ROM architecture ${BUILD_TARGET_ARCH}, since when did samsung started making ROMS for unknown architectures? i don't knowwwwwwww and i won't letting you in!" "build.sh"
 
 # device specific customization:
 if [ -d "./target/${TARGET_BUILD_PRODUCT_NAME}" ]; then
@@ -602,22 +607,22 @@ if [ "$TARGET_BUILD_REMOVE_SYSTEM_LOGGING" == "true" ]; then
 fi
 
 # brings mobile data toggle in the power menu:
-[ "$TARGET_BUILD_ADD_MOBILE_DATA_TOGGLE_IN_POWER_MENU" == "true" ] && addCSCxmlValues "CscFeature_Framework_SupportDataModeSwitchGlobalAction" "true"
+[ "$TARGET_BUILD_ADD_MOBILE_DATA_TOGGLE_IN_POWER_MENU" == "true" ] && addCSCxmlValues "CscFeature_Framework_SupportDataModeSwitchGlobalAction" "TRUE"
 
 # enables 5 network bars:
 [ "$TARGET_BUILD_FORCE_FIVE_BAR_NETICON" == "true" ] && addCSCxmlValues "CscFeature_SystemUI_ConfigMaxRssiLevel" "5"
 
 # Forces the system to not close music apps while recording a video
-[ "$TARGET_BUILD_FORCE_SYSTEM_TO_PLAY_MUSIC_WHILE_RECORDING" == "true" ] && addCSCxmlValues "CscFeature_Camera_CamcorderDoNotPauseMusic" "true"
+[ "$TARGET_BUILD_FORCE_SYSTEM_TO_PLAY_MUSIC_WHILE_RECORDING" == "true" ] && addCSCxmlValues "CscFeature_Camera_CamcorderDoNotPauseMusic" "TRUE"
 
 # Enables network speed bar in qs:
 if [ "$TARGET_BUILD_ADD_NETWORK_SPEED_WIDGET" == "true" ]; then
-	addCSCxmlValues "CscFeature_Setting_SupportRealTimeNetworkSpeed" "true"
-	[ "$BUILD_TARGET_SDK_VERSION" -ge "34" ] && addCSCxmlValues "CscFeature_Common_SupportZProjectFunctionInGlobal" "true"
+	addCSCxmlValues "CscFeature_Setting_SupportRealTimeNetworkSpeed" "TRUE"
+	[ "$BUILD_TARGET_SDK_VERSION" -ge "34" ] && addCSCxmlValues "CscFeature_Common_SupportZProjectFunctionInGlobal" "TRUE"
 fi
 
 # forces system to not close the camera app while calling
-[ "$TARGET_BUILD_FORCE_SYSTEM_TO_NOT_CLOSE_CAMERA_WHILE_CALLING" == "true" ] && addCSCxmlValues "CscFeature_Camera_EnableCameraDuringCall" "true"
+[ "$TARGET_BUILD_FORCE_SYSTEM_TO_NOT_CLOSE_CAMERA_WHILE_CALLING" == "true" ] && addCSCxmlValues "CscFeature_Camera_EnableCameraDuringCall" "TRUE"
 
 # Adds call recording feature in samsung dialer
 [ "$TARGET_BUILD_ADD_CALL_RECORDING_IN_SAMSUNG_DIALER" == "true" ] && addCSCxmlValues "CscFeature_VoiceCall_ConfigRecording" "RecordingAllowedByMenu"
@@ -645,20 +650,20 @@ fi
 # removes junk on setup:
 if [ "$TARGET_BUILD_SKIP_SETUP_JUNKS" == "true" ]; then
 	addCSCxmlValues "CscFeature_Setting_SkipWifiActvDuringSetupWizard" "FALSE"
-	addCSCxmlValues "CscFeature_Setting_SkipStepsDuringSamsungSetupWizard" "true"
+	addCSCxmlValues "CscFeature_Setting_SkipStepsDuringSamsungSetupWizard" "TRUE"
 fi
 
 # Blocks notification sounds on playbacks:
-[ "$BLOCK_NOTIFICATION_SOUNDS_DURING_PLAYBACK" == "true" ] && addCSCxmlValues "CscFeature_Video_BlockNotiSoundDuringStreaming" "true"
+[ "$BLOCK_NOTIFICATION_SOUNDS_DURING_PLAYBACK" == "true" ] && addCSCxmlValues "CscFeature_Video_BlockNotiSoundDuringStreaming" "TRUE"
 
 # Forces the system to play media while call
-[ "$TARGET_BUILD_FORCE_SYSTEM_TO_PLAY_SMTH_WHILE_CALL" == "true" ] && addCSCxmlValues "CscFeature_Video_SupportPlayDuringCall" "true"
+[ "$TARGET_BUILD_FORCE_SYSTEM_TO_PLAY_SMTH_WHILE_CALL" == "true" ] && addCSCxmlValues "CscFeature_Video_SupportPlayDuringCall" "TRUE"
 
 # Forces samsung video player to work on pop-up window
-[ "$FORCE_ENABLE_POP_UP_PLAYER_ON_SVP" == "true" ] && addCSCxmlValues "CscFeature_Video_EnablePopupPlayer" "true"
+[ "$FORCE_ENABLE_POP_UP_PLAYER_ON_SVP" == "true" ] && addCSCxmlValues "CscFeature_Video_EnablePopupPlayer" "TRUE"
 
 # critical - disables setup wizard:
-[ "$TARGET_BUILD_FORCE_DISABLE_SETUP_WIZARD" == "true" ] && addCSCxmlValues "CscFeature_SetupWizard_DisablePrivacyPolicyAgreement" "true"
+[ "$TARGET_BUILD_FORCE_DISABLE_SETUP_WIZARD" == "true" ] && addCSCxmlValues "CscFeature_SetupWizard_DisablePrivacyPolicyAgreement" "TRUE"
 
 if [ "$TARGET_BUILD_MAKE_DEODEXED_ROM" == "true" ]; then
 	for deletableO_VDexFiles in ${SYSTEM_DIR}/app/*/*/*.odex ${SYSTEM_DIR}/app/*/*/*.vdex ${SYSTEM_DIR}/priv-app/*/*/*.odex ${SYSTEM_DIR}/priv-app/*/*/*.vdex \
@@ -764,14 +769,9 @@ if [[ "${BUILD_TARGET_SDK_VERSION}" =~ ^(34|35)$ && "$BRINGUP_CN_SMARTMANAGER_DE
 		debugPrint "build.sh: Moving SmartManager and Device Care to a temporary directory.."
 		# now move these for a quick revert if anything goes wrong.
 		# xmls
-		sudo mv "${SYSTEM_DIR}/etc/permissions/privapp-permissions-com.samsung.android.lool.xml" "./local_build/etc/permissions/"
-		sudo mv "${SYSTEM_DIR}/etc/permissions/signature-permissions-com.samsung.android.lool.xml" "./local_build/etc/permissions/"
-		sudo mv "${SYSTEM_DIR}/etc/permissions/privapp-permissions-com.samsung.android.sm.devicesecurity_v6.xml" "./local_build/etc/permissions/"
-		sudo mv "${SYSTEM_DIR}/etc/permissions/privapp-permissions-com.samsung.android.sm_cn.xml" "./local_build/etc/permissions/"
-		sudo mv "${SYSTEM_DIR}/etc/permissions/signature-permissions-com.samsung.android.sm_cn.xml" "./local_build/etc/permissions/"
-		sudo mv "${SYSTEM_DIR}/etc/permissions/privapp-permissions-com.samsung.android.sm.devicesecurity.tcm_v6.xml" "./local_build/etc/permissions/"
-		sudo mv "${SYSTEM_DIR}/etc/permissions/privapp-permissions-com.samsung.android.applock.xml" "./local_build/etc/permissions/"
-		sudo mv "${SYSTEM_DIR}/etc/permissions/privapp-permissions-com.sec.android.app.firewall.xml" "./local_build/etc/permissions/"
+		for i in ${SYSTEM_DIR}/etc/permissions/privapp-permissions-com.* ${SYSTEM_DIR}/etc/permissions/signature-permissions-com.samsung.android.*; do
+			[ ! -f "${i}" ] || sudo mv "${i}" "./local_build/etc/permissions/"
+		done
 		# actual thing
 		sudo mv ${SYSTEM_DIR}/app/SmartManager_v6_DeviceSecurity/* "./local_build/etc/app/SmartManager_v6_DeviceSecurity"
 		sudo mv ${SYSTEM_DIR}/app/SmartManager_v6_DeviceSecurity_CN/* "./local_build/etc/app/SmartManager_v6_DeviceSecurity_CN"
@@ -798,14 +798,9 @@ if [[ "${BUILD_TARGET_SDK_VERSION}" =~ ^(34|35)$ && "$BRINGUP_CN_SMARTMANAGER_DE
 					sudo mv ./local_build/etc/app/SmartManager_v6_DeviceSecurity_CN/* "${SYSTEM_DIR}/app/SmartManager_v6_DeviceSecurity_CN/"
 					sudo mv ./local_build/etc/app/SmartManager_v6_DeviceSecurity/* "${SYSTEM_DIR}/app/SmartManager_v6_DeviceSecurity/"
 					# xmls
-					sudo mv "./local_build/etc/permissions/privapp-permissions-com.sec.android.app.firewall.xml" "${SYSTEM_DIR}/etc/permissions/"
-					sudo mv "./local_build/etc/permissions/privapp-permissions-com.samsung.android.applock.xml" "${SYSTEM_DIR}/etc/permissions/"
-					sudo mv "./local_build/etc/permissions/privapp-permissions-com.samsung.android.sm.devicesecurity.tcm_v6.xml" "${SYSTEM_DIR}/etc/permissions/"
-					sudo mv "./local_build/etc/permissions/signature-permissions-com.samsung.android.sm_cn.xml" "${SYSTEM_DIR}/etc/permissions/"
-					sudo mv "./local_build/etc/permissions/privapp-permissions-com.samsung.android.sm_cn.xml" "${SYSTEM_DIR}/etc/permissions/"
-					sudo mv "./local_build/etc/permissions/privapp-permissions-com.samsung.android.sm.devicesecurity_v6.xml" "${SYSTEM_DIR}/etc/permissions/"
-					sudo mv "./local_build/etc/permissions/signature-permissions-com.samsung.android.lool.xml" "${SYSTEM_DIR}/etc/permissions/"
-					sudo mv "./local_build/etc/permissions/privapp-permissions-com.samsung.android.lool.xml" "${SYSTEM_DIR}/etc/permissions/"
+					for j in ./local_build/etc/permissions/privapp-permissions-com.* ./local_build/etc/permissions/signature-permissions-com.samsung.android.*; do
+						[ ! -f "${j}" ] || sudo mv "${j}" "${SYSTEM_DIR}/etc/permissions/"
+					done
 					debugPrint "build.sh: Seems like i did restore those files? didn't i?"
 					warns "Failed to download stuffs from @saadelasfur github repo, moved everything to their places!" "FAILED_TO_DOWNLOAD_SMARTMANAGER"
 					break
@@ -907,9 +902,9 @@ fi
 
 # let's extend audio offload buffer size to 256kb and plug some of our things.
 debugPrint "build.sh: End of the script, running misc stuffs.."
-addCSCxmlValues "CscFeature_Setting_InfinitySoftwareUpdate" "true"
-addCSCxmlValues "CscFeature_Setting_DisableMenuSoftwareUpdate" "true"
-addCSCxmlValues "CscFeature_Settings_GOTA" "true"
+addCSCxmlValues "CscFeature_Setting_InfinitySoftwareUpdate" "TRUE"
+addCSCxmlValues "CscFeature_Setting_DisableMenuSoftwareUpdate" "TRUE"
+addCSCxmlValues "CscFeature_Settings_GOTA" "TRUE"
 addCSCxmlValues "CscFeature_Settings_FOTA" "FALSE"
 setprop --system ro.config.iccc_version "iccc_disabled"
 setprop --system ro.config.dmverity "false"
