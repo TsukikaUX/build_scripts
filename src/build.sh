@@ -245,6 +245,7 @@ if [ -n "$argOne" ]; then
 			downloadRequestedFile "${argOne}" "./local_build/etc/downloadedContents/firmware.zip" && touch ./local_build/etc/FirmwareZipDownloadedWithoutErrors
 			# re-exec because we alr have code to manage with zip files.
 			./src/build.sh "./local_build/etc/downloadedContents/firmware.zip"
+			exit 0
 		fi
 	fi
 else
@@ -276,9 +277,7 @@ TARGET_BUILD_PRODUCT_NAME="$(grep_prop "ro.product.system.device" "${TSUKIKA_SYS
 
 # COMMON DEVICE VARIABLES: do not edit!
 BUILD_TARGET_ARCH=$(
-    for props in "$TSUKIKA_PRODUCT_PROPERTY_FILE" \
-                 "$TSUKIKA_SYSTEM_PROPERTY_FILE" \
-                 "$TSUKIKA_VENDOR_PROPERTY_FILE"; do
+    for props in "$TSUKIKA_VENDOR_PROPERTY_FILE" "$TSUKIKA_SYSTEM_PROPERTY_FILE"; do
         [ -f "$props" ] || continue
         if grep -q 'arm64-v8a' "$props"; then
     		echo "ARM64"
