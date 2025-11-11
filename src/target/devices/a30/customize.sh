@@ -55,6 +55,7 @@ if [[ "$(grep_prop "ro.product.vendor.device" "$TSUKIKA_VENDOR_PROPERTY_FILE")" 
         console_print "Trying to build framework overlay app for applying device cutout fix..."
         buildAndSignThePackage "./target/devices/a30/android_overlay/framework-res/" "${VENDOR_DIR}/overlay/" && console_print "Successfully built framework overlay app for applying device cutout fix." || warns "Failed to build framework overlay app for applying device cutout fix, please check the log." "customize.sh:device"
     fi
+    [ "${BUILD_TARGET_SDK_VERSION}" == "28|29|30" ] && setprop --custom "./src/target/devices/a30/buildTargetProperties.conf" "BUILD_TARGET_REQUIRES_BLUETOOTH_LIBRARY_PATCHES" "true" && source "./src/target/devices/a30/buildTargetProperties.conf"
 else
     warns "Unknown device, cannot proceed with the customization" "customize.sh:device"
 fi
