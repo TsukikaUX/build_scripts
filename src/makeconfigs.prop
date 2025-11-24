@@ -48,16 +48,10 @@ TARGET_BUILD_SETUP_WIZARD_OUTRO_TEXT="You're all set up, Thanks🥰"
 :setup wizard customization:
 
 # disables gboard's app icon from home via an overlay.
-TARGET_BUILD_DISABLE_GBOARD_HOME_ICON=false
+TARGET_BUILD_DISABLE_GBOARD_HOME_ICON=true
 
 # just changes the brand name in the settings app, ig
 TARGET_INCLUDE_CUSTOM_BRAND_NAME=false
-
-# Disables annoying sounds while calls.
-BLOCK_NOTIFICATION_SOUNDS_DURING_PLAYBACK=true
-
-# Force enables Popup player on Samsung Video Player
-FORCE_ENABLE_POP_UP_PLAYER_ON_SVP=true
 
 # Brings Chinese version of Smartmanager and Device Care, thnx @saadelasfur
 BRINGUP_CN_SMARTMANAGER_DEVICE=false
@@ -90,17 +84,11 @@ TARGET_BUILD_FORCE_DISABLE_SETUP_WIZARD=false
 # force skips junks like wifi setup and etc in the setup wizard
 TARGET_BUILD_SKIP_SETUP_JUNKS=false
 
-# forces the system to not close the camera app while calling
-TARGET_BUILD_FORCE_SYSTEM_TO_NOT_CLOSE_CAMERA_WHILE_CALLING=true
-
-# forces the Media Player to play a video during an call.
-TARGET_BUILD_FORCE_SYSTEM_TO_PLAY_SMTH_WHILE_CALL=false
-
 # removes unnecessary logging stuffs, don't disable logs on private / test builds.
 TARGET_BUILD_REMOVE_SYSTEM_LOGGING=false
 
 # brings back network speed in some regions
-TARGET_BUILD_ADD_NETWORK_SPEED_WIDGET=false
+TARGET_BUILD_ADD_NETWORK_SPEED_WIDGET=true
 
 # Brings mobile data toggle on the power menu context.
 TARGET_BUILD_ADD_MOBILE_DATA_TOGGLE_IN_POWER_MENU=true
@@ -108,20 +96,14 @@ TARGET_BUILD_ADD_MOBILE_DATA_TOGGLE_IN_POWER_MENU=true
 # Forces the network icon to show 5 bars
 TARGET_BUILD_FORCE_FIVE_BAR_NETICON=true
 
-# Forces the system to play song(s) / music(s) while recording a video
-TARGET_BUILD_FORCE_SYSTEM_TO_PLAY_MUSIC_WHILE_RECORDING=true
-
 # force enable Call Recording in the Samsung Dialer App
 TARGET_BUILD_ADD_CALL_RECORDING_IN_SAMSUNG_DIALER=false
 
-# disables wifi calling if it set to true
-TARGET_BUILD_DISABLE_WIFI_CALLING=false
-
-# floating feature configs. THANKS Furiousdroid for the suggestion!
+# disables the game launcher on ui 6 <. Not sure but try it yourself.
 TARGET_FLOATING_FEATURE_INCLUDE_GAMELAUNCHER_IN_THE_HOMESCREEN=false
-TARGET_FLOATING_FEATURE_INCLUDE_SPOTIFY_AS_ALARM=false
-TARGET_FLOATING_FEATURE_INCLUDE_EASY_MODE=false
-TARGET_FLOATING_FEATURE_INCLUDE_CLOCK_LIVE_ICON=false
+
+# add spotify into the alarm if it's not available on your device.
+TARGET_FLOATING_FEATURE_INCLUDE_SPOTIFY_AS_ALARM=true
 
 # This thing is used to adjust the animation type of the device
 # This can be : LowEnd , LowestEnd , LowEndFast , Mass (mid-rangers, not available after 3.1) , HighEnd , CHNHighEND & HighEnd_Tablet
@@ -145,11 +127,11 @@ TARGET_FLOATING_FEATURE_ENABLE_BLUR_EFFECTS=false
 # + Vivid
 TARGET_FLOATING_FEATURE_ENABLE_EXTRA_SCREEN_MODES=false
 
-# ultra power saving, this thing is useless but yeah if you want it then take it.
+# ultra power saving, useless crap tbh.
 TARGET_FLOATING_FEATURE_ENABLE_ULTRA_POWER_SAVING=false
 
-# Tinker with smart switch, useless thing change it to true if you want to nuke this.
-# and also removes a smart switch listener port from the init shell.
+# Tinker with smart switch, change it to true if you want to remove this.
+# This removes a smart switch listener thing as far as i know but it doesn't consume much on resources.
 TARGET_FLOATING_FEATURE_DISABLE_SMART_SWITCH=false
 
 # bring dolby sound effects on games. (if supported + if the hw is capable of doing this)
