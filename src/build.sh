@@ -443,8 +443,8 @@ if [ "$CUSTOM_WALLPAPER_RES_JSON_GENERATOR" == "true" ]; then
 	debugPrint "build.sh: User requested ${wallpaper_count} metadata to generate for wallpaper-res"
 	[[ "$wallpaper_count" =~ ^[0-9]+$ ]] && abort "\e[0;31m - Invalid input. Please enter a valid number. Exiting...\e[0;37m" "build.sh"
 	clear
-	sudo rm -rf ./src/tsukika/packages/flosspaper_purezza/raw/resources_info.json
-	echo -e "{\n\t\"version\": \"0.0.1\",\n\t\"phone\": [" > ./src/tsukika/packages/flosspaper_purezza/raw/resources_info.json
+	sudo rm -rf ./src/tsukika/packages/TsukikaWallpapers/raw/resources_info.json
+	echo -e "{\n\t\"version\": \"0.0.1\",\n\t\"phone\": [" > ./src/tsukika/packages/TsukikaWallpapers/raw/resources_info.json
 	for ((i = 1; i <= wallpaper_count; i++)); do
 		[ "${i}" -ge "10" ] && special_index=0
 		printf "\e[0;36m - Adding configurations for wallpaper_${special_index}${i}.png.\e[0;37m\n"
