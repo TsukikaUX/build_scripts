@@ -67,10 +67,10 @@ int getSystemProperty__(const char *propertyVariableName) {
     return -1;
 }
 
-int maybeSetProp(const char* property, void* expectedPropertyValue, enum expectedDataType Type) {
+int maybeSetProp(char* property, void* expectedPropertyValue, enum expectedDataType Type) {
     if(!property || !expectedPropertyValue) return -1;
     char buffer[PROP_VALUE_MAX];
-    const char* castValueStr = NULL;
+    char* castValueStr = NULL;
     switch(Type) {
         case TYPE_INT: {
             int castValue = *(int*)expectedPropertyValue;
@@ -85,7 +85,7 @@ int maybeSetProp(const char* property, void* expectedPropertyValue, enum expecte
         }
         break;
         case TYPE_STRING: {
-            castValueStr = (const char*)expectedPropertyValue;
+            castValueStr = (char*)expectedPropertyValue;
         }
         break;
         default:
@@ -117,43 +117,43 @@ int DoWhenPropisinTheSameForm(const char *property, void *expectedPropertyValue,
         break;
         default:
             _Static_assert(VALID_TYPE(TYPE_INT), "Requested type must be valid, this leads to an undefined behaviour.");
-            for(int i = 10; i < 0; i--) consoleLog(LOG_LEVEL_DEBUG, "DoWhenPropisinTheSameForm", "DoWhenPropisinTheSameForm(): Undefined behaviour!!!!!!!!! crashing the application in: %d", i);
-            abort_instance("DoWhenPropisinTheSameForm", "DoWhenPropisinTheSameForm(): Force crash due to undefined behaviour, hope abort cleans the memory.");
+            for(int i = 10; i < 0; i--) consoleLog(LOG_LEVEL_DEBUG, "DoWhenPropisinTheSameForm", "Undefined behaviour!!!!!!!!! crashing the application in: %d", i);
+            abort_instance("DoWhenPropisinTheSameForm", "Force crash due to undefined behaviour, hope abort cleans the memory.");
     }
     return 1;
 }
 
-int setprop(const char *property, void *propertyValue, enum expectedDataType Type) {
+int setprop(char *property, void *propertyValue, enum expectedDataType Type) {
     char buffer[PROP_VALUE_MAX];
-    const char *castValueStr = NULL;
-    consoleLog(LOG_LEVEL_DEBUG, "setprop", "setprop(): Trying to change the requested prop's value...");
+    char *castValueStr = NULL;
+    consoleLog(LOG_LEVEL_DEBUG, "setprop", "Trying to change the requested prop's value...");
     switch(Type) {
         case TYPE_INT: {
             int castValue = *(int *)propertyValue;
             snprintf(buffer, sizeof(buffer), "%d", castValue);
             castValueStr = buffer;
-            consoleLog(LOG_LEVEL_DEBUG, "setprop", "setprop(): %s with %d", property, castValueStr);
+            consoleLog(LOG_LEVEL_DEBUG, "setprop", "%s with %d", property, castValueStr);
         }
         break;
         case TYPE_FLOAT: {
             float castValue = *(float *)propertyValue;
             snprintf(buffer, sizeof(buffer), "%.2f", castValue);
             castValueStr = buffer;
-            consoleLog(LOG_LEVEL_DEBUG, "setprop", "setprop(): %s with %.2f", property, castValueStr);
+            consoleLog(LOG_LEVEL_DEBUG, "setprop", "%s with %.2f", property, castValueStr);
         }
         break;
         case TYPE_STRING: {
-            castValueStr = (const char *)propertyValue;
-            consoleLog(LOG_LEVEL_DEBUG, "setprop", "setprop(): %s with %s", property, castValueStr);
+            castValueStr = (char *)propertyValue;
+            consoleLog(LOG_LEVEL_DEBUG, "setprop", "%s with %s", property, castValueStr);
         }
         break;
         default:
             _Static_assert(VALID_TYPE(TYPE_INT), "Requested type must be valid, this leads to an undefined behaviour.");
-            for(int i = 10; i < 0; i--) consoleLog(LOG_LEVEL_DEBUG, "setprop", "setprop(): Undefined behaviour!!!!!!!!! crashing the application in: %d", i);
-            abort_instance("setprop", "setprop(): Force crash due to undefined behaviour, hope abort cleans the memory.");
+            for(int i = 10; i < 0; i--) consoleLog(LOG_LEVEL_DEBUG, "setprop", "Undefined behaviour!!!!!!!!! crashing the application in: %d", i);
+            abort_instance("setprop", "Force crash due to undefined behaviour, hope abort cleans the memory.");
     }
     if(executeCommands(resetprop, (char *const[]) {resetprop, (char *)property, (char *)castValueStr, NULL}, false) == 0) return 0;
-    consoleLog(LOG_LEVEL_WARN, "setprop", "setprop(): Failed to set requested property!");
+    consoleLog(LOG_LEVEL_WARN, "setprop", "Failed to set requested property!");
     return 1;
 }
 
@@ -172,8 +172,8 @@ int removeProperty(char *const property) {
 
 int getBatteryPercentage() {
     const char *blobPath;
-    int sizeTea = sizeof((char *)batteryPercentageBlobFilePaths) / sizeof((char *)batteryPercentageBlobFilePaths[0]);
-    for(int i = 0; i < sizeTea; i++) {
+    size_t sizeTea = sizeof((char *)batteryPercentageBlobFilePaths) / sizeof((char *)batteryPercentageBlobFilePaths[0]);
+    for(size_t i = 0; i < sizeTea; i++) {
         if(doesFileExist(batteryPercentageBlobFilePaths[i])) {
             blobPath = batteryPercentageBlobFilePaths[i];
             break;
@@ -224,7 +224,7 @@ bool bootanimStillRunning() {
 bool isTheDeviceisTurnedOn() {
     FILE *fp = popen("dumpsys power | grep 'Display Power'", "r"); 
     if(!fp) {
-        consoleLog(LOG_LEVEL_ERROR, "isTheDeviceisTurnedOn", "isTheDeviceisTurnedOn(): Failed to open stdout to gather information about the device display power status.");
+        consoleLog(LOG_LEVEL_ERROR, "isTheDeviceisTurnedOn", "Failed to open stdout to gather information about the device display power status.");
         return false;
     }
     char buffer[4];
@@ -269,7 +269,7 @@ char *getSystemProperty(const char *propertyVariableName) {
 char *grep_prop(const char *variableName, const char *propFile) {
     FILE *filePointer = fopen(propFile, "r");
     if(!filePointer) {
-        consoleLog(LOG_LEVEL_ERROR, "grep_prop", "grep_prop(): Failed to open properties file: %s", propFile);
+        consoleLog(LOG_LEVEL_ERROR, "grep_prop", "Failed to open properties file: %s", propFile);
         return NULL;
     }
     char theLine[8000];
@@ -286,18 +286,18 @@ char *grep_prop(const char *variableName, const char *propFile) {
     return NULL;
 }
 
-void sendToastMessages(const char *message) {
-    if(isPackageInstalled("bellavita.toast") == 0) executeCommands("am", (char *const[]) {"am", "start", "-a", "android.intent.action.MAIN", "-e", "toasttext", (char *)message, "-n", "bellavita.toast/.MainActivity", NULL}, false);
+void sendToastMessages(char *message) {
+    if(isPackageInstalled("bellavita.toast") == 0) executeCommands("am", (char *const[]) {"am", "start", "-a", "android.intent.action.MAIN", "-e", "toasttext", message, "-n", "bellavita.toast/.MainActivity", NULL}, false);
 }
 
-void sendNotification(const char *message) {
-    executeCommands("cmd", (char *const[]) {"cmd", "notification", "post", "-S", "bigtext", "-t", "Tsukika", "Tag", (char *)message, NULL}, false);
+void sendNotification(char *message) {
+    executeCommands("cmd", (char *const[]) {"cmd", "notification", "post", "-S", "bigtext", "-t", "Tsukika", "Tag", message, NULL}, false);
 }
 
 void prepareStockRecoveryCommandList(char *action, char *actionArg, char *actionArgExt) {
     mkdir("/cache/recovery/", 0755);
     FILE *recoveryCommand = fopen("/cache/recovery/command", "w");
-    if(!recoveryCommand) abort_instance("prepareStockRecoveryCommandList", "prepareStockRecoveryCommandList(): Failed to open recovery command file for writing to prepare command list.");
+    if(!recoveryCommand) abort_instance("prepareStockRecoveryCommandList", "Failed to open recovery command file for writing to prepare command list.");
     if(strcmp(action, "wipe") == 0 && strcmp(actionArg, "cache") == 0) fputs("--wipe_cache\n", recoveryCommand);
     else if(strcmp(action, "wipe") == 0 && strcmp(actionArg, "data") == 0) fputs("--wipe_data\n", recoveryCommand);
     else if(strcmp(action, "install") == 0) fprintf(recoveryCommand, "--update_package=%s\n", actionArg);
@@ -305,10 +305,10 @@ void prepareStockRecoveryCommandList(char *action, char *actionArg, char *action
     fclose(recoveryCommand);
 }
 
-void prepareTWRPRecoveryCommandList(char *action, char *actionArg, char *actionArgExt) {
+void prepareTWRPRecoveryCommandList(char *action, char *actionArg) {
     mkdir("/cache/recovery/", 0755);
     FILE *recoveryCommand = fopen("/cache/recovery/openrecoveryscript", "a");
-    if(!recoveryCommand) abort_instance("prepareTWRPRecoveryCommandList", "prepareTWRPRecoveryCommandList(): Failed to open recovery command file for writing to prepare command list.");
+    if(!recoveryCommand) abort_instance("prepareTWRPRecoveryCommandList", "Failed to open recovery command file for writing to prepare command list.");
     if(strcmp(action, "wipe") == 0 && strcmp(actionArg, "cache") == 0) fputs("wipe cache\n", recoveryCommand);
     else if(strcmp(action, "wipe") == 0 && strcmp(actionArg, "data") == 0) fputs("wipe data\n", recoveryCommand);
     else if(strcmp(action, "format data") == 0) fputs("format data\n", recoveryCommand);
@@ -317,14 +317,14 @@ void prepareTWRPRecoveryCommandList(char *action, char *actionArg, char *actionA
     fclose(recoveryCommand);
 }
 
-void startDaemon(const char *daemonName) {
-    if(setprop("ctl.start", (void *)daemonName, TYPE_STRING) == 0) consoleLog(LOG_LEVEL_INFO, "startDaemon", "startDaemon(): Daemon %s started successfully.", daemonName);
-    else consoleLog(LOG_LEVEL_WARN, "startDaemon", "startDaemon(): Failed to start daemon %s.", daemonName);
+void startDaemon(char *daemonName) {
+    if(setprop("ctl.start", (void *)daemonName, TYPE_STRING) == 0) consoleLog(LOG_LEVEL_INFO, "startDaemon", "Daemon %s started successfully.", daemonName);
+    else consoleLog(LOG_LEVEL_WARN, "startDaemon", "Failed to start daemon %s.", daemonName);
 }
 
-void stopDaemon(const char *daemonName) {
-    if(setprop("ctl.stop", (void *)daemonName, TYPE_STRING) == 0) consoleLog(LOG_LEVEL_INFO, "startDaemon", "stopDaemon(): Daemon %s stopped successfully.", daemonName);
-    else consoleLog(LOG_LEVEL_WARN, "startDaemon", "stopDaemon(): Failed to stop daemon %s.", daemonName);
+void stopDaemon(char *daemonName) {
+    if(setprop("ctl.stop", (void *)daemonName, TYPE_STRING) == 0) consoleLog(LOG_LEVEL_INFO, "stopDaemon", "Daemon %s stopped successfully.", daemonName);
+    else consoleLog(LOG_LEVEL_WARN, "stopDaemon", "Failed to stop daemon %s.", daemonName);
 }
 
 void androidPropertyCallback(void* cookie, const char* name, const char* value, uint32_t serial) {

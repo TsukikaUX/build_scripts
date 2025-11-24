@@ -28,7 +28,7 @@
 #include <tsukikautils.h>
 
 // extern variables.
-extern const char *batteryPercentageBlobFilePaths[];
+extern char *batteryPercentageBlobFilePaths[];
 extern char *const resetprop;
 
 // MUST ADDDDDDDDDDDDDDDDDD!
@@ -63,9 +63,9 @@ enum expectedDataType {
 // function declarations.
 int isPackageInstalled(const char packageName[250]);
 int getSystemProperty__(const char *propertyVariableName);
-int maybeSetProp(const char* property, void* expectedPropertyValue, enum expectedDataType Type);
+int maybeSetProp(char* property, void* expectedPropertyValue, enum expectedDataType Type);
 int DoWhenPropisinTheSameForm(const char *property, void *expectedPropertyValue, enum expectedDataType Type);
-int setprop(const char *property, void *propertyValue, enum expectedDataType Type);
+int setprop(char *property, void *propertyValue, enum expectedDataType Type);
 int isSetupOver();
 int removeProperty(char *const property);
 int getBatteryPercentage();
@@ -78,12 +78,12 @@ bool bootanimStillRunning();
 char *combineStringsFormatted(const char *format, ...);
 char *getSystemProperty(const char *propertyVariableName);
 char *grep_prop(const char *string, const char *propFile);
-void sendToastMessages(const char *message);
-void sendNotification(const char *message);
+void sendToastMessages(char *message);
+void sendNotification(char *message);
 void prepareStockRecoveryCommandList(char *action, char *actionArg, char *actionArgExt);
-void prepareTWRPRecoveryCommandList(char *action, char *actionArg, char *actionArgExt);
-void startDaemon(const char *daemonName);
-void stopDaemon(const char *daemonName);
+void prepareTWRPRecoveryCommandList(char *action, char *actionArg);
+void startDaemon(char *daemonName);
+void stopDaemon(char *daemonName);
 void androidPropertyCallback(void* cookie, const char* name, const char* value, uint32_t serial);
 //void checkArch();
 #endif

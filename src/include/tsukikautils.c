@@ -152,10 +152,10 @@ int checkBlocklistedStringsNChar(const char *haystack) {
         "/dev/block/mmcblk",
         "/dev/mmcblk"
     };
-    for(int i = 0; i < sizeof(blocklistedStrings) / sizeof(blocklistedStrings[0]); i++) {
+    for(size_t i = 0; i < sizeof(blocklistedStrings) / sizeof(blocklistedStrings[0]); i++) {
         if(searchBlockListedStrings(haystack, blocklistedStrings[i]) == 1) {
-            consoleLog(LOG_LEVEL_ERROR, "checkBlocklistedStringsNChar", "checkBlocklistedStringsNChar(): Found Blocklisted string: %s", blocklistedStrings[i]);
-            consoleLog(LOG_LEVEL_ERROR, "checkBlocklistedStringsNChar", "checkBlocklistedStringsNChar(): The script is not safe to execute! Stopping execution process...");
+            consoleLog(LOG_LEVEL_ERROR, "checkBlocklistedStringsNChar", "Found Blocklisted string: %s", blocklistedStrings[i]);
+            consoleLog(LOG_LEVEL_ERROR, "checkBlocklistedStringsNChar", "The script is not safe to execute! Stopping execution process...");
             return 1;
         }
     }
@@ -182,21 +182,45 @@ char *combineStringsFormatted(const char *format, ...) {
     va_start(args, format);
     va_list args_copy;
     va_copy(args_copy, args);
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wformat-nonliteral"
     int len = vsnprintf(NULL, 0, format, args_copy);
+    #pragma clang diagnostic pop
     va_end(args_copy);
     if(len < 0) {
         va_end(args);
         return NULL;
     }
-    char *result = malloc(len + 1);
+    size_t size = (size_t)len + 1;
+    char *result = malloc(size);
     if(!result) {
         va_end(args);
         return NULL;
     }
-    vsnprintf(result, len + 1, format, args);
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wformat-nonliteral"
+    vsnprintf(result, size, format, args);
+    #pragma clang diagnostic pop
     va_end(args);
-    if(!result) return NULL;
     return result;
+}
+
+char *cStringToLower(char *str) {
+    int i = 0;
+    while(str[i]) {
+        str[i] = (char)tolower(str[i]);
+        i++;
+    }
+    return str;
+}
+
+char *cStringToUpper(char *str) {
+    int i = 0;
+    while(str[i]) {
+        str[i] = (char)toupper(str[i]);
+        i++;
+    }
+    return str;
 }
 
 void abort_instance(const char *service, const char *format, ...) {
@@ -243,7 +267,10 @@ void consoleLog(enum elogLevel loglevel, const char *service, const char *messag
             else fprintf(out, "ABORT: %s: ", service);
         break;
     }
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wformat-nonliteral"
     vfprintf(out, message, args);
+    #pragma clang diagnostic pop
     if(!toFile) fprintf(out, "\033[0m\n");
     else fprintf(out, "\n");
     if(!useStdoutForAllLogs && out) fclose(out);
