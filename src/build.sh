@@ -369,9 +369,6 @@ fi
 [ "$TARGET_FLOATING_FEATURE_INCLUDE_CLOCK_LIVE_ICON" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_LAUNCHER_SUPPORT_CLOCK_LIVE_ICON" "TRUE" || \
 	addFloatXMLValues "SEC_FLOATING_FEATURE_LAUNCHER_SUPPORT_CLOCK_LIVE_ICON" "FALSE"
 
-[ "$TARGET_FLOATING_FEATURE_INCLUDE_EASY_MODE" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_SETTINGS_SUPPORT_EASY_MODE" "TRUE" || \
-	addFloatXMLValues "SEC_FLOATING_FEATURE_SETTINGS_SUPPORT_EASY_MODE" "FALSE"
-
 if [ "$TARGET_FLOATING_FEATURE_ENABLE_BLUR_EFFECTS" == "true" ]; then
 	for blur_effects in SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_PARTIAL_BLUR SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_CAPTURED_BLUR SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_3D_SURFACE_TRANSITION_FLAG; do
 		addFloatXMLValues "$blur_effects" "TRUE"
@@ -611,17 +608,11 @@ fi
 # enables 5 network bars:
 [ "$TARGET_BUILD_FORCE_FIVE_BAR_NETICON" == "true" ] && addCSCxmlValues "CscFeature_SystemUI_ConfigMaxRssiLevel" "5"
 
-# Forces the system to not close music apps while recording a video
-[ "$TARGET_BUILD_FORCE_SYSTEM_TO_PLAY_MUSIC_WHILE_RECORDING" == "true" ] && addCSCxmlValues "CscFeature_Camera_CamcorderDoNotPauseMusic" "TRUE"
-
 # Enables network speed bar in qs:
 if [ "$TARGET_BUILD_ADD_NETWORK_SPEED_WIDGET" == "true" ]; then
 	addCSCxmlValues "CscFeature_Setting_SupportRealTimeNetworkSpeed" "TRUE"
 	[ "$BUILD_TARGET_SDK_VERSION" -ge "34" ] && addCSCxmlValues "CscFeature_Common_SupportZProjectFunctionInGlobal" "TRUE"
 fi
-
-# forces system to not close the camera app while calling
-[ "$TARGET_BUILD_FORCE_SYSTEM_TO_NOT_CLOSE_CAMERA_WHILE_CALLING" == "true" ] && addCSCxmlValues "CscFeature_Camera_EnableCameraDuringCall" "TRUE"
 
 # Adds call recording feature in samsung dialer
 [ "$TARGET_BUILD_ADD_CALL_RECORDING_IN_SAMSUNG_DIALER" == "true" ] && addCSCxmlValues "CscFeature_VoiceCall_ConfigRecording" "RecordingAllowedByMenu"
@@ -640,26 +631,11 @@ if [ "$BUILD_TARGET_DISABLE_KNOX_PROPERTIES" == "true" ]; then
 	addCSCxmlValues "CscFeature_Knox_SupportKnoxGuard" "FALSE"
 fi
 
-# Disables Wifi calling
-if [ "$TARGET_BUILD_DISABLE_WIFI_CALLING" == "true" ]; then
-	addCSCxmlValues "CscFeature_Setting_SupportWifiCall" "FALSE"
-	addCSCxmlValues "CscFeature_Setting_SupportWiFiCallingMenu" "FALSE"
-fi
-
 # removes junk on setup:
 if [ "$TARGET_BUILD_SKIP_SETUP_JUNKS" == "true" ]; then
 	addCSCxmlValues "CscFeature_Setting_SkipWifiActvDuringSetupWizard" "FALSE"
 	addCSCxmlValues "CscFeature_Setting_SkipStepsDuringSamsungSetupWizard" "TRUE"
 fi
-
-# Blocks notification sounds on playbacks:
-[ "$BLOCK_NOTIFICATION_SOUNDS_DURING_PLAYBACK" == "true" ] && addCSCxmlValues "CscFeature_Video_BlockNotiSoundDuringStreaming" "TRUE"
-
-# Forces the system to play media while call
-[ "$TARGET_BUILD_FORCE_SYSTEM_TO_PLAY_SMTH_WHILE_CALL" == "true" ] && addCSCxmlValues "CscFeature_Video_SupportPlayDuringCall" "TRUE"
-
-# Forces samsung video player to work on pop-up window
-[ "$FORCE_ENABLE_POP_UP_PLAYER_ON_SVP" == "true" ] && addCSCxmlValues "CscFeature_Video_EnablePopupPlayer" "TRUE"
 
 # critical - disables setup wizard:
 [ "$TARGET_BUILD_FORCE_DISABLE_SETUP_WIZARD" == "true" ] && addCSCxmlValues "CscFeature_SetupWizard_DisablePrivacyPolicyAgreement" "TRUE"
