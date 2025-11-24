@@ -6,10 +6,11 @@
     android:compileSdkVersionCodename="11"
     platformBuildVersionCode="30"
     platformBuildVersionName="11">
+    <application
+        android:hasCode="false"
+        android:title="月華 - Misc / Always On Display Custom GIFs Overlay">
     <overlay
         android:targetPackage="com.samsung.android.app.aodservice"
         android:isStatic="true"
-        android:hasCode="false"
-        android:title="月華 - Misc / Always On Display Custom GIFs Overlay"
         android:priority="1" />
 </manifest>

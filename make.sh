@@ -18,7 +18,9 @@
 
 # shutt up
 CC_ROOT="/home/ayumi/android-ndk-r27d/toolchains/llvm/prebuilt/linux-x86_64/bin"
-CFLAGS="-std=c23 -O3 -static"
+CFLAGS="-std=c23 -O3 -static -Wall -Wextra -Werror -pedantic \
+        -Wshadow -Wconversion -Wsign-conversion -Wpointer-arith -Wcast-qual \
+        -Wmissing-prototypes -Wstrict-prototypes -Wformat=2 -Wundef"
 BUILD_LOGFILE="./local_build/logs/makeErrors.log"
 OLD_REFERENCE_URL="https://raw.githubusercontent.com/ayumi-aiko/Tsukika/ref/ota-manifest.xml"
 UBER_SIGNER_JAR="./src/dependencies/bin/signer.jar"
