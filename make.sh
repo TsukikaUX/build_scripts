@@ -25,6 +25,9 @@ BUILD_LOGFILE="./local_build/logs/makeErrors.log"
 OLD_REFERENCE_URL="https://raw.githubusercontent.com/ayumi-aiko/Tsukika/ref/ota-manifest.xml"
 UBER_SIGNER_JAR="./src/dependencies/bin/signer.jar"
 APKTOOL_JAR="./src/dependencies/bin/apktool.jar"
+HEADER_PATH="./src/include"
+HEADER_SOURCES="./src/include/tsukika.c ./src/include/tsukikautils.c"
+SOURCES=("./src/compileTest/test.c")
 SKIPSIGN=""
 OTA_MANIFEST_URL=""
 SDK=""
@@ -41,7 +44,7 @@ mkdir -p "$(dirname "${BUILD_LOGFILE}")"
 for args in "$@"; do
     lowerCaseArgument=$(echo "${args}" | tr '[:upper:]' '[:lower:]')
     if [ "${lowerCaseArgument}" == "clean" ]; then
-        sudo rm -rf "./src/tsukika/packages/TsukikaUpdater/dist" "./src/tsukika/packages/TsukikaUpdater/smali" ./src/tsukika/packages/TsukikaUpdater/smali_* "./src/tsukika/packages/TsukikaUpdater/build" "${BUILD_LOGFILE}"
+        sudo rm -rf "./src/tsukika/packages/TsukikaUpdater/dist" "./src/tsukika/packages/TsukikaUpdater/smali" ./src/tsukika/packages/TsukikaUpdater/smali_* "./src/tsukika/packages/TsukikaUpdater/build" "${BUILD_LOGFILE}" "./hawksnest"
 	    echo -e "\033[0;32mmake: Info: Clean complete.\033[0m"
         break;
     fi
@@ -70,11 +73,7 @@ for args in "$@"; do
             ;;
         esac
     fi
-	if [ -x "$CC" ]; then
-		printf "\033[0;31mmake: Error: Compiler '%s' not found or not executable. Please check the path or install it.\033[0m\n" "$(basename $CC)";
-		exit 1;
-    fi
-    if [ "$lowerCaseArgument" == "unicaupdater" ]; then
+    if [ "${lowerCaseArgument}" == "unicaupdater" ]; then
         source ./src/misc/build_scripts/util_functions.sh
         source ./src/makeconfigs.prop
 		[ -z "${OTA_MANIFEST_URL}" ] && abort "- OTA_MANIFEST_URL is not mentioned, check the command again." "MAKE" "NULL";
@@ -106,5 +105,13 @@ for args in "$@"; do
                 abort "- Failed to sign the application, please try again..." "MAKE" "NULL";
             fi
         fi
+    fi
+    if [ "${lowerCaseArgument}" == "headertest" ]; then
+	    if [ ! -x "$CC" ]; then
+		    printf "\033[0;31mmake: Error: Compiler '%s' not found or not executable. Please check the path or install it.\033[0m\n" "$(basename $CC)";
+    		exit 1;
+        fi
+        # rare occurance dudeeeeeeeeee
+        "${CC}" ${CFLAGS} -I"${HEADER_PATH}" ${HEADER_SOURCES} "${SOURCES[0]}" -o hawksnest || echo "- Failed to build the test binary, please kindly send the logs to me :)";
     fi
 done

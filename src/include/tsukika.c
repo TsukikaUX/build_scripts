@@ -157,15 +157,6 @@ int setprop(char *property, void *propertyValue, enum expectedDataType Type) {
     return 1;
 }
 
-int isSetupOver() {
-    char *currentSetupWizardMode = getSystemProperty("ro.setupwizard.mode");
-    if(strcmp(getSystemProperty("persist.sys.setupwizard"), "FINISH") == 0) {
-        if(strcmp(currentSetupWizardMode, "OPTIONAL")  == 0 || strcmp(currentSetupWizardMode, "DISABLED") == 0) return 0;
-        return 0;
-    }
-    return 1;
-}
-
 int removeProperty(char *const property) {
     return executeCommands(resetprop, (char *const[]){resetprop, "-d", property}, false);
 }
@@ -209,28 +200,27 @@ bool killProcess(pid_t procID) {
     return (executeCommands("su", (char *const[]) {"su", "-c", "kill", combineStringsFormatted("%d", procID)}, false) == 0);
 }
 
-bool isTheDeviceBootCompleted() {
-    return (getSystemProperty__("sys.boot_completed") == 1);
-}
-
-bool isBootAnimationExited() {
-    return (getSystemProperty__("service.bootanim.exit") == 1);
-}
-
-bool bootanimStillRunning() {
-    return (getSystemProperty__("service.bootanim.progress") == 1);
-}
-
-bool isTheDeviceisTurnedOn() {
-    FILE *fp = popen("dumpsys power | grep 'Display Power'", "r"); 
-    if(!fp) {
-        consoleLog(LOG_LEVEL_ERROR, "isTheDeviceisTurnedOn", "Failed to open stdout to gather information about the device display power status.");
-        return false;
+bool getDeviceState(enum expectedDeviceState exptx) {
+    char *currentSetupWizardMode = getSystemProperty("ro.setupwizard.mode");
+    if(!currentSetupWizardMode) return false;
+    if(exptx == DEVICE_SETUP_OVER) {
+        if(strcmp(getSystemProperty("persist.sys.setupwizard"), "FINISH") == 0 || strcmp(currentSetupWizardMode, "OPTIONAL")  == 0 || strcmp(currentSetupWizardMode, "DISABLED") == 0) return true;
     }
-    char buffer[4];
-    fgets(buffer, sizeof(buffer), fp);
-    pclose(fp);
-    return (strstr(buffer, "OFF") == NULL);
+    else if(exptx == BOOTANIMATION_RUNNING) return (getSystemProperty__("service.bootanim.progress") == 1);
+    else if(exptx == BOOTANIMATION_EXITED) return (getSystemProperty__("service.bootanim.exit") == 1);
+    else if(exptx == DEVICE_BOOT_COMPLETED) return (getSystemProperty__("sys.boot_completed") == 1);
+    else if(exptx == DEVICE_TURNED_ON) {
+        FILE *fp = popen("dumpsys power | grep 'Display Power'", "r"); 
+        if(!fp) {
+            consoleLog(LOG_LEVEL_ERROR, "getDeviceState", "Failed to open stdout to gather information about the device display power status.");
+            return false;
+        }
+        char buffer[4];
+        fgets(buffer, sizeof(buffer), fp);
+        pclose(fp);
+        return (strstr(buffer, "OFF") == NULL);
+    }
+    return false;
 }
 
 char *getSystemProperty(const char *propertyVariableName) {
@@ -286,45 +276,31 @@ char *grep_prop(const char *variableName, const char *propFile) {
     return NULL;
 }
 
-void sendToastMessages(char *message) {
+void alertUser(char *message) {
     if(isPackageInstalled("bellavita.toast") == 0) executeCommands("am", (char *const[]) {"am", "start", "-a", "android.intent.action.MAIN", "-e", "toasttext", message, "-n", "bellavita.toast/.MainActivity", NULL}, false);
+    else executeCommands("cmd", (char *const[]) {"cmd", "notification", "post", "-S", "bigtext", "-t", "Tsukika", "Tag", message, NULL}, false);
 }
 
-void sendNotification(char *message) {
-    executeCommands("cmd", (char *const[]) {"cmd", "notification", "post", "-S", "bigtext", "-t", "Tsukika", "Tag", message, NULL}, false);
-}
-
-void prepareStockRecoveryCommandList(char *action, char *actionArg, char *actionArgExt) {
+void prepareStockRecoveryCommandFile(enum openRecoveryScriptNextCommand ors, char *actionArgOne, char *actionArgTwo) {
     mkdir("/cache/recovery/", 0755);
-    FILE *recoveryCommand = fopen("/cache/recovery/command", "w");
-    if(!recoveryCommand) abort_instance("prepareStockRecoveryCommandList", "Failed to open recovery command file for writing to prepare command list.");
-    if(strcmp(action, "wipe") == 0 && strcmp(actionArg, "cache") == 0) fputs("--wipe_cache\n", recoveryCommand);
-    else if(strcmp(action, "wipe") == 0 && strcmp(actionArg, "data") == 0) fputs("--wipe_data\n", recoveryCommand);
-    else if(strcmp(action, "install") == 0) fprintf(recoveryCommand, "--update_package=%s\n", actionArg);
-    else if(strcmp(action, "switchLocale") == 0) fprintf(recoveryCommand, "--locale=%s_%s\n", cStringToLower(actionArg), cStringToUpper(actionArgExt));
-    fclose(recoveryCommand);
+    FILE *recoveryCommandFile = fopen("/cache/recovery/command", "w");
+    if(!recoveryCommandFile) abort_instance("prepareStockRecoveryCommandFile", "Failed to open recovery command file to prepare given action on next boot.");
+    if(ors == WIPE_DATA) fputs("--wipe_data\n", recoveryCommandFile);
+    else if(ors == WIPE_CACHE) fputs("--wipe_cache\n", recoveryCommandFile);
+    else if(ors == INSTALL_PACKAGE) fprintf(recoveryCommandFile, "--update_package=%s\n", actionArgOne);
+    else if(ors == SWITCH_LOCALE) fprintf(recoveryCommandFile, "--locale=%s_%s\n", cStringToLower(actionArgOne), cStringToUpper(actionArgTwo));
+    fclose(recoveryCommandFile);
 }
 
-void prepareTWRPRecoveryCommandList(char *action, char *actionArg) {
-    mkdir("/cache/recovery/", 0755);
-    FILE *recoveryCommand = fopen("/cache/recovery/openrecoveryscript", "a");
-    if(!recoveryCommand) abort_instance("prepareTWRPRecoveryCommandList", "Failed to open recovery command file for writing to prepare command list.");
-    if(strcmp(action, "wipe") == 0 && strcmp(actionArg, "cache") == 0) fputs("wipe cache\n", recoveryCommand);
-    else if(strcmp(action, "wipe") == 0 && strcmp(actionArg, "data") == 0) fputs("wipe data\n", recoveryCommand);
-    else if(strcmp(action, "format data") == 0) fputs("format data\n", recoveryCommand);
-    else if(strcmp(action, "reboot") == 0 && (strcmp(actionArg, "recovery") == 0 || strcmp(actionArg, "poweroff") == 0 || strcmp(actionArg, "download") == 0 || strcmp(actionArg, "bootloader") == 0 || strcmp(actionArg, "edl") == 0)) fprintf(recoveryCommand, "reboot %s\n", actionArg);
-    else if(strcmp(action, "install") == 0) fprintf(recoveryCommand, "install %s\n", actionArg);
-    fclose(recoveryCommand);
-}
-
-void startDaemon(char *daemonName) {
-    if(setprop("ctl.start", (void *)daemonName, TYPE_STRING) == 0) consoleLog(LOG_LEVEL_INFO, "startDaemon", "Daemon %s started successfully.", daemonName);
-    else consoleLog(LOG_LEVEL_WARN, "startDaemon", "Failed to start daemon %s.", daemonName);
-}
-
-void stopDaemon(char *daemonName) {
-    if(setprop("ctl.stop", (void *)daemonName, TYPE_STRING) == 0) consoleLog(LOG_LEVEL_INFO, "stopDaemon", "Daemon %s stopped successfully.", daemonName);
-    else consoleLog(LOG_LEVEL_WARN, "stopDaemon", "Failed to stop daemon %s.", daemonName);
+void daemonStateManager(enum setDaemonPropertyState daemonProp, char *daemonName) {
+    if(daemonProp == DAEMON_START) {
+        if(setprop("ctl.start", (void *)daemonName, TYPE_STRING) == 0) consoleLog(LOG_LEVEL_INFO, "startDaemon", "Daemon %s started successfully.", daemonName);
+        else consoleLog(LOG_LEVEL_WARN, "daemonStateManager", "Failed to start %s daemon service.", daemonName);
+    }
+    else if(daemonProp == DAEMON_STOP) {
+        if(setprop("ctl.stop", (void *)daemonName, TYPE_STRING) == 0) consoleLog(LOG_LEVEL_INFO, "stopDaemon", "Daemon %s stopped successfully.", daemonName);
+        else consoleLog(LOG_LEVEL_WARN, "daemonStateManager", "Failed to stop %s daemon service.", daemonName);
+    }
 }
 
 void androidPropertyCallback(void* cookie, const char* name, const char* value, uint32_t serial) {
@@ -335,9 +311,3 @@ void androidPropertyCallback(void* cookie, const char* name, const char* value, 
     handler->propertySerial = serial;
     handler->found = 1;
 }
-
-//void checkArch() {
-//    if(android_getCpuFamily() = ANDROID_CPU_FAMILY_ARM
-//    || android_getCpuFamily() == ANDROID_CPU_FAMILY_ARM64) return;
-//    abort_instance("checkArch", "Undefined architecture! This pre-compiled binary cannot run on this platform.");
-//}
