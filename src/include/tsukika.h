@@ -44,13 +44,13 @@ It's worth noting a historical caveat about popen in Android NDK:
 */
 
 typedef struct {
-    int found; // Hey google, syfm!
+    int found; // Hey google, shut it up!
     uint32_t propertySerial;
     char propertyName[PROP_NAME_MAX];
     char propertyValue[PROP_VALUE_MAX];
 } PropertyHandler;
 
-// for void* based arguments.
+// only used for void* based arguments.
 // compiler will throw errors if somebody tried to use a diff enum.
 enum expectedDataType {
 	TYPE_INT,
@@ -60,30 +60,45 @@ enum expectedDataType {
 	TYPE_STRING,
 };
 
+// used for verifying if we are in a expected state.
+enum expectedDeviceState {
+	DEVICE_SETUP_OVER,
+	BOOTANIMATION_RUNNING,
+	BOOTANIMATION_EXITED,
+	DEVICE_BOOT_COMPLETED,
+	DEVICE_TURNED_ON
+};
+
+// used for stopping/starting the daemon given.
+enum setDaemonPropertyState {
+	DAEMON_START,
+	DAEMON_STOP
+};
+
+// used for preparing open recovery script.
+enum openRecoveryScriptNextCommand {
+	WIPE_DATA,
+	WIPE_CACHE,
+	INSTALL_PACKAGE,
+	SWITCH_LOCALE
+};
+
 // function declarations.
 int isPackageInstalled(const char packageName[250]);
 int getSystemProperty__(const char *propertyVariableName);
 int maybeSetProp(char* property, void* expectedPropertyValue, enum expectedDataType Type);
 int DoWhenPropisinTheSameForm(const char *property, void *expectedPropertyValue, enum expectedDataType Type);
 int setprop(char *property, void *propertyValue, enum expectedDataType Type);
-int isSetupOver();
 int removeProperty(char *const property);
 int getBatteryPercentage();
 int getPidOf(const char *proc);
 bool killProcess(pid_t procID);
-bool isBootAnimationExited();
-bool isTheDeviceBootCompleted();
-bool isTheDeviceisTurnedOn();
-bool bootanimStillRunning();
+bool getDeviceState(enum expectedDeviceState exptx);
 char *combineStringsFormatted(const char *format, ...);
 char *getSystemProperty(const char *propertyVariableName);
 char *grep_prop(const char *string, const char *propFile);
-void sendToastMessages(char *message);
-void sendNotification(char *message);
-void prepareStockRecoveryCommandList(char *action, char *actionArg, char *actionArgExt);
-void prepareTWRPRecoveryCommandList(char *action, char *actionArg);
-void startDaemon(char *daemonName);
-void stopDaemon(char *daemonName);
+void alertUser(char *message);
+void prepareStockRecoveryCommandFile(enum openRecoveryScriptNextCommand ors, char *actionArgOne, char *actionArgTwo);
+void daemonStateManager(enum setDaemonPropertyState daemonProp, char *daemonName);
 void androidPropertyCallback(void* cookie, const char* name, const char* value, uint32_t serial);
-//void checkArch();
 #endif
