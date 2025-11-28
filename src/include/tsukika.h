@@ -83,6 +83,14 @@ enum openRecoveryScriptNextCommand {
 	SWITCH_LOCALE
 };
 
+// used for tracking the current init state.
+enum bootTraceState {
+	LATE_FS,
+	INIT,
+	POST_FS,
+	POST_FS_DATA
+};
+
 // function declarations.
 int isPackageInstalled(const char packageName[250]);
 int getSystemProperty__(const char *propertyVariableName);
@@ -94,6 +102,7 @@ int getBatteryPercentage();
 int getPidOf(const char *proc);
 bool killProcess(pid_t procID);
 bool getDeviceState(enum expectedDeviceState exptx);
+bool bootTraceState(enum bootTraceState theBootStage);
 char *combineStringsFormatted(const char *format, ...);
 char *getSystemProperty(const char *propertyVariableName);
 char *grep_prop(const char *string, const char *propFile);

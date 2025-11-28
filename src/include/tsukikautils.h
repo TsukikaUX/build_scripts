@@ -50,10 +50,8 @@ int searchBlockListedStrings(const char *__filename, const char *__search_str);
 int verifyScriptStatusUsingShell(const char *__filename);
 int checkBlocklistedStringsNChar(const char *__haystack);
 bool erase_file_content(const char *__file);
-bool doesFileExist(const char *filePath);
 char *combineStringsFormatted(const char *format, ...);
-char *cStringToLower(char *str);
-char *cStringToUpper(char *str);
+char *stringCase(char *string, bool shouldTurnToUpper);
 void abort_instance(const char *service, const char *format, ...);
 void consoleLog(enum elogLevel loglevel, const char *service, const char *message, ...);
 
