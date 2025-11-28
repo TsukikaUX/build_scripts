@@ -169,13 +169,6 @@ bool erase_file_content(const char *file) {
     return true;
 }
 
-bool doesFileExist(const char *filePath) {
-    FILE *fptr = fopen(filePath, "r"); 
-    if(!fptr) return false;
-    fclose(fptr);
-    return true;
-}
-
 // NOTE: THIS FUNCTION RETURNS STACK AND SHOULD BE CLEARED!!
 char *combineStringsFormatted(const char *format, ...) {
     va_list args;
@@ -205,22 +198,23 @@ char *combineStringsFormatted(const char *format, ...) {
     return result;
 }
 
-char *cStringToLower(char *str) {
-    int i = 0;
-    while(str[i]) {
-        str[i] = (char)tolower(str[i]);
-        i++;
+char *stringCase(char *string, bool shouldTurnToUpper) {
+    if(shouldTurnToUpper) {
+        int i = 0;
+        while(string[i]) {
+            string[i] = (char)toupper(string[i]);
+            i++;
+        }
+        return string;
     }
-    return str;
-}
-
-char *cStringToUpper(char *str) {
-    int i = 0;
-    while(str[i]) {
-        str[i] = (char)toupper(str[i]);
-        i++;
+    else {
+        int i = 0;
+        while(string[i]) {
+            string[i] = (char)tolower(string[i]);
+            i++;
+        }
+        return string;
     }
-    return str;
 }
 
 void abort_instance(const char *service, const char *format, ...) {

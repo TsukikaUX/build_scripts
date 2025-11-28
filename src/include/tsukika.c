@@ -165,7 +165,7 @@ int getBatteryPercentage() {
     const char *blobPath;
     size_t sizeTea = sizeof((char *)batteryPercentageBlobFilePaths) / sizeof((char *)batteryPercentageBlobFilePaths[0]);
     for(size_t i = 0; i < sizeTea; i++) {
-        if(doesFileExist(batteryPercentageBlobFilePaths[i])) {
+        if(access(batteryPercentageBlobFilePaths[i], F_OK) == 0) {
             blobPath = batteryPercentageBlobFilePaths[i];
             break;
         }
@@ -210,7 +210,7 @@ bool getDeviceState(enum expectedDeviceState exptx) {
     else if(exptx == BOOTANIMATION_EXITED) return (getSystemProperty__("service.bootanim.exit") == 1);
     else if(exptx == DEVICE_BOOT_COMPLETED) return (getSystemProperty__("sys.boot_completed") == 1);
     else if(exptx == DEVICE_TURNED_ON) {
-        FILE *fp = popen("dumpsys power | grep 'Display Power'", "r"); 
+        FILE *fp = popen("dumpsys power | grep 'Display Power'", "r");
         if(!fp) {
             consoleLog(LOG_LEVEL_ERROR, "getDeviceState", "Failed to open stdout to gather information about the device display power status.");
             return false;
@@ -220,6 +220,23 @@ bool getDeviceState(enum expectedDeviceState exptx) {
         pclose(fp);
         return (strstr(buffer, "OFF") == NULL);
     }
+    return false;
+}
+
+bool bootTraceState(enum bootTraceState theBootStage) {
+    FILE *initState = fopen("boottrace", "r");
+    if(!initState) {
+        consoleLog(LOG_LEVEL_ERROR, "bootTraceState", "Failed to open /dev/tmp/boottrace, please try again");
+        return false;
+    }
+    char content[15];
+    while(fgets(content, sizeof(content), initState));
+    fclose(initState);
+    if(theBootStage == LATE_FS) return strcmp(content, "late-fs") == 0;
+    else if(theBootStage == INIT) return strcmp(content, "init") == 0;
+    else if(theBootStage == POST_FS) return strcmp(content, "post-fs") == 0;
+    else if(theBootStage == POST_FS_DATA) return strcmp(content, "post-fs-data") == 0;
+    // undefined behaviour:
     return false;
 }
 
@@ -288,7 +305,7 @@ void prepareStockRecoveryCommandFile(enum openRecoveryScriptNextCommand ors, cha
     if(ors == WIPE_DATA) fputs("--wipe_data\n", recoveryCommandFile);
     else if(ors == WIPE_CACHE) fputs("--wipe_cache\n", recoveryCommandFile);
     else if(ors == INSTALL_PACKAGE) fprintf(recoveryCommandFile, "--update_package=%s\n", actionArgOne);
-    else if(ors == SWITCH_LOCALE) fprintf(recoveryCommandFile, "--locale=%s_%s\n", cStringToLower(actionArgOne), cStringToUpper(actionArgTwo));
+    else if(ors == SWITCH_LOCALE) fprintf(recoveryCommandFile, "--locale=%s_%s\n", stringCase(actionArgOne, false), stringCase(actionArgTwo, true));
     fclose(recoveryCommandFile);
 }
 

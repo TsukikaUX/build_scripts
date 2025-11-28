@@ -866,6 +866,24 @@ if [[ "${TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER}" == "true" && ! -z "${TARGET
 	fi
 fi
 
+# bootRecon init thing:
+{
+	echo "on late-fs"
+	echo -e "\twrite /dev/tmp/boottrace \"late-fs\""
+	echo "on init"
+	echo -e "\twrite /dev/tmp/boottrace \"init\""
+	echo "on post-fs"
+	echo -e "\twrite /dev/tmp/boottrace \"post-fs\""
+	echo "on post-fs-data"
+	echo -e "\twrite /dev/tmp/boottrace \"post-fs-data\""
+	echo "on property:sys.boot_completed"
+	echo -e "\twrite /dev/tmp/boottrace \"boot-completed\"\n"
+} > "${SYSTEM_DIR}/etc/init/init.bootTimeTrace.rc"
+sudo chmod 644 "${SYSTEM_DIR}/etc/init/init.bootTimeTrace.rc"
+sudo chown 0 "${SYSTEM_DIR}/etc/init/init.bootTimeTrace.rc"
+sudo chgrp 0 "${SYSTEM_DIR}/etc/init/init.bootTimeTrace.rc"
+sudo chcon u:object_r:system_file:s0 "${SYSTEM_DIR}/etc/init/init.bootTimeTrace.rc"
+
 # knoxpatch
 if [[ "${TARGET_BUILD_ADD_KNOXPATCH}" == "true" ]]; then
 	console_print "Trying to run KnoxPatch module..."
