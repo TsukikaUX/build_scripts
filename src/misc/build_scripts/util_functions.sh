@@ -81,6 +81,7 @@ function setprop() {
             propFile="$2"
             propVariableName="$3"
             sed -i "/^${propVariableName}=.*/d" "$propFile"
+            return 0;
         ;;
         *)
             echo "Invalid setprop target: $1"
@@ -461,8 +462,8 @@ EOF
     printf " - Enter the path to the default ${type^} wallpaper: "
     read path
     if [ -f "$path" ]; then
-        debugPrint "[INDEX: $index | TYPE: $type] $path -> ./src/tsukika/packages/flosspaper_purezza/res/drawable-nodpi/${filename}"
-        cp -af "$path" "./src/tsukika/packages/flosspaper_purezza/res/drawable-nodpi/${filename}"
+        debugPrint "[INDEX: $index | TYPE: $type] $path -> ./src/tsukika/packages/TsukikaWallpapers/res/drawable-nodpi/${filename}"
+        cp -af "$path" "./src/tsukika/packages/TsukikaWallpapers/res/drawable-nodpi/${filename}"
     else
         abort "Wrong wallpaper image path, aborting this build..." "addTheWallpaperMetadata"
     fi

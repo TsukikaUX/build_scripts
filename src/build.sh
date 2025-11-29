@@ -602,9 +602,6 @@ if [ "$TARGET_BUILD_REMOVE_SYSTEM_LOGGING" == "true" ]; then
 	esac
 fi
 
-# brings mobile data toggle in the power menu:
-[ "$TARGET_BUILD_ADD_MOBILE_DATA_TOGGLE_IN_POWER_MENU" == "true" ] && addCSCxmlValues "CscFeature_Framework_SupportDataModeSwitchGlobalAction" "TRUE"
-
 # enables 5 network bars:
 [ "$TARGET_BUILD_FORCE_FIVE_BAR_NETICON" == "true" ] && addCSCxmlValues "CscFeature_SystemUI_ConfigMaxRssiLevel" "5"
 

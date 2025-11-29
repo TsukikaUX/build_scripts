@@ -90,9 +90,6 @@ TARGET_BUILD_REMOVE_SYSTEM_LOGGING=false
 # brings back network speed in some regions
 TARGET_BUILD_ADD_NETWORK_SPEED_WIDGET=true
 
-# Brings mobile data toggle on the power menu context.
-TARGET_BUILD_ADD_MOBILE_DATA_TOGGLE_IN_POWER_MENU=true
-
 # Forces the network icon to show 5 bars
 TARGET_BUILD_FORCE_FIVE_BAR_NETICON=true
 

@@ -65,7 +65,7 @@ There are like dozens of way to build your own Tsukika fork but here are some:
 sudo ./src/build.sh <firmware zip path>
 ```
 
-> No need to extract the zip file as the script will handle extract it.
+> No need to extract the zip file as the script will handle the extracting process.
 
 ```bash
 sudo ./src/build.sh <firmware zip link>
@@ -104,6 +104,6 @@ OPTICS_DIR=/home/joshua/a40/optics
 > Remember, you can change the value to your own need. This is just an example.
 
 ## Doubts
-Upload `local_build/logs/tsuki_build.log` `./local_build/logs/makeErrors.log` in the discussion tab if you are having any issues.
+Upload `local_build/logs/tsuki_build.log` `./local_build/logs/makeErrors.log` in the discussion tab if you are having any issues building the forked ROM.
 
 Thank you 🥰

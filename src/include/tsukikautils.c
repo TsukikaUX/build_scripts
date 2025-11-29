@@ -42,19 +42,21 @@ int executeCommands(const char *command, char *const args[], bool requiresOutput
             consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "Waiting for %s to finish it's process.", command);
             int exitStatus;
             wait(&exitStatus);
-            consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "%s successfully executed.", command);
+            consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "%s returns %d normally", command, exitStatus);
+            consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "%s returns %d with function calls", command, (WIFEXITED(exitStatus)) ? WEXITSTATUS(exitStatus) : 1);
             return (WIFEXITED(exitStatus)) ? WEXITSTATUS(exitStatus) : 1;
     }
+    return -1;
 }
 
-int executeScripts(const char *script_file, char *const args[], bool requiresOutput) {
+int executeScripts(const char *scriptFile, char *const args[], bool requiresOutput) {
     // verify and execute.
     for(int i = 0; args[i] != NULL; i++) {
         if(strstr(args[i], ";") || strstr(args[i], "&&") || strstr(args[i], "|") || strstr(args[i], "$(")) abort_instance("executeScripts", "Malicious hijack attempts detected: %s", args[i]);
     }
-    if(checkBlocklistedStringsNChar(script_file) != 0 && verifyScriptStatusUsingShell(script_file) != 0) abort_instance("executeScripts", "The given script either doesn't have executable permission or it contains malicious commands. Please report this issue immediately. (%s)", script_file);
+    if(checkBlocklistedStringsNChar(scriptFile) != 0 && verifyScriptStatusUsingShell(scriptFile) != 0) abort_instance("executeScripts", "The given script either doesn't have executable permission or it contains malicious commands. Please report this issue immediately. (%s)", scriptFile);
     pid_t ProcessID = fork();
-    consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "Trying to create a child process for a shell script execution, path to the script: %s", script_file);
+    consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "Trying to create a child process for a shell script execution, path to the script: %s", scriptFile);
     consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "Child process ID: %d", ProcessID);
     switch(ProcessID) {
         case -1:
@@ -69,15 +71,16 @@ int executeScripts(const char *script_file, char *const args[], bool requiresOut
                 dup2(devNull, STDERR_FILENO);
                 close(devNull);
             }
-            execv(script_file, args);
-            consoleLog(LOG_LEVEL_ERROR, "executeScripts", "Failed to execute %s", script_file);
+            execv(scriptFile, args);
+            consoleLog(LOG_LEVEL_ERROR, "executeScripts", "Failed to execute %s", scriptFile);
             return 1;
         break;
         default:
             consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "Waiting for script to finish it's process.");
             int exitStatus;
             wait(&exitStatus);
-            consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "Script successfully executed.");
+            consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "%s returns %d normally", scriptFile, exitStatus);
+            consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "%s returns %d with function calls", scriptFile, (WIFEXITED(exitStatus)) ? WEXITSTATUS(exitStatus) : 1);
             return (WIFEXITED(exitStatus)) ? WEXITSTATUS(exitStatus) : 1;
     }
 }
@@ -91,10 +94,6 @@ int executeScripts(const char *script_file, char *const args[], bool requiresOut
 // help me to improve myself if you can or otherwise don't be a bad guy on me.
 // -----------------------------------------------------------------------------
 int searchBlockListedStrings(const char *filename, const char *search_str) {
-    size_t sizeOfTheseCraps = strlen(filename) + strlen(search_str) + 3;
-    char *command = malloc(sizeOfTheseCraps);
-    // we failed to get the memory we want.
-    if(!command) abort_instance("searchBlockListedStrings", "Failed to allocate memory for searching blocklisted strings.");
     // let's grab the shell exitCode from the command. it's better to use native C but- nvm let's just use native C instead.
     char boii[8000];
     FILE *fptr = fopen(filename, "r"); 
@@ -103,12 +102,10 @@ int searchBlockListedStrings(const char *filename, const char *search_str) {
         boii[strcspn(boii, "\n")] = '\0';
         if(strstr(boii, search_str)) {
             fclose(fptr);
-            free(command);
-            consoleLog(LOG_LEVEL_ERROR, "searchBlockListedStrings", "Malicious code execution detected in the script file: %s", filename);
+            consoleLog(LOG_LEVEL_ERROR, "searchBlockListedStrings", "Expected string found in given file: %s", filename);
             return 1;
         }
     }
-    free(command);
     fclose(fptr);
     return 0;
 }

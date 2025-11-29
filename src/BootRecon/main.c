@@ -52,7 +52,7 @@ char *propertyVariableValueStrSpoofs[] = {
     "0"
 };
 
-// props that should have it's value as null
+// props that should have it's value as unknown
 char *propertyVariableNameStrMB[] = {
     "ro.bootmode",
     "ro.boot.bootmode",

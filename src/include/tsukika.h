@@ -31,9 +31,6 @@
 extern char *batteryPercentageBlobFilePaths[];
 extern char *const resetprop;
 
-// MUST ADDDDDDDDDDDDDDDDDD!
-#define VALID_TYPE(t) ((t) == TYPE_INT || (t) == TYPE_FLOAT || (t) == TYPE_STRING)
-
 /*
 It's worth noting a historical caveat about popen in Android NDK:
     - in very old Android versions (pre-ICS, around Android 4.0), popen() could be buggy due to its use of vfork(),

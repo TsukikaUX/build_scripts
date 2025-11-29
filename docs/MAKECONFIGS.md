@@ -2,7 +2,7 @@
 
 # Tsukika (月華) | Build Configuration Variables
 
-> **Important**: Please note that while everything works, some configurations might cause issues. Some of these configs can lead to a bootloop.
+> **Important**: Please note that while everything works, some configurations might cause issues. Some unexpected configs can lead to a bootloop.
 
 ---
 
@@ -22,7 +22,7 @@ Please provide the paths for each extracted partition:
 
 ## Security
 
-- **TARGET_REMOVE_NONE_SECURITY_OPTION**: Disables the "None" option for lock screen security.
+- **TARGET_REMOVE_NONE_SECURITY_OPTION**: Disables the "None" option.
 - **TARGET_REMOVE_SWIPE_SECURITY_OPTION**: Disables the swipe-to-unlock option.
 
 ---
@@ -60,15 +60,13 @@ Please provide the paths for each extracted partition:
 
 ## Additional Customization
 
-- **TARGET_FLOATING_FEATURE_SUPPORTS_DOLBY_IN_GAMES**: Self-explanatory
 - **TARGET_FLOATING_FEATURE_LAUNCHER_CONFIG_ANIMATION_TYPE**: Adjusts launcher animation for different performance tiers (LowEnd, LowestEnd, LowEndFast, Mass, HighEnd, CHNHighEND, HighEnd_Tablet).
 - **CUSTOM_WALLPAPER_RES_JSON_GENERATOR**: Generates json and builds wallpaper-res with custom static wallpapers.
-- **TARGET_BUILD_ADD_MOBILE_DATA_TOGGLE_IN_POWER_MENU**: Adds a mobile data toggle to the power menu.
 - **TARGET_BUILD_FORCE_FIVE_BAR_NETICON**: Forces the network icon to display 5 bars.
 - **TARGET_BUILD_ADD_CALL_RECORDING_IN_SAMSUNG_DIALER**: Enables call recording in the Samsung Dialer app. Note: You are responsible for complying with local laws.
 - **TARGET_BUILD_SKIP_SETUP_JUNKS**: Force skips junks like wifi setup and etc in the setup wizard
 - **TARGET_BUILD_FORCE_DISABLE_SETUP_WIZARD**: For trusted use cases only. Disables setup wizard.
-- **TARGET_FLOATING_FEATURE_INCLUDE_GAMELAUNCHER_IN_THE_HOMESCREEN**
+- **TARGET_FLOATING_FEATURE_INCLUDE_GAMELAUNCHER_IN_THE_HOMESCREEN** Disables Game Launcher when set to false.
 - **TARGET_FLOATING_FEATURE_BATTERY_SUPPORT_BSOH_SETTINGS**: Adds battery health settings like iPhone. Credit: [UN1CA](https://github.com/salvogiangri/UN1CA)
 - **BRINGUP_CN_SMARTMANAGER_DEVICE**: Adds Chinese Smart Manager. Credit: [@saadelasfur](https://github.com/saadelasfur)
 - **TARGET_BUILD_ADD_SCREENRESOLUTION_CHANGER**: Adds resolution switcher. Credit: [@Yanndroid](https://github.com/Yanndroid)
