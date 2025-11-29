@@ -19,8 +19,6 @@
 #include <tsukikautils.h>
 
 int isPackageInstalled(const char *packageName) {
-    // Prevents command injection attempts
-    if(strchr(packageName, ';') != NULL || strcmp(packageName, "&&") == 0 || strcmp(packageName, "||") == 0) abort_instance("isPackageInstalled", "Malicious intent in the given argument detected!");
     FILE *fptr = popen("pm list packages | cut -d ':' -f 2", "r");
     if(!fptr) return -1;
     char string[8000];
@@ -41,19 +39,11 @@ int getSystemProperty__(const char *propertyVariableName) {
     if(pi) {
         PropertyHandler ctx = {0};
         __system_property_read_callback(pi, androidPropertyCallback, &ctx);
-        /* - THIS WAS INTENDED FOR DEBUGGING! PLEASE DONT UN-COMMENT THESE UNLESS YOU KNOW WHAT ARE YOU DOING!
-        consoleLog(LOG_LEVEL_DEBUG, "###########################");
-        consoleLog(LOG_LEVEL_DEBUG, "Requested property details:");
-        consoleLog(LOG_LEVEL_DEBUG, "NAME: %d", handler.propertyName);
-        consoleLog(LOG_LEVEL_DEBUG, "VALUE: %d", handler.propertyValue);
-        consoleLog(LOG_LEVEL_DEBUG, "SERIAL: %d", handler.propertySerial);
-        consoleLog(LOG_LEVEL_DEBUG, "###########################");
-        */
         return atoi(ctx.propertyValue);
     }
     else {
         consoleLog(LOG_LEVEL_ERROR, "getSystemProperty__", "%s not found in system, trying to gather property value from resetprop...", propertyVariableName);
-        FILE *fptr = popen(combineStringsFormatted("/system/bin/resetprop %s", propertyVariableName), "r");
+        FILE *fptr = popen(combineStringsFormatted("resetprop %s", propertyVariableName), "r");
         if(!fptr) {
             consoleLog(LOG_LEVEL_ERROR, "getSystemProperty__", "uh, major hiccup, failed to open resetprop in popen()");
             return -1;
@@ -116,9 +106,7 @@ int DoWhenPropisinTheSameForm(const char *property, void *expectedPropertyValue,
         }
         break;
         default:
-            _Static_assert(VALID_TYPE(TYPE_INT), "Requested type must be valid, this leads to an undefined behaviour.");
-            for(int i = 10; i < 0; i--) consoleLog(LOG_LEVEL_DEBUG, "DoWhenPropisinTheSameForm", "Undefined behaviour!!!!!!!!! crashing the application in: %d", i);
-            abort_instance("DoWhenPropisinTheSameForm", "Force crash due to undefined behaviour, hope abort cleans the memory.");
+            abort_instance("DoWhenPropisinTheSameForm", "Force exit due to undefined behaviour, hope abort cleans the memory.");
     }
     return 1;
 }
@@ -148,9 +136,7 @@ int setprop(char *property, void *propertyValue, enum expectedDataType Type) {
         }
         break;
         default:
-            _Static_assert(VALID_TYPE(TYPE_INT), "Requested type must be valid, this leads to an undefined behaviour.");
-            for(int i = 10; i < 0; i--) consoleLog(LOG_LEVEL_DEBUG, "setprop", "Undefined behaviour!!!!!!!!! crashing the application in: %d", i);
-            abort_instance("setprop", "Force crash due to undefined behaviour, hope abort cleans the memory.");
+            abort_instance("setprop", "Force exit due to undefined behaviour, hope abort cleans the memory.");
     }
     if(executeCommands(resetprop, (char *const[]) {resetprop, (char *)property, (char *)castValueStr, NULL}, false) == 0) return 0;
     consoleLog(LOG_LEVEL_WARN, "setprop", "Failed to set requested property!");
@@ -243,20 +229,12 @@ bool bootTraceState(enum bootTraceState theBootStage) {
 char *getSystemProperty(const char *propertyVariableName) {
     // Update: use native functions from android-ndk itself!
     const prop_info* pi = __system_property_find(propertyVariableName);
-    static char global_property_value_buffer[PROP_VALUE_MAX];
+    static char globalPropertyValueBuffer[PROP_VALUE_MAX];
     if(pi) {
         PropertyHandler ctx = {0};
         __system_property_read_callback(pi, androidPropertyCallback, &ctx);
-        /* - THIS WAS INTENDED FOR DEBUGGING! PLEASE DONT UN-COMMENT THESE UNLESS YOU KNOW WHAT ARE YOU DOING!
-        consoleLog(LOG_LEVEL_DEBUG, "###########################");
-        consoleLog(LOG_LEVEL_DEBUG, "Requested property details:");
-        consoleLog(LOG_LEVEL_DEBUG, "NAME: %d", handler.propertyName);
-        consoleLog(LOG_LEVEL_DEBUG, "VALUE: %d", handler.propertyValue);
-        consoleLog(LOG_LEVEL_DEBUG, "SERIAL: %d", handler.propertySerial);
-        consoleLog(LOG_LEVEL_DEBUG, "###########################");
-        */
-        snprintf(global_property_value_buffer, sizeof(global_property_value_buffer), "%s", ctx.propertyValue);
-        return global_property_value_buffer;
+        snprintf(globalPropertyValueBuffer, sizeof(globalPropertyValueBuffer), "%s", ctx.propertyValue);
+        return globalPropertyValueBuffer;
     }
     else {
         consoleLog(LOG_LEVEL_ERROR, "getSystemProperty", "%s not found in system, trying to gather property value from resetprop...", propertyVariableName);
@@ -266,9 +244,9 @@ char *getSystemProperty(const char *propertyVariableName) {
             return NULL;
         }
         // remove the dawn newline char to get a clear value.
-        while(fgets(global_property_value_buffer, sizeof(global_property_value_buffer), fptr) != NULL) global_property_value_buffer[strcspn(global_property_value_buffer, "\n")] = '\0';
+        while(fgets(globalPropertyValueBuffer, sizeof(globalPropertyValueBuffer), fptr) != NULL) globalPropertyValueBuffer[strcspn(globalPropertyValueBuffer, "\n")] = '\0';
         fclose(fptr);
-        return global_property_value_buffer;
+        return globalPropertyValueBuffer;
     }
     return NULL;
 }

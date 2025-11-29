@@ -114,7 +114,7 @@ for args in "$@"; do
                 exit 1;
             fi
             echo -e "\e[0;35mmake: Info: Trying to build ${lowerCaseArgument}..\033[0m"
-            if ! "${CC}" ${CFLAGS} -I"${HEADER_PATH}" ${HEADER_SOURCES} "${SOURCES[${SOURCE_INDEX}]}" -o ${SOURCE_BUILD_OUTPUT_PATH[${SOURCE_INDEX}]}; then
+            if ! "${CC}" ${CFLAGS} -I"${HEADER_PATH}" ${HEADER_SOURCES} "${SOURCES[${SOURCE_INDEX}]}" -o ${SOURCE_BUILD_OUTPUT_PATH[${SOURCE_INDEX}]} &>./local_build/logs/makeErrors.log; then
                 echo "\033[0;31mmake: Error: Failed to build ${lowerCaseArgument}\033[0m, please kindly send the logs to me :)"
                 [ -f "${SOURCE_BUILD_OUTPUT_PATH[${SOURCE_INDEX}]}" ] && rm -rf "${SOURCE_BUILD_OUTPUT_PATH[${SOURCE_INDEX}]}"
                 exit 1
