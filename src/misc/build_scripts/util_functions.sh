@@ -51,6 +51,7 @@ function setprop() {
     local propFile
     local propVariableName
     local propValue
+    local needToRemoveProp=true
 
     case "$(stringFormat --lower "$1")" in
         *product*)
@@ -75,13 +76,14 @@ function setprop() {
             propFile="$2"
             propVariableName="$3"
             propValue="$4"
+            needToRemoveProp=false
             [[ "$(grep_prop "$propVariableName" "$propFile")" == "$propValue" ]] && sed -i "/^${propVariableName}=.*/d" "$propFile"
         ;;
         *force-delete*)
             propFile="$2"
             propVariableName="$3"
+            needToRemoveProp=false
             sed -i "/^${propVariableName}=.*/d" "$propFile"
-            return 0;
         ;;
         *)
             echo "Invalid setprop target: $1"
@@ -89,13 +91,16 @@ function setprop() {
         ;;
     esac
 
-    # Normal setprop case
-    [[ -z "$propVariableName" ]] && propVariableName="$2"
-    [[ -z "$propValue" ]] && propValue="$3"
-
-    # Delete existing line, then append the new one
-    sed -i "/^${propVariableName}=.*/d" "$propFile"
-    echo "${propVariableName}=${propValue}" >> "$propFile"
+    # remove prop if needed.
+    if [ "${needToRemoveProp}" == "true" ]; then
+        # Normal setprop case
+        [[ -z "$propVariableName" ]] && propVariableName="$2"
+        [[ -z "$propValue" ]] && propValue="$3"
+        
+        # Delete existing line, then append the new one
+        sed -i "/^${propVariableName}=.*/d" "$propFile"
+        echo "${propVariableName}=${propValue}" >> "$propFile"
+    fi
 }
 
 function abort() {
@@ -109,6 +114,7 @@ function abort() {
         sudo rm -rf $TMPDIR $TMPFILE ./local_build/etc/extract/*.img ./local_build/etc/extract/*.img.lz4 ./localFirmwareBuildPending
         sudo umount ./local_build/etc/imageSetup/* &>/dev/null
     fi
+    sudo rm -rf $TMPDIR $TMPFILE
     export PATH="${OLDPATH}"
     exit 1
 }
@@ -586,74 +592,74 @@ function downloadGLmodules() {
             case "${BUILD_TARGET_SDK_VERSION}" in
                 28)
                     if ask "Do you want to download ${GOODLOOK_MODULES_FOR_28_APP_NAMES[$i]}?"; then
-                        mkdir -p ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_28_APP_NAMES[$i]}/
-                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/28/${GOODLOOK_MODULES_FOR_28[$i]} ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_28_APP_NAMES[$i]}/
+                        mkdir -p $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_28_APP_DIRNAMES[$i]}/
+                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/28/${GOODLOOK_MODULES_FOR_28[$i]} $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_28_APP_DIRNAMES[$i]}/
                     else 
-                        rmdir ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_28_APP_NAMES[$i]}/
+                        rmdir $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_28_APP_DIRNAMES[$i]}/ &>/dev/null
                     fi
                 ;;
                 29)
                     if ask "Do you want to download ${GOODLOOK_MODULES_FOR_29_APP_NAMES[$i]}?"; then
-                        mkdir -p ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_29_APP_NAMES[$i]}/
-                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/29/${GOODLOOK_MODULES_FOR_29[$i]} ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_29_APP_NAMES[$i]}/
+                        mkdir -p $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_29_APP_DIRNAMES[$i]}/
+                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/29/${GOODLOOK_MODULES_FOR_29[$i]} $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_29_APP_DIRNAMES[$i]}/
                     else 
-                        rmdir ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_29_APP_NAMES[$i]}/
+                        rmdir $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_29_APP_DIRNAMES[$i]}/ &>/dev/null
                     fi
                 ;;
                 30)
                     if ask "Do you want to download ${GOODLOOK_MODULES_FOR_30_APP_NAMES[$i]}?"; then
-                        mkdir -p ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_30_APP_NAMES[$i]}/
-                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/30/${GOODLOOK_MODULES_FOR_30[$i]} ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_30_APP_NAMES[$i]}/
+                        mkdir -p $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_30_APP_DIRNAMES[$i]}/
+                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/30/${GOODLOOK_MODULES_FOR_30[$i]} $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_30_APP_DIRNAMES[$i]}/
                     else 
-                        rmdir ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_30_APP_NAMES[$i]}/
+                        rmdir $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_30_APP_DIRNAMES[$i]}/ &>/dev/null
                     fi
                 ;;
                 31)
                     if ask "Do you want to download ${GOODLOOK_MODULES_FOR_31_APP_NAMES[$i]}?"; then
-                        mkdir -p ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_31_APP_NAMES[$i]}/
-                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/31/${GOODLOOK_MODULES_FOR_31[$i]} ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_31_APP_NAMES[$i]}/
+                        mkdir -p $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_31_APP_DIRNAMES[$i]}/
+                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/31/${GOODLOOK_MODULES_FOR_31[$i]} $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_31_APP_DIRNAMES[$i]}/
                     else 
-                        rmdir ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_31_APP_NAMES[$i]}/
+                        rmdir $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_31_APP_DIRNAMES[$i]}/ &>/dev/null
                     fi
                 ;;
                 32)
                     if ask "Do you want to download ${GOODLOOK_MODULES_FOR_32_APP_NAMES[$i]}?"; then
-                        mkdir -p ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_32_APP_NAMES[$i]}/
-                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/32/${GOODLOOK_MODULES_FOR_32[$i]} ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_32_APP_NAMES[$i]}/
+                        mkdir -p $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_32_APP_DIRNAMES[$i]}/
+                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/32/${GOODLOOK_MODULES_FOR_32[$i]} $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_32_APP_DIRNAMES[$i]}/
                     else 
-                        rmdir ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_32_APP_NAMES[$i]}/
+                        rmdir $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_32_APP_DIRNAMES[$i]}/ &>/dev/null
                     fi
                 ;;
                 33)
                     if ask "Do you want to download ${GOODLOOK_MODULES_FOR_33_APP_NAMES[$i]}?"; then
-                        mkdir -p ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_33_APP_NAMES[$i]}/
-                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/33/${GOODLOOK_MODULES_FOR_33[$i]} ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_33_APP_NAMES[$i]}/
+                        mkdir -p $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_33_APP_DIRNAMES[$i]}/
+                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/33/${GOODLOOK_MODULES_FOR_33[$i]} $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_33_APP_DIRNAMES[$i]}/
                     else 
-                        rmdir ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_33_APP_NAMES[$i]}/
+                        rmdir $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_33_APP_DIRNAMES[$i]}/ &>/dev/null
                     fi
                 ;;
                 34)
                     if ask "Do you want to download ${GOODLOOK_MODULES_FOR_34_APP_NAMES[$i]}?"; then
-                        mkdir -p ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_34_APP_NAMES[$i]}/
-                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/34/${GOODLOOK_MODULES_FOR_34[$i]} ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_34_APP_NAMES[$i]}/
+                        mkdir -p $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_34_APP_DIRNAMES[$i]}/
+                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/34/${GOODLOOK_MODULES_FOR_34[$i]} $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_34_APP_DIRNAMES[$i]}/
                     else 
-                        rmdir ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_34_APP_NAMES[$i]}/ 
+                        rmdir $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_34_APP_DIRNAMES[$i]}/  &>/dev/null
                     fi
                 ;;
                 35)
                     if ask "Do you want to download ${GOODLOOK_MODULES_FOR_35_APP_NAMES[$i]}?"; then
-                        mkdir -p ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_35_APP_NAMES[$i]}/
-                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/35/${GOODLOOK_MODULES_FOR_35[$i]} ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_35_APP_NAMES[$i]}/
+                        mkdir -p $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_35_APP_DIRNAMES[$i]}/
+                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/35/${GOODLOOK_MODULES_FOR_35[$i]} $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_35_APP_DIRNAMES[$i]}/
                     else 
-                        rmdir ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_35_APP_NAMES[$i]}/
+                        rmdir $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_35_APP_DIRNAMES[$i]}/ &>/dev/null
                     fi
                 ;;
                 36)
                     if ask "Do you want to download ${GOODLOOK_MODULES_FOR_36_APP_NAMES[$i]}?"; then
-                        mkdir -p ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_36_APP_NAMES[$i]}/
-                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/36/${GOODLOOK_MODULES_FOR_36[$i]} ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_36_APP_NAMES[$i]}/
+                        mkdir -p $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_36_APP_DIRNAMES[$i]}/
+                        downloadRequestedFile https://github.com/corsicanu/goodlock_dump/releases/download/36/${GOODLOOK_MODULES_FOR_36[$i]} $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_36_APP_DIRNAMES[$i]}/
                     else 
-                        rmdir ./local_build/system/priv-app/${GOODLOOK_MODULES_FOR_36_APP_NAMES[$i]}/
+                        rmdir $SYSTEM_DIR/priv-app/${GOODLOOK_MODULES_FOR_36_APP_DIRNAMES[$i]}/ &>/dev/null
                     fi
                 ;;
             esac
