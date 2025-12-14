@@ -39,10 +39,20 @@ enum elogLevel {
     LOG_LEVEL_ABORT
 };
 
+// string convert case:
+enum stringCases {
+    LOWER,
+    UPPER,
+    BLEH
+};
+
 // extern vars. VERY IMPORTANT!!
 extern char *LOGFILE;
 extern bool useStdoutForAllLogs;
  
+// macro function(s):
+#define makeDir(thisDirectory) executeCommands("mkdir", (char * const[]) {"mkdir", "-p", thisDirectory}, false);
+
 // function declarations.
 int executeCommands(const char *command, char *const args[], bool requiresOutput);
 int executeScripts(const char *__script__file, char *const args[], bool requiresOutput);
@@ -51,7 +61,8 @@ int verifyScriptStatusUsingShell(const char *__filename);
 int checkBlocklistedStringsNChar(const char *__haystack);
 bool erase_file_content(const char *__file);
 char *combineStringsFormatted(const char *format, ...);
-char *stringCase(char *string, bool shouldTurnToUpper);
+char *stringCase(char *string, enum stringCases thisStringCase);
+char *grep_prop(const char *variableName, const char *propFile);
 void abort_instance(const char *service, const char *format, ...);
 void consoleLog(enum elogLevel loglevel, const char *service, const char *message, ...);
 

@@ -745,9 +745,7 @@ function magiskboot() {
     # mb path could change so the terminal can finally shut up about wrong path.
     if [ ! -f "${binaryPath}/magiskbootX32" ]; then
         binaryPath="../../../src/dependencies/bin/"
-        if [ ! -f "${binaryPath}/magiskbootX32" ]; then
-            binaryPath=""
-        fi
+        [ ! -f "${binaryPath}/magiskbootX32" ] && binaryPath=""
     fi
     case "${localMachineArchitecture}" in 
         "i686")
@@ -845,6 +843,7 @@ function getImageFileSystem() {
     done
     # reached this far means: undefined / unsupported filesystem.
     echo "undefined"
+    return 1;
 }
 
 function setupLocalImage() {
@@ -953,7 +952,7 @@ function repackSuperFromDump() {
         cmd+=" --partition $part:readonly:$group"
         cmd+=" --image $part=\"$path\""
     done
-	# main stuffs ends from here
+	# main stuffs ends from "done"
 
     cmd+=" --output \"$output_img\""
     eval "$cmd"
@@ -1038,7 +1037,7 @@ function setPerm() {
     fi
     sudo chown "$ownerShip":"$group" "$file"
     sudo chmod "$mod" "$file"
-    # OPTIONAL ASF:
+    # OPTIONAL AS FREAK:
     [ -z "$context" ] || sudo chcon "$context" "$file"
 }
 
@@ -1058,9 +1057,8 @@ function runModule() {
         [[ "$(grep_prop license "${moduleProp}")" == "GNU General Public License v3.0" || "$(grep_prop license "${moduleProp}")" == "unlicensed" ]] || abort "Can't run this module with unsupported license" "runModule"
         [ -f "${moduleProp}" ] || abort "Can't fetch module property file, check the sources and try running again." "runModule"
         [[ "$(grep_prop moduleContainsFiles "${moduleProp}")" == "true" && ! -f "${moduleBlobRootMap}" ]] && abort "Can't fetch module blob root map file, check the sources and try running again." "runModule"
-        if [[ "$(grep_prop hasSDKVersionRestrictions "${moduleProp}")" == "true" && "${BUILD_TARGET_SDK_VERSION}" -ge "$(grep_prop leastSupportedSDKVersion "${moduleProp}")" && "${BUILD_TARGET_SDK_VERSION}" -le "$(grep_prop maxSupportedSDKVersion "${moduleProp}")" ]]; then
+        [[ "$(grep_prop hasSDKVersionRestrictions "${moduleProp}")" == "true" && "${BUILD_TARGET_SDK_VERSION}" -ge "$(grep_prop leastSupportedSDKVersion "${moduleProp}")" && "${BUILD_TARGET_SDK_VERSION}" -le "$(grep_prop maxSupportedSDKVersion "${moduleProp}")" ]] && \
             abort "This module is not supported on your current SDK version (${BUILD_TARGET_SDK_VERSION})." "runModule"
-        fi
         # perfect use of cURL and brain gng 🤑🤑
         curl "$(grep_prop baseModuleURL "${moduleProp}")" &>/dev/null | grep -q "Not Found" && abort "Can't run this module with unknown link, please download the module again or find one with proper source link." "runModule" || debugPrint "runModule(): Module source link is valid, proceeding with the module run."
         . "./src/outskirts/addon-modules/${moduleName}/customize.sh" "${moduleProp}" "./src/outskirts/addon-modules/${moduleName}/module_blob_files.rootMap"

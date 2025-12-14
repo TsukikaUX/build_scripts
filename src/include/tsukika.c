@@ -48,9 +48,10 @@ int getSystemProperty__(const char *propertyVariableName) {
             consoleLog(LOG_LEVEL_ERROR, "getSystemProperty__", "uh, major hiccup, failed to open resetprop in popen()");
             return -1;
         }
-        char eval[1000];
+        char eval[PROP_VALUE_MAX];
+        fgets(eval, sizeof(eval), fptr);
         // remove the dawn newline char to get a clear value.
-        while(fgets(eval, sizeof(eval), fptr) != NULL) eval[strcspn(eval, "\n")] = '\0';
+        eval[strcspn(eval, "\n")] = '\0';
         fclose(fptr);
         return atoi(eval);
     }
@@ -216,14 +217,22 @@ bool bootTraceState(enum bootTraceState theBootStage) {
         return false;
     }
     char content[15];
-    while(fgets(content, sizeof(content), initState));
+    fgets(content, sizeof(content), initState);
     fclose(initState);
-    if(theBootStage == LATE_FS) return strcmp(content, "late-fs") == 0;
-    else if(theBootStage == INIT) return strcmp(content, "init") == 0;
-    else if(theBootStage == POST_FS) return strcmp(content, "post-fs") == 0;
-    else if(theBootStage == POST_FS_DATA) return strcmp(content, "post-fs-data") == 0;
-    // undefined behaviour:
-    return false;
+    // switch is faster.
+    switch(theBootStage) {
+        case LATE_FS:
+            return strcmp(content, "late-fs") == 0;
+        case INIT:
+            return strcmp(content, "init") == 0;
+        case POST_FS:
+            return strcmp(content, "post-fs") == 0;
+        case POST_FS_DATA:
+            return strcmp(content, "post-fs-data") == 0;
+        // undefined behaviour:
+        default:
+            return false;
+    }
 }
 
 char *getSystemProperty(const char *propertyVariableName) {
@@ -251,39 +260,19 @@ char *getSystemProperty(const char *propertyVariableName) {
     return NULL;
 }
 
-char *grep_prop(const char *variableName, const char *propFile) {
-    FILE *filePointer = fopen(propFile, "r");
-    if(!filePointer) {
-        consoleLog(LOG_LEVEL_ERROR, "grep_prop", "Failed to open properties file: %s", propFile);
-        return NULL;
-    }
-    char theLine[8000];
-    size_t lengthOfTheString = strlen(variableName);
-    while(fgets(theLine, sizeof(theLine), filePointer)) {
-        if(strncmp(theLine, variableName, lengthOfTheString) == 0) {
-            strtok(theLine, "=");
-            char *value = strtok(NULL, "\n");
-            fclose(filePointer);
-            return value;
-        }
-    }
-    fclose(filePointer);
-    return NULL;
-}
-
 void alertUser(char *message) {
     if(isPackageInstalled("bellavita.toast") == 0) executeCommands("am", (char *const[]) {"am", "start", "-a", "android.intent.action.MAIN", "-e", "toasttext", message, "-n", "bellavita.toast/.MainActivity", NULL}, false);
     else executeCommands("cmd", (char *const[]) {"cmd", "notification", "post", "-S", "bigtext", "-t", "Tsukika", "Tag", message, NULL}, false);
 }
 
 void prepareStockRecoveryCommandFile(enum openRecoveryScriptNextCommand ors, char *actionArgOne, char *actionArgTwo) {
-    mkdir("/cache/recovery/", 0755);
+    makeDir("/cache/recovery");
     FILE *recoveryCommandFile = fopen("/cache/recovery/command", "w");
     if(!recoveryCommandFile) abort_instance("prepareStockRecoveryCommandFile", "Failed to open recovery command file to prepare given action on next boot.");
     if(ors == WIPE_DATA) fputs("--wipe_data\n", recoveryCommandFile);
     else if(ors == WIPE_CACHE) fputs("--wipe_cache\n", recoveryCommandFile);
     else if(ors == INSTALL_PACKAGE) fprintf(recoveryCommandFile, "--update_package=%s\n", actionArgOne);
-    else if(ors == SWITCH_LOCALE) fprintf(recoveryCommandFile, "--locale=%s_%s\n", stringCase(actionArgOne, false), stringCase(actionArgTwo, true));
+    else if(ors == SWITCH_LOCALE) fprintf(recoveryCommandFile, "--locale=%s_%s\n", stringCase(actionArgOne, LOWER), stringCase(actionArgTwo, UPPER));
     fclose(recoveryCommandFile);
 }
 
