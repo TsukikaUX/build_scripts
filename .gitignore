@@ -1,3 +1,6 @@
 src/test
 genKey.sh
 test
+hawksnext
+./local_build/logs/*.log
+hua

@@ -44,15 +44,9 @@ fi
 mkdir -p "$(dirname "${BUILD_LOGFILE}")"
 for args in "$@"; do
     lowerCaseArgument=$(echo "${args}" | tr '[:upper:]' '[:lower:]')
-    if [[ -z "${SDK}" && "${lowerCaseArgument}" == sdk=* ]]; then
-        SDK="${lowerCaseArgument#sdk=}"
-    fi
-    if [[ -z "${OTA_MANIFEST_URL}" && "${lowerCaseArgument}" == ota_manifest_url=* ]]; then
-        OTA_MANIFEST_URL="${lowerCaseArgument#ota_manifest_url=}"
-    fi
-    if [[ -z "${SKIPSIGN}" && "${lowerCaseArgument}" == skipsign=* ]]; then
-        SKIPSIGN="${lowerCaseArgument#skipsign=}"
-    fi
+    [[ -z "${SDK}" && "${lowerCaseArgument}" == sdk=* ]] && SDK="${lowerCaseArgument#sdk=}"
+    [[ -z "${OTA_MANIFEST_URL}" && "${lowerCaseArgument}" == ota_manifest_url=* ]] && OTA_MANIFEST_URL="${lowerCaseArgument#ota_manifest_url=}"
+    [[ -z "${SKIPSIGN}" && "${lowerCaseArgument}" == skipsign=* ]] && SKIPSIGN="${lowerCaseArgument#skipsign=}"
     if [[ -z "${CC}" && -n "${SDK}" ]]; then
         case "${lowerCaseArgument}" in
             arch=arm)
