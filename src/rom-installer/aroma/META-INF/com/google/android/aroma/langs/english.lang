@@ -74,7 +74,7 @@ flasher.verifying=Checking device integrity...
 flasher.dontwipe0=As mentioned in the installation tutorial, you should not wipe the system partitions before flashing this package.
 flasher.dontwipe1=Please reinstall Tsukika or install the full rom package.
 flasher.failed.system.mount=Failed to mount /system
-flasher.charge.atleast=Please atleast charge your device to 40% to continue the installation
+flasher.charge.atleast=Please at least charge your device to 40% to continue the installation
 flasher.undefined=Undefined behaviour/action, stopping installatiom.
 flasher.handling.aroma.actions=Handling aroma actions...
 

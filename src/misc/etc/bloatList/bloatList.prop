@@ -1,0 +1,132 @@
+local app=(
+    "ANTPlusTest"
+    "ATTMessage_ATT"
+    "AutomationTest_FB"
+    "BluetoothTest"
+    "Chrome"
+    "ChromeCustomizations"
+    "DictDiotekForSec"
+    "DuoStub"
+    "EasymodeContactsWidget81"
+    "Facebook_stub"
+    "FBAppManager_NS"
+    "FactoryAirCommandManager"
+    "FactoryCameraFB"
+    "Foundation"
+    "GoogleTTS"
+    "GalaxyResourceUpdater"
+    "KidsHome_Installer"
+    "Maps"
+    "MAPSAgent"
+    "MDMApp"
+    "MinusOnePage"
+    "MyATTWebLink"
+    "MnoDmViewer"
+    "MnoDmClient"
+    "Notes40"
+    "Netflix_activationCommon"
+    "Netflix_stub"
+    "OpenCalendar"
+    "PhotoTable"
+    "PartnerBookmarksProvider"
+    "PlayAutoInstallConfig"
+    "SamsungOne"
+    "SecFactoryPhoneTest"
+    "SmartSwitchAgent"
+    "SLocation"
+    "WebManual"
+    "VZMessages"
+    "WlanTest"
+    "YouTube"
+)
+
+local privilagedApps=(
+    "APNWidgetBaseRoot_ATT"
+    "ATTAPNWidget_ATT"
+    "AttTvMode"
+    "AppUpdateCenter"
+    "DeviceBasedServiceConsent"
+    "DeviceQualityAgent"
+    "DeviceTest"
+    "DynamicLockscreen"
+    "DumpCollector"
+    "EasySetup"
+    "FactoryTestProvider"
+    "FBInstaller_NS"
+    "Fast"
+    "Fmm"
+    "FotaAgent"
+    "GooglePartnerSetup"
+    "GoogleRestore"
+    "HuxPlatform"
+    "HwModuleTest"
+    "LTETest"
+    "ModemServiceMode"
+    "MemorySaver_O_Refresh"
+    "NSDSWebApp"
+    "NetworkDiagnostic"
+    "PreloadInstaller"
+    "PhoneErrService"
+    "SNP"
+    "SOAgent"
+    "SPPPushClient"
+    "SamsungSmartSuggestions"
+    "SamsungCoreServices-Stub"
+    "SettingsBixby"
+    "SetupWizard_USA"
+    "SmartSwitchAssistant"
+    "SoftphoneAccount"
+    "SsuService"
+    "serviceModeApp_FB"
+    "StoryService"
+    "SmartEpdgTestApp"
+    "TADownloader"
+    "Velvet"
+    "UserDictionaryProvider"
+    "YourPhone_Stub"
+    "VzCloud"
+)
+
+local systemExtraPrivilagedApps=(
+    "GoogleFeedback"
+)
+
+local productApps=(
+    "Chrome"
+    "DuoStub"
+    "Maps"
+    "YouTube"
+)
+
+local productPrivilagedApps=(
+    "GooglePartnerSetup"
+    "Velvet"
+    "GoogleRestore"
+)
+
+###### Optional Bloats ######
+local optApp=(
+    "AASAservice" # 0
+    "AllShareAware" # 1
+    "AllshareFileShare" # 2
+    "AllshareMediaShare" # 3
+    "ARCore" # 4
+    "ARZone" # 5
+    "StickerCenter" # 6
+    "PrintSpooler" # 7
+    "GooglePrintRecommendationService" # 8
+)
+local optPrivilagedApps=(
+    "AREmoji" # 0
+    "AREmojiEditor" # 1
+    "sticker" # 2
+    "ThemeCenter" # 3
+    "BuiltInPrintService" # 4
+    "LiveStickers" # 5
+    "StickerFaceARAvatar" # 6
+    "SecureFolder" # 7
+    "SamsungDeviceHealthManagerService" # 8
+    "ShareLive" # 9
+    "Turbo" # 10
+)
+###### Optional Bloats ######

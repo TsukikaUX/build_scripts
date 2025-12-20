@@ -1099,3 +1099,15 @@ function applyHexPatches() {
     # Return success if at least one patch was applied
     [ $patches_applied -gt 0 ]
 }
+
+function removeApps() {
+    local appList=("$@")
+    local baseDir="$1"
+    shift
+    local appNames=("$@")   
+    for appName in "${appNames[@]}"; do
+        fullPath="${baseDir}/${appName}"
+        debugPrint "removeApps(): Trying to remove ${fullPath}..."
+        [ -d "${fullPath}" ] && rm -rf "${fullPath}" 2>>"${thisConsoleTempLogFile}" || debugPrint "removeApps(): Couldn't find ${appName}, don't worry, I will debloat it somehow :D"
+    done
+}

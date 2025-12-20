@@ -21,7 +21,7 @@ console_print "$(grep_prop "name" "$1")"
 console_print "Made by: $(grep_prop "author" "$1")"
 console_print "Based on: v$(grep_prop "version" "$1") | $(grep_prop "source" "$1")"
 console_print "License Template: v$(grep_prop "license" "$1")"
-debugPrint "KnoxPatch: Module URL: $(grep_prop "baseModuleURL" "$1")"
+debugPrint "KnoxPatch-customize.sh: Module URL: $(grep_prop "baseModuleURL" "$1")"
 source "$2"
 
 # implement your own actions from here:
@@ -30,12 +30,12 @@ setprop --system wlan.wfd.hdcp disable
 console_print "KnoxPatch: Trying to apply WSM fix.."
 for i in ${SYSTEM_DIR}/lib*/libhal.wsm.samsung.so; do
 	[ -f "${i}" ] || continue
-	sudo touch "${i}" && console_print "KnoxPatch: Finished applying WSM fix to ${i}..." || abort "Failed to apply WSM fix to ${i}" "KnoxPatch"
+	sudo touch "${i}" && console_print "KnoxPatch: Finished applying WSM fix to ${i}..." || abort "Failed to apply WSM fix to ${i}" "KnoxPatch-customize.sh"
 done
 
 # copy that xml for that LSPosed module thing
 verify256Checksum "${modulePath}/${SYSTEM_BLOBS[1]}" "${modulePath}/${SYSTEM_BLOBS_CHECKSUM[1]}" || \
-	abort "Checksum of ${SYSTEM_BLOBS[1]} doesn't match, please clone this repo again." "KnoxPatch"
+	abort "Checksum of ${SYSTEM_BLOBS[1]} doesn't match, please clone this repo again." "KnoxPatch-customize.sh"
 
 # copy blobs, patch em' and finish the j*b
 # RESTORE ORIGINAL VOLD IF PATCHED AND STORED AS .bak ALREADY!
@@ -54,7 +54,7 @@ elif [[ "$BUILD_TARGET_SDK_VERSION" == "29" || "$BUILD_TARGET_SDK_VERSION" == "3
             for i in "00e4006fea861a11 00e4006feabe0451" "08fa805200e4006f 0800805200e4006f" "08fa80520800ae72 080080520800ae72s" "09fa80520900ae72 090080520900ae72"; do
                 magiskboot hexpatch "${SYSTEM_DIR}/bin/vold" "$(echo $i | awk '{print $1}')" "$(echo $i | awk '{print $2}')" && PATCHED=true
             done
-            $PATCHED && console_print "KnoxPatch: Applied Secure Folder fix" || abort "Failed to apply patch" "KnoxPatch"
+            $PATCHED && console_print "KnoxPatch: Applied Secure Folder fix" || abort "Failed to apply patch" "KnoxPatch-customize.sh"
             setPerm "${SYSTEM_DIR}/bin/vold" 0 2000 0755 "u:object_r:vold_exec:s0"
         else
             console_print "KnoxPatch: No patches required for secure folder in this device."
@@ -63,7 +63,7 @@ elif [[ "$BUILD_TARGET_SDK_VERSION" == "29" || "$BUILD_TARGET_SDK_VERSION" == "3
 		if grep -q 'Device supports FBE!' /system/lib/libepm.so; then
 			console_print "KnoxPatch: Trying to apply Secure Folder fix..."
 			mv "${SYSTEM_DIR}/bin/vold" "${SYSTEM_DIR}/bin/vold.bak"
-			verify256Checksum "${modulePath}/${SYSTEM_BLOBS[0]}" "${modulePath}/${SYSTEM_BLOBS_CHECKSUM[0]}" || abort "Checksum of ${SYSTEM_BLOBS[0]} doesn't match, please clone this repo again." "KnoxPatch"
+			verify256Checksum "${modulePath}/${SYSTEM_BLOBS[0]}" "${modulePath}/${SYSTEM_BLOBS_CHECKSUM[0]}" || abort "Checksum of ${SYSTEM_BLOBS[0]} doesn't match, please clone this repo again." "KnoxPatch-customize.sh"
 			sudo cp -af "${modulePath}/${SYSTEM_BLOBS[0]}" "${SYSTEM_DIR}/bin/vold"
 			setPerm "/system/bin/vold" 0 2000 0755 "u:object_r:vold_exec:s0"
 			for i in "${modulePath}/${SYSTEM_BLOBS[2]}" "${modulePath}/${SYSTEM_BLOBS[3]}"; do 
@@ -71,12 +71,12 @@ elif [[ "$BUILD_TARGET_SDK_VERSION" == "29" || "$BUILD_TARGET_SDK_VERSION" == "3
 				# BACK IT UP BEFORE COPYING IT!
 				if echo "$i" | grep lib64; then
 					verify256Checksum "${i}" "${modulePath}/${SYSTEM_BLOBS_CHECKSUM[3]}" || \
-						abort "Checksum of ${SYSTEM_BLOBS[3]} doesn't match, please clone this repo again." "KnoxPatch"
+						abort "Checksum of ${SYSTEM_BLOBS[3]} doesn't match, please clone this repo again." "KnoxPatch-customize.sh"
 					sudo mv "${SYSTEM_DIR}/lib64/$(basename $i)" "${SYSTEM_DIR}/lib64/$(basename $i).bak"
 					copyDeviceBlobsSafely "${i}" "${SYSTEM_DIR}/lib64"
 				else	
 					verify256Checksum "${i}" "${modulePath}/${SYSTEM_BLOBS_CHECKSUM[2]}" || \
-						abort "Checksum of ${SYSTEM_BLOBS[2]} doesn't match, please clone this repo again." "KnoxPatch"
+						abort "Checksum of ${SYSTEM_BLOBS[2]} doesn't match, please clone this repo again." "KnoxPatch-customize.sh"
 					sudo mv "${SYSTEM_DIR}/lib/$(basename $i)" "${SYSTEM_DIR}/lib/$(basename $i).bak"
 					copyDeviceBlobsSafely "${i}" "${SYSTEM_DIR}/lib"
 				fi
