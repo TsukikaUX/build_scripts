@@ -1,4 +1,4 @@
-local app=(
+app=(
     "ANTPlusTest"
     "ATTMessage_ATT"
     "AutomationTest_FB"
@@ -40,7 +40,7 @@ local app=(
     "YouTube"
 )
 
-local privilagedApps=(
+privilagedApps=(
     "APNWidgetBaseRoot_ATT"
     "ATTAPNWidget_ATT"
     "AttTvMode"
@@ -87,25 +87,25 @@ local privilagedApps=(
     "VzCloud"
 )
 
-local systemExtraPrivilagedApps=(
+systemExtraPrivilagedApps=(
     "GoogleFeedback"
 )
 
-local productApps=(
+productApps=(
     "Chrome"
     "DuoStub"
     "Maps"
     "YouTube"
 )
 
-local productPrivilagedApps=(
+productPrivilagedApps=(
     "GooglePartnerSetup"
     "Velvet"
     "GoogleRestore"
 )
 
 ###### Optional Bloats ######
-local optApp=(
+optApp=(
     "AASAservice" # 0
     "AllShareAware" # 1
     "AllshareFileShare" # 2
@@ -116,7 +116,7 @@ local optApp=(
     "PrintSpooler" # 7
     "GooglePrintRecommendationService" # 8
 )
-local optPrivilagedApps=(
+optPrivilagedApps=(
     "AREmoji" # 0
     "AREmojiEditor" # 1
     "sticker" # 2
