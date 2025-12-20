@@ -993,7 +993,7 @@ fi
 # if this would work or not.. i hope one day somebody just tells me if this worked or not.
 [[ ${BUILD_TARGET_SDK_VERSION} -eq 35 && ! -z "${BUILD_TARGET_HIGHEST_DEVICE_REFRESH_RATE}" ]] && setprop --vendor "ro.surface_flinger.game_default_frame_rate_override" "$BUILD_TARGET_HIGHEST_DEVICE_REFRESH_RATE"
 tinkerWithCSCFeaturesFile --encode && debugPrint "CSC feature file(s) successfully encoded." || abort "Failed to encode the CSC files!"
-sudo rm -rf "$TMPDIR"
+sudo rm -rf "$TMPDIR" "$TMPFILE"
 
 if [ -f "./localFirmwareBuildPending" ]; then
 	if [ -f "./local_build/etc/extract/super_extract/system" ]; then
