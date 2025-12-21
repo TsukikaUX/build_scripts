@@ -37,14 +37,13 @@ quotes=(
 randomQuote="${quotes[$RANDOM % ${#quotes[@]}]}"
 BUILD_START_TIME=$(date +%s)
 sameOldFirmwarePackage=false
-TSUKIKA_BUILD_NUMBER=$(date +%Y%m%d)
 branchToFork=android10
 
 # Trap the SIGINT signal (Ctrl+C) and call handle_sigint when it's caught
 trap 'abort "Aborting the build....." "build.sh"' SIGINT
 
 # jst execve ts 2 fix bugs:
-for i in ./src/misc/build_scripts/util_functions.sh ./src/makeconfigs.prop ./src/monika.conf; do
+for i in ./src/misc/util_functions.sh ./src/makeconfigs.prop ./src/monika.conf; do
 	if [ ! -f "$i" ]; then
 		echo -e "\e[0;31mCan't find $i file, please try again later...\e[0;37m"
 		sleep 0.5
@@ -106,7 +105,7 @@ if ! sudo touch ./.sanitytest/test; then
 fi
 sudo umount ./.sanitytest &>/dev/null
 sudo rm -rf ./.sanitytest ./thetenacity 
-debugPrint "- Passed image mount test, seems like the user is running on their own machine."
+debugPrint "build.sh: Passed image mount test, seems like the user is running on their own machine."
 
 # check:
 if [ -n "$argOne" ]; then
@@ -289,6 +288,9 @@ BUILD_TARGET_ARCH=$(
     done
 )
 
+# tsukika build number ig:
+TSUKIKA_BUILD_NUMBER="$(grep_prop "ro.build.id" "${TSUKIKA_SYSTEM_PROPERTY_FILE}")_$(date +%Y%m%d)"
+
 # TODO: check the arch and start building.
 [ -z "${BUILD_TARGET_ARCH}" ] && abort "Unknown ROM architecture, since when did samsung started making ROMS for unknown architectures? i don't knowwwwwwww and i won't letting you in!" "build.sh"
 
@@ -318,9 +320,9 @@ if [[ $BUILD_TARGET_ANDROID_VERSION -eq 14 ]]; then
 fi
 
 if [[ "$TARGET_REMOVE_USELESS_SAMSUNG_APPLICATIONS_STUFFS" == "true" && -f "./target/${TARGET_BUILD_PRODUCT_NAME}/debloater.sh" ]]; then
-	. "./target/${TARGET_BUILD_PRODUCT_NAME}/debloater.sh"
+	bash "./target/${TARGET_BUILD_PRODUCT_NAME}/debloater.sh"
 elif [[ "$TARGET_REMOVE_USELESS_SAMSUNG_APPLICATIONS_STUFFS" == "true" ]]; then
-	. "${SCRIPTS[5]}"
+	bash "${SCRIPTS[1]}"
 fi
 
 # misc - unlimited photos backups
@@ -361,7 +363,7 @@ fi
 [ "$TARGET_FLOATING_FEATURE_INCLUDE_SPOTIFY_AS_ALARM" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_CLOCK_CONFIG_ALARM_SOUND" "spotify"
 
 if [ "$TARGET_FLOATING_FEATURE_BATTERY_SUPPORT_BSOH_SETTINGS" == "true" ]; then
-	console_print "This feature needs some patches to work on some roms, if you dont"
+	console_print "This feature needs some patches to work on roms, if you don't"
 	console_print "see anything in the settings, please remove this on the next build."
 	addFloatXMLValues "SEC_FLOATING_FEATURE_BATTERY_SUPPORT_BSOH_SETTINGS" "TRUE"
 fi
@@ -545,7 +547,7 @@ fi
 # disables samsung asks
 [ "$TARGET_DISABLE_SAMSUNG_ASKS_SIGNATURE_VERFICATION" == "true" ] && setprop --system ro.build.official.release false
 
-[[ ${BUILD_TARGET_SDK_VERSION} == 35 && -n "${roynaWhat}" ]] && buildAndSignThePackage "${DECODEDAPKTOOLPATHS[4]}" "$TSUKIKA_FALLBACK_OVERLAY_PATH" "false" --skip-editing-version-info
+#[[ -n "${roynaWhat}" ]] && buildAndSignThePackage "${DECODED-APKTOOLPATHS[4]}" "$TSUKIKA_FALLBACK_OVERLAY_PATH" "false" --skip-editing-version-info
 
 if [ "$TARGET_BUILD_REMOVE_SYSTEM_LOGGING" == "true" ]; then
 	addFloatXMLValues "SEC_FLOATING_FEATURE_SYSTEM_CONFIG_SYSINT_DQA_LOGLEVEL" '3'
@@ -585,18 +587,18 @@ if [ "$TARGET_BUILD_REMOVE_SYSTEM_LOGGING" == "true" ]; then
 			applyDiffPatches "${SYSTEM_DIR}/etc/init/logd.rc" "${DIFF_UNIFIED_PATCHES[12]}"
 		;;
 		33)
-			applyDiffPatches "${SYSTEM_DIR}/etc/init/atrace.rc" "${DIFF_UNIFIED_PATCHES[24]}"
 			applyDiffPatches "${SYSTEM_DIR}/etc/init/dumpstate.rc" "${DIFF_UNIFIED_PATCHES[26]}"
+			applyDiffPatches "${SYSTEM_DIR}/etc/init/atrace.rc" "${DIFF_UNIFIED_PATCHES[24]}"
 			applyDiffPatches "${SYSTEM_DIR}/etc/init/logd.rc" "${DIFF_UNIFIED_PATCHES[27]}"
 		;;
 		34)
-			applyDiffPatches "${SYSTEM_DIR}/etc/init/atrace.rc" "${DIFF_UNIFIED_PATCHES[28]}"
 			applyDiffPatches "${SYSTEM_DIR}/etc/init/dumpstate.rc" "${DIFF_UNIFIED_PATCHES[30]}"
+			applyDiffPatches "${SYSTEM_DIR}/etc/init/atrace.rc" "${DIFF_UNIFIED_PATCHES[28]}"
 			applyDiffPatches "${SYSTEM_DIR}/etc/init/logd.rc" "${DIFF_UNIFIED_PATCHES[31]}"
 		;;
 		35)
-			applyDiffPatches "${SYSTEM_DIR}/etc/init/atrace.rc" "${DIFF_UNIFIED_PATCHES[32]}"
 			applyDiffPatches "${SYSTEM_DIR}/etc/init/dumpstate.rc" "${DIFF_UNIFIED_PATCHES[34]}"
+			applyDiffPatches "${SYSTEM_DIR}/etc/init/atrace.rc" "${DIFF_UNIFIED_PATCHES[32]}"
 			applyDiffPatches "${SYSTEM_DIR}/etc/init/logd.rc" "${DIFF_UNIFIED_PATCHES[35]}"
 		;;
 	esac
@@ -649,23 +651,23 @@ fi
 # should enable voice Memo on Samsung Notes:
 [[ "${TARGET_FLOATING_FEATURE_ENABLE_VOICE_MEMO_ON_NOTES}" == "true" && ${BUILD_TARGET_SDK_VERSION} == 35 ]] && addFloatXMLValues "SEC_FLOATING_FEATURE_VOICERECORDER_CONFIG_DEF_MODE" "normal,interview,voicememo"
 
-# hahahah
+# hahahaha
 [  "${TARGET_BUILD_DISABLE_GBOARD_HOME_ICON}" == "true" ] && buildAndSignThePackage "${DECODEDAPKTOOLPATHS[6]}" "${TSUKIKA_VENDOR_OVERLAY}" "false"
 
 # hehe~
-if [ "${TARGET_BUILD_OVERLAY_CUSTOMGIFLOADER}" == "true" ]; then
-	maxGIFLoadables=19
-	gifIndexSuffix="preload_gif_"
-	overlayGIFIndexPath="${DECODEDAPKTOOLPATHS[7]}/res/raw"
-	gifIndex=0
-	[ ! -f "${DECODEDAPKTOOLPATHS[7]}/AndroidManifest.xml" ] && abort "- Leaflit overlay not found, exiting." "leaflit.sh";
-	[[ -z "${gifPaths[@]}" ]] && abort "Error: No GIF paths found in leaflit.conf" "leaflit.sh";
-	for (( i=0; i<=$maxGIFIndex; i++ )); do
-		cp "${gifPaths[${i}]}" "${overlayGIFIndexPath}/${gifIndexSuffix}${gifIndex}.gif"
-		(( gifIndex++ ))
-	done
-	buildAndSignThePackage "${DECODEDAPKTOOLPATHS[7]}" "${TSUKIKA_FALLBACK_OVERLAY_PATH}" "false" --skip-editing-version-info || abort "- Failed to build the leaflit overlay package." "leaflit.sh";
-fi
+# if [ "${TARGET_BUILD_OVERLAY_CUSTOMGIFLOADER}" == "true" ]; then
+# 	maxGIFLoadables=19
+# 	gifIndexSuffix="preload_gif_"
+# 	overlayGIFIndexPath="${DECODEDAPKTOOLPATHS[7]}/res/raw"
+# 	gifIndex=0
+# 	[ ! -f "${DECODEDAPKTOOLPATHS[7]}/AndroidManifest.xml" ] && abort "- Leaflit overlay not found, exiting." "leaflit.sh";
+# 	[[ -z "${gifPaths[@]}" ]] && abort "Error: No GIF paths found in leaflit.conf" "leaflit.sh";
+# 	for (( i=0; i<=$maxGIFIndex; i++ )); do
+# 		cp "${gifPaths[${i}]}" "${overlayGIFIndexPath}/${gifIndexSuffix}${gifIndex}.gif"
+# 		(( gifIndex++ ))
+# 	done
+# 	buildAndSignThePackage "${DECODEDAPKTOOLPATHS[7]}" "${TSUKIKA_FALLBACK_OVERLAY_PATH}" "false" --skip-editing-version-info || abort "- Failed to build the leaflit overlay package." "leaflit.sh";
+# fi
 
 # verify if the device is capable of running Generative AI and it's related actions.
 if [ "${BUILD_TARGET_IS_CAPABLE_FOR_GENERATIVE_AI}" == "true" ]; then
@@ -719,7 +721,8 @@ if [ "${TARGET_BUILD_ADD_SCREENRESOLUTION_CHANGER}" == "true" ]; then
 	[[ -z ${BUILD_TARGET_SCREEN_WIDTH} || -z "${BUILD_TARGET_SCREEN_HEIGHT}" ]] && abort "The screen resolution is not specified on the property file."
 	if [[ ${BUILD_TARGET_SCREEN_WIDTH} =~ ^[0-9]+$ && ${BUILD_TARGET_SCREEN_HEIGHT} =~ ^[0-9]+$ && ${BUILD_TARGET_SCREEN_WIDTH} -eq 1080 && ${BUILD_TARGET_SCREEN_HEIGHT} -eq 2340 ]]; then
 		console_print "Trying to add screenResolution controller app into the device..."
-		. "${SCRIPTS[1]}"
+		cp "./src/tsukika/android_packages_xml/permissions/privapp_permissions-de-dylt.yanndroid.screenresolution.xml" "${SYSTEM_DIR}/etc/permissions/"
+		setPerm "${SYSTEM_DIR}/etc/permissions/privapp-permissions-de.dylt.yanndroid.screenresolution.xml" 0 0 644 u:object_r:system_file:s0
 		sudo rm -rf "${SYSTEM_DIR}/priv-app/screenResolution"
 		makeADirectory "${SYSTEM_DIR}/priv-app/screenResolution" "root" "root"
 		[ -f "${DECODEDAPKTOOLPATHS[5]}" ] || logInterpreter "Trying to extract the screenResolution app.." "tar -C ./src/tsukika/android_packages/ -xf ${DECODEDAPKTOOLPATHS[5]}.tar"
@@ -773,8 +776,8 @@ if [[ "${BUILD_TARGET_SDK_VERSION}" =~ ^(34|35)$ && "$BRINGUP_CN_SMARTMANAGER_DE
 					for j in ./local_build/etc/permissions/privapp-permissions-com.* ./local_build/etc/permissions/signature-permissions-com.samsung.android.*; do
 						[ ! -f "${j}" ] || sudo mv "${j}" "${SYSTEM_DIR}/etc/permissions/"
 					done
-					debugPrint "build.sh: Seems like i did restore those files? didn't i?"
-					warns "Failed to download stuffs from @saadelasfur github repo, moved everything to their places!" "FAILED_TO_DOWNLOAD_SMARTMANAGER"
+					debugPrint "build.sh: Seems like i did restore those files, didn't i?"
+					warns "Failed to download stuffs from @saadelasfur's github repo, moved everything to their places!" "FAILED_TO_DOWNLOAD_SMARTMANAGER"
 					break
 				} &>>$thisConsoleTempLogFile
 			}
@@ -790,11 +793,8 @@ if [[ "${BUILD_TARGET_SDK_VERSION}" =~ ^(34|35)$ && "$BRINGUP_CN_SMARTMANAGER_DE
 fi
 
 if [ "${BUILD_TARGET_ENABLE_DISPLAY_OVERCLOCKING}" == "true" ]; then
-	if [[ -z "${DTBO_IMAGE_PATH}" || ! -f "${DTBO_IMAGE_PATH}" ]]; then
-		warns "Can't patch dtbo because the dtbo image path is inaccessable." "DTBO_PATCH_FAILED"
-	else
-		. "${SCRIPTS[6]}"
-	fi
+	[[ -z "${DTBO_IMAGE_PATH}" || ! -f "${DTBO_IMAGE_PATH}" ]] && warns "Can't patch dtbo because the dtbo image path is inaccessable." "DTBO_PATCH_FAILED" || \
+		bash "${SCRIPTS[2]}"
 fi
 
 # refer ts: https://www.reddit.com/r/technology/comments/1iy19yt/a_new_android_feature_is_scanning_your_photos_for/
@@ -835,7 +835,7 @@ fi
 # ota implementation.
 if [[ "${TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER}" == "true" && ! -z "${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" && "${BUILD_TARGET_SDK_VERSION}" -ge "29" ]]; then
 	makeADirectory "${SYSTEM_DIR}/app/TsukikaUpdater" "root" "root"
-	./make.sh UN1CAUpdater OTA_MANIFEST_URL="${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" SKIPSIGN=false
+	./make.sh OTA_MANIFEST_URL="${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" SKIPSIGN=false UN1CAUpdater
 	sudo cp "${DECODEDAPKTOOLPATHS[8]}/dist/TsukikaUpdater-aligned-signed.apk" "${SYSTEM_DIR}/app/TsukikaUpdater" || abort "Failed to copy the updater app into the ROM" "build.sh"
 	sudo cp "./src/tsukika/android_packages_xml/permissions/privapp_whitelist_com.mesalabs.ten.update.xml" "${SYSTEM_DIR}/etc/permissions/"
 	sudo cp "./src/tsukika/android_packages_xml/default-permissions/default-permissions_com.mesalabs.ten.update.xml" "${SYSTEM_DIR}/etc/default-permissions/"
@@ -888,9 +888,9 @@ if [[ "${TARGET_BUILD_ADD_KNOXPATCH}" == "true" ]]; then
 fi
 
 # device customization script
-[ -f "./src/target/${TARGET_BUILD_PRODUCT_NAME}/customize.sh" ] && . "./src/target/${TARGET_BUILD_PRODUCT_NAME}/customize.sh"
+[ -f "./src/target/${TARGET_BUILD_PRODUCT_NAME}/customize.sh" ] && bash "./src/target/${TARGET_BUILD_PRODUCT_NAME}/customize.sh"
 
-# let's extend audio offload buffer size to 256kb and plug some of our things.
+# let's plug some of our things.
 debugPrint "build.sh: End of the script, running misc stuffs.."
 addCSCxmlValues "CscFeature_Setting_InfinitySoftwareUpdate" "TRUE"
 addCSCxmlValues "CscFeature_Setting_DisableMenuSoftwareUpdate" "TRUE"
