@@ -27,6 +27,7 @@ if [ "${BUILD_TARGET_SDK_VERSION}" -ge "29" ]; then
         console_print "The list hasn't really focused for Android Pie because no one uses it nowadays, sorry.."
     removeApps "${SYSTEM_DIR}/app" "${app[@]}"
     removeApps "${SYSTEM_DIR}/priv-app" "${privilagedApps[@]}"
+    removeApps "${SYSTEM_EXT_DIR}/app" "${systemExtraApps[@]}"
     removeApps "${SYSTEM_EXT_DIR}/priv-app" "${systemExtraPrivilagedApps[@]}"
     removeApps "${PRODUCT_DIR}/app" "${productApps[@]}"
     removeApps "${PRODUCT_DIR}/priv-app" "${productPrivilagedApps[@]}"

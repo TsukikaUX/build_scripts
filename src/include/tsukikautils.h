@@ -62,7 +62,7 @@ int checkBlocklistedStringsNChar(const char *__haystack);
 bool erase_file_content(const char *__file);
 char *combineStringsFormatted(const char *format, ...);
 char *stringCase(char *string, enum stringCases thisStringCase);
-char *grep_prop(const char *variableName, const char *propFile);
+char *getpropFromFile(const char *variableName, const char *propFile);
 void abort_instance(const char *service, const char *format, ...);
 void consoleLog(enum elogLevel loglevel, const char *service, const char *message, ...);
 

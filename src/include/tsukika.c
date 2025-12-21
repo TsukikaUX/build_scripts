@@ -100,12 +100,10 @@ int DoWhenPropisinTheSameForm(const char *property, void *expectedPropertyValue,
             castValueStr = buffer;
             return (getSystemProperty(property) == castValueStr);
         }
-        break;
         case TYPE_STRING: {
             castValueStr = (const char *)expectedPropertyValue;
             return strcmp(getSystemProperty(property), castValueStr);
         }
-        break;
         default:
             abort_instance("DoWhenPropisinTheSameForm", "Force exit due to undefined behaviour, hope abort cleans the memory.");
     }
@@ -123,19 +121,16 @@ int setprop(char *property, void *propertyValue, enum expectedDataType Type) {
             castValueStr = buffer;
             consoleLog(LOG_LEVEL_DEBUG, "setprop", "%s with %d", property, castValueStr);
         }
-        break;
         case TYPE_FLOAT: {
             float castValue = *(float *)propertyValue;
             snprintf(buffer, sizeof(buffer), "%.2f", castValue);
             castValueStr = buffer;
             consoleLog(LOG_LEVEL_DEBUG, "setprop", "%s with %.2f", property, castValueStr);
         }
-        break;
         case TYPE_STRING: {
             castValueStr = (char *)propertyValue;
             consoleLog(LOG_LEVEL_DEBUG, "setprop", "%s with %s", property, castValueStr);
         }
-        break;
         default:
             abort_instance("setprop", "Force exit due to undefined behaviour, hope abort cleans the memory.");
     }
