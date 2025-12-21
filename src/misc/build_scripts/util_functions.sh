@@ -16,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# source 
+
 # fix makefile:
 [ -z "${thisConsoleTempLogFile}" ] && thisConsoleTempLogFile="./local_build/logs/tsuki_build.log"
 [ -z "${TMPFILE}" ] && TMPFILE="$(mktemp)"
@@ -468,8 +470,8 @@ EOF
     printf " - Enter the path to the default ${type^} wallpaper: "
     read path
     if [ -f "$path" ]; then
-        debugPrint "[INDEX: $index | TYPE: $type] $path -> ./src/tsukika/packages/TsukikaWallpapers/res/drawable-nodpi/${filename}"
-        cp -af "$path" "./src/tsukika/packages/TsukikaWallpapers/res/drawable-nodpi/${filename}"
+        debugPrint "[INDEX: $index | TYPE: $type] $path -> ./src/tsukika/android_packages/TsukikaWallpapersres/drawable-nodpi/${filename}"
+        cp -af "$path" "./src/tsukika/android_packages/TsukikaWallpapersres/drawable-nodpi/${filename}"
     else
         abort "Wrong wallpaper image path, aborting this build..." "addTheWallpaperMetadata"
     fi
