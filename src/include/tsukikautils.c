@@ -25,7 +25,6 @@ int executeCommands(const char *command, char *const args[], bool requiresOutput
         case -1:
             consoleLog(LOG_LEVEL_ERROR, "executeCommands", "Failed to fork process.");
             return 1;
-        break;
         case 0:
             if(!requiresOutput) {
                 int devNull = open("/dev/null", O_WRONLY);
@@ -37,7 +36,6 @@ int executeCommands(const char *command, char *const args[], bool requiresOutput
             execvp(command, args);
             consoleLog(LOG_LEVEL_ERROR, "executeCommands", "Failed to execute command: %s", command);
             return 1;
-        break;
         default:
             consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "Waiting for %s to finish it's process.", command);
             int exitStatus;
@@ -62,7 +60,6 @@ int executeScripts(const char *scriptFile, char *const args[], bool requiresOutp
         case -1:
             consoleLog(LOG_LEVEL_ERROR, "executeScripts", "Failed to fork process.");
             return 1;
-        break;
         case 0:
             if(!requiresOutput) {
                 int devNull = open("/dev/null", O_WRONLY);
@@ -74,7 +71,6 @@ int executeScripts(const char *scriptFile, char *const args[], bool requiresOutp
             execv(scriptFile, args);
             consoleLog(LOG_LEVEL_ERROR, "executeScripts", "Failed to execute %s", scriptFile);
             return 1;
-        break;
         default:
             consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "Waiting for script to finish it's process.");
             int exitStatus;
@@ -181,15 +177,14 @@ char *combineStringsFormatted(const char *format, ...) {
         va_end(args);
         return NULL;
     }
-    size_t size = (size_t)len + 1;
-    char *result = malloc(size);
+    char *result = malloc((size_t)len + 1);
     if(!result) {
         va_end(args);
         return NULL;
     }
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wformat-nonliteral"
-    vsnprintf(result, size, format, args);
+    vsnprintf(result, (size_t)len + 1, format, args);
     #pragma clang diagnostic pop
     va_end(args);
     return result;
@@ -224,10 +219,10 @@ char *stringCase(char *string, enum stringCases thisStringCase) {
     }
 }
 
-char *grep_prop(const char *variableName, const char *propFile) {
+char *getpropFromFile(const char *variableName, const char *propFile) {
     FILE *filePointer = fopen(propFile, "r");
     if(!filePointer) {
-        consoleLog(LOG_LEVEL_ERROR, "grep_prop", "Failed to open properties file: %s", propFile);
+        consoleLog(LOG_LEVEL_ERROR, "getpropFromFile", "Failed to open properties file: %s", propFile);
         return NULL;
     }
     char theLine[1000];
