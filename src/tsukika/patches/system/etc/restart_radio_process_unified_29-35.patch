@@ -6,7 +6,7 @@
  
 -control=`getprop ro.vendor.use_data_netmgrd`
 +is_integer() {
-+    [[ "$1" =~ ^-?[0-9]+$ ]]
++    [ "$1" =~ ^-?[0-9]+$ ]
 +}
  
 -if [ "$control" = "true" ]; then
@@ -28,7 +28,7 @@
 +    echo "         /system/etc/restart_radio.sh --kill-radio-till-reboot"
 +    echo "setprop ro.vendor.use_data_netmgrd true; /system/etc/restart_radio.sh"
 +    echo -e "\nWhat this script does??"
-+    echo -e "    - This stops the netmgrd which is responsible for handling the radio process in the system.\n"
++    echo -e "    - This stops the netmgrd which is responsible for handling the mobile network process in the system.\n"
 +    echo -e "What does \"--stop-radio\" do??"
 +    echo -e "    - This prevents the netmgrd from starting for a given period of time.\n"
 +    echo -e "What does \"--kill-radio-till-reboot\" do??"
@@ -62,7 +62,7 @@
 +        done &
 +        echo " - you may have seen a number above, please note it down and if you"
 +        echo "   want to stop this script from killing the netmgrd, please enter the following in your console:"
-+        echo "kill <the noted number>"
++        echo "su -c kill <the noted number>"
 +    else
 +        help_text
 +        return 1
@@ -71,4 +71,6 @@
 +}
 +
 +main "$@"
++exit $?
++
 \ No newline at end of file

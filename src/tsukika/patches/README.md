@@ -1,6 +1,6 @@
 ![mad_emergency_food](https://github.com/bocchi-the-dev/banners/blob/main/notFound.png?raw=true)
 
-## Why Do Some Files Have "Unified" in Their Names with Numbers?
+## Why do some files have "Unified" in their names with numbers?
 
 Some files include "unified" in their names along with specific numbers. These numbers are not random; they typically indicate compatibility with certain Android versions. 
 
