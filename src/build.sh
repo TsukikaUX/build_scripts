@@ -127,7 +127,7 @@ if [ -n "$argOne" ]; then
 					mountPath="./local_build/etc/imageSetup/$(basename ${COMMON_FIRMWARE_BLOCKS} .img)"
 					mkdir -p "${mountPath}"
 					if stringFormat -l "$(file "${COMMON_FIRMWARE_BLOCKS}")" | grep -q "sparse"; then
-						simg2img "${COMMON_FIRMWARE_BLOCKS}" "${COMMON_FIRMWARE_BLOCKS}_rawFactor" &>/dev/null || abort "Failed to convert $(basename ${COMMON_FIRMWARE_BLOCKS} .img) into an raw image, please try again later.."
+						simg2img "${COMMON_FIRMWARE_BLOCKS}" "${COMMON_FIRMWARE_BLOCKS}_rawFactor" &>/dev/null || abort "Failed to convert $(basename ${COMMON_FIRMWARE_BLOCKS} .img) into a raw image, please try again later.."
 						sudo rm -rf "${COMMON_FIRMWARE_BLOCKS}"
 						sudo mv "${COMMON_FIRMWARE_BLOCKS}_rawFactor" "${COMMON_FIRMWARE_BLOCKS}"
 					fi
@@ -136,7 +136,7 @@ if [ -n "$argOne" ]; then
 				for images in ./local_build/etc/extract/*.img; do
 					echo $images | grep -qE "system|vendor|product|optics" || continue
 					console_print "Setting up previous iteration.."
-					logInterpreter "Trying to extract ${images}.img from an LZ4 archive..." "lz4 -d ./local_build/etc/extract/${images}.img.lz4 ./local_build/etc/extract/${images}.img" || abort "Failed to extract $images from an lz4 archive." "build.sh"
+					logInterpreter "Trying to extract ${images}.img from a LZ4 archive..." "lz4 -d ./local_build/etc/extract/${images}.img.lz4 ./local_build/etc/extract/${images}.img" || abort "Failed to extract $images from a lz4 archive." "build.sh"
 					sudo rm -rf ./local_build/etc/extract/${images}.img.lz4
 					logInterpreter "Converting $images from sparse to raw image factor...." "simg2img ./local_build/etc/extract/${images}.img ./local_build/etc/extract/${images}_raw.img"
 					sudo rm ./local_build/etc/extract/${images}.img
@@ -166,7 +166,7 @@ if [ -n "$argOne" ]; then
 				tar -tf "$extractedHomeCSCFilePath" | grep -q "${cscStuff}.img.lz4" || continue
 				console_print "Extracting ${cscStuff}..."
 				tar -C ./local_build/etc/extract/ -xf $extractedHomeCSCFilePath ${cscStuff}.img.lz4 &>> ${thisConsoleTempLogFile}
-				logInterpreter "Trying to extract ${cscStuff}.img from an LZ4 archive..." "lz4 -d ./local_build/etc/extract/${cscStuff}.img.lz4 ./local_build/etc/extract/${cscStuff}.img" || abort "Failed to extract $cscStuff from an lz4 archive." "logInterpreter"
+				logInterpreter "Trying to extract ${cscStuff}.img from a LZ4 archive..." "lz4 -d ./local_build/etc/extract/${cscStuff}.img.lz4 ./local_build/etc/extract/${cscStuff}.img" || abort "Failed to extract $cscStuff from a lz4 archive." "logInterpreter"
 				sudo rm -rf ./local_build/etc/extract/${cscStuff}.img.lz4
 				# TODO: convert images into raw if not already:
 				logInterpreter "Converting $cscStuff from sparse to raw image factor...." "simg2img ./local_build/etc/extract/${cscStuff}.img ./local_build/etc/extract/${cscStuff}_raw.img"
@@ -193,7 +193,7 @@ if [ -n "$argOne" ]; then
 					fi
 					console_print "Extracting super..."
 					tar -C "./local_build/etc/extract/" -xf "$extractedAPFilePath" "super.img.lz4" &>> ${thisConsoleTempLogFile} || abort "Failed to extract super.img.lz4 from the tar file." "build.sh"
-					logInterpreter "Trying to extract super.img from an LZ4 archive..." "lz4 -d ./local_build/etc/extract/super.img.lz4 ./local_build/etc/extract/" || abort "Failed to extract super image from an lz4 archive." "build.sh"
+					logInterpreter "Trying to extract super.img from a LZ4 archive..." "lz4 -d ./local_build/etc/extract/super.img.lz4 ./local_build/etc/extract/" || abort "Failed to extract super image from a lz4 archive." "build.sh"
 					sudo rm -rf ./local_build/etc/extract/super.img.lz4
 					lpdump "./local_build/etc/extract/super.img" > ./local_build/etc/dumpOfTheSuperBlock &>>$thisConsoleTempLogFile || abort "Failed to dump metadata from super.img" "build.sh"
 					lpunpack "./local_build/etc/extract/super.img" "./local_build/etc/extract/super_extract/" &>>$thisConsoleTempLogFile || abort "Failed to unpack super.img" "build.sh"
@@ -201,10 +201,10 @@ if [ -n "$argOne" ]; then
 						echo "$(basename "${COMMON_FIRMWARE_BLOCKS}" .img)" | grep -qE "system|vendor|product" || continue
 						mountPath="./local_build/etc/imageSetup/$(basename ${COMMON_FIRMWARE_BLOCKS} .img)"
 						# TODO: convert images into raw if required:
-						# i dont think super would have an raw image inside it, because for whatever reason i decided it 
+						# i dont think super would have a raw image inside it, because for whatever reason i decided it 
 						# would be a great idea to do such thing as below:
 						if stringFormat -l "$(file "${COMMON_FIRMWARE_BLOCKS}")" | grep -q "sparse"; then
-							simg2img "${COMMON_FIRMWARE_BLOCKS}" "${COMMON_FIRMWARE_BLOCKS}_rawFactor" &>/dev/null || abort "Failed to convert $(basename ${COMMON_FIRMWARE_BLOCKS} .img) into an raw image, please try again later.."
+							simg2img "${COMMON_FIRMWARE_BLOCKS}" "${COMMON_FIRMWARE_BLOCKS}_rawFactor" &>/dev/null || abort "Failed to convert $(basename ${COMMON_FIRMWARE_BLOCKS} .img) into a raw image, please try again later.."
 							sudo rm -rf "${COMMON_FIRMWARE_BLOCKS}"
 							sudo mv "${COMMON_FIRMWARE_BLOCKS}_rawFactor" "${COMMON_FIRMWARE_BLOCKS}"
 						fi
@@ -213,8 +213,8 @@ if [ -n "$argOne" ]; then
 					break
 				else
 					console_print "Extracting $androidOS..."
-					tar -tf "$extractedAPFilePath" | grep -q "${androidOS}.img.lz4" && tar -C ./local_build/etc/extract -xf $extractedAPFilePath ${androidOS}.img.lz4 &>> ${thisConsoleTempLogFile} || abort "Failed to extract $androidOS from an tar file." "build.sh"
-					logInterpreter "Trying to extract ${androidOS}.img from an LZ4 archive..." "lz4 -d ./local_build/etc/extract/${androidOS}.img.lz4 ./local_build/etc/extract/${androidOS}.img" || abort "Failed to extract $androidOS from an lz4 archive." "build.sh"
+					tar -tf "$extractedAPFilePath" | grep -q "${androidOS}.img.lz4" && tar -C ./local_build/etc/extract -xf $extractedAPFilePath ${androidOS}.img.lz4 &>> ${thisConsoleTempLogFile} || abort "Failed to extract $androidOS from a tar file." "build.sh"
+					logInterpreter "Trying to extract ${androidOS}.img from a LZ4 archive..." "lz4 -d ./local_build/etc/extract/${androidOS}.img.lz4 ./local_build/etc/extract/${androidOS}.img" || abort "Failed to extract $androidOS from a lz4 archive." "build.sh"
 					sudo rm -rf ./local_build/etc/extract/${androidOS}.img.lz4
 					# TODO: convert images into raw if not already:
 					logInterpreter "Converting $androidOS from sparse to raw image factor...." "simg2img ./local_build/etc/extract/${androidOS}.img ./local_build/etc/extract/${androidOS}_raw.img"
@@ -226,7 +226,7 @@ if [ -n "$argOne" ]; then
 			if [[ "$BUILD_TARGET_INCLUDE_FASTBOOTD_PATCH" == "true" || "$BUILD_TARGET_ENABLE_DISPLAY_OVERCLOCKING" == "true" ]]; then
 				for patchableImages in recovery.img.lz4 dtbo.img.lz4; do
 					tar -C ./local_build/etc/extract "${extractedAPFilePath}" "${patchableImages}" &>>${thisConsoleTempLogFile} || abort "Failed to extract ${patchableImages} from the archive." "build.sh"
-					logInterpreter "Trying to extract $(basename ${patchableImages} .lz4) from an LZ4 archive..." "lz4 -d ./local_build/etc/extract/dtbo.img.lz4 ./local_build/etc/extract/$(basename ${patchableImages} .lz4)" || abort "Failed to extract $(basename ${patchableImages} .img.lz4) image from an lz4 archive." "build.sh"
+					logInterpreter "Trying to extract $(basename ${patchableImages} .lz4) from a LZ4 archive..." "lz4 -d ./local_build/etc/extract/dtbo.img.lz4 ./local_build/etc/extract/$(basename ${patchableImages} .lz4)" || abort "Failed to extract $(basename ${patchableImages} .img.lz4) image from a lz4 archive." "build.sh"
 				done
 				# to update the file path:
 				for propertyFiles in ./src/genericTargetProperties.conf ./src/target/*/buildTargetProperties.conf; do
@@ -264,15 +264,13 @@ if [ -d "${PRODUCT_DIR}/overlay" ]; then
 elif [ -d "${SYSTEM_DIR}/product/overlay" ]; then
     TSUKIKA_PRODUCT_OVERLAY="${SYSTEM_DIR}/product/overlay"
 fi
-TSUKIKA_VENDOR_OVERLAY="${VENDOR_DIR}/overlay"
-TSUKIKA_FALLBACK_OVERLAY_PATH=$([ -d "${TSUKIKA_PRODUCT_OVERLAY}" ] && echo "${TSUKIKA_PRODUCT_OVERLAY}" || echo "${TSUKIKA_VENDOR_OVERLAY}")
-
-# fix: "grep: /build.prop: No such file or directory" moved to build.sh to fix that error.
 BUILD_TARGET_ANDROID_VERSION=$(grep_prop "ro.build.version.release" "${TSUKIKA_SYSTEM_PROPERTY_FILE}")
 BUILD_TARGET_SDK_VERSION=$(grep_prop "ro.build.version.sdk" "${TSUKIKA_SYSTEM_PROPERTY_FILE}")
 BUILD_TARGET_VENDOR_SDK_VERSION=$(grep_prop "ro.vndk.version" "${TSUKIKA_VENDOR_PROPERTY_FILE}")
 BUILD_TARGET_MODEL="$(grep_prop "ro.product.system.model" "${TSUKIKA_SYSTEM_PROPERTY_FILE}")"
 TARGET_BUILD_PRODUCT_NAME="$(grep_prop "ro.product.system.device" "${TSUKIKA_SYSTEM_PROPERTY_FILE}")"
+TSUKIKA_VENDOR_OVERLAY="${VENDOR_DIR}/overlay"
+TSUKIKA_FALLBACK_OVERLAY_PATH=$([ -d "${TSUKIKA_PRODUCT_OVERLAY}" ] && echo "${TSUKIKA_PRODUCT_OVERLAY}" || echo "${TSUKIKA_VENDOR_OVERLAY}")
 
 # COMMON DEVICE VARIABLES: do not edit!
 BUILD_TARGET_ARCH=$(
@@ -840,27 +838,27 @@ if [[ "${TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER}" == "true" && ! -z "${TARGET
 	sudo cp "./src/tsukika/android_packages_xml/permissions/privapp_whitelist_com.mesalabs.ten.update.xml" "${SYSTEM_DIR}/etc/permissions/"
 	sudo cp "./src/tsukika/android_packages_xml/default-permissions/default-permissions_com.mesalabs.ten.update.xml" "${SYSTEM_DIR}/etc/default-permissions/"
 	console_print "Successfully added updater app into the rom."
-	console_print "Trying to mod SecSettings.."
-	if [[ -f "./src/diff_patches/system/priv-app/SecSettings/${BUILD_TARGET_SDK_VERSION}_sec_software_info_settings.xml" && \ 
-		"./src/diff_patches/system/priv-app/SecSettings/${BUILD_TARGET_SDK_VERSION}_sec_top_level_settings.xml" ]]; then
-			java -jar ./src/dependencies/bin/apktool.jar if ${SYSTEM_DIR}/framework/framework-res.apk &>/dev/null
-			java -jar ./src/dependencies/bin/apktool.jar --only-main-classes decode ${SYSTEM_DIR}/priv-app/SecSettings/SecSettings.apk -o ./SecSettingsMOD &>/dev/null || abort "Failed to decompile the System Settings app" "build.sh"
-			cp -af "./src/diff_patches/system/priv-app/SecSettings/${BUILD_TARGET_SDK_VERSION}_sec_software_info_settings.xml" ./SecSettingsMOD/res/xml/sec_software_info_settings.xml
-			cp -af "./src/diff_patches/system/priv-app/SecSettings/${BUILD_TARGET_SDK_VERSION}_sec_top_level_settings.xml" ./SecSettingsMOD/res/xml/sec_top_level_settings.xml
-			# change the default placeholder values
-			xmlstarlet ed -L -N a="http://schemas.android.com/apk/res/android" -N s="http://schemas.android.com/apk/res-auto" \ 
-				-u "//*[@a:key='tsukika_changelogs']/*[@a:data]/@a:data" -v "https://github.com/bocchi-the-dev/Tsukika/updaterConfigs/changelogs/${TSUKIKA_BUILD_NUMBER}/CHANGELOGS.md" "./SecSettingsMOD/res/xml/sec_software_info_settings.xml"
-			xmlstarlet ed -L -N a="http://schemas.android.com/apk/res/android" -u "//*[@a:key='tsukika_codename']/@a:summary" -v "${CODENAME}" \
-				-u "//*[@a:key='tsukika_version']/@a:summary" -v "${CODENAME_VERSION_REFERENCE_ID}" \
-				-u "//*[@a:key='tsukika_builder']/@a:summary" -v "${BUILD_USERNAME}" \
-				-u "//*[@a:key='tsukika_build_number']/@a:summary" -v "${TSUKIKA_BUILD_NUMBER}" "./SecSettingsMOD/res/xml/sec_top_level_settings.xml"
-			for i in "./SecSettingsMOD/res/xml/sec_top_level_settings.xml" "./SecSettingsMOD/res/xml/sec_software_info_settings.xml"; do
-				xmllint --noout ${i} &>/dev/null || abort "$(basename $i) has bad XML structure" "build.sh"
-			done
-			buildAndSignThePackage "./SecSettingsMOD/" "${SYSTEM_DIR}/priv-app/SecSettings/SecSettings.apk" false --skip-editing-version-info
-	else
-		console_print "Can't modify system settings, required modified XML files are not found!"
-	fi
+	# console_print "Trying to mod SecSettings.."
+	# if [[ -f "./src/diff_patches/system/priv-app/SecSettings/${BUILD_TARGET_SDK_VERSION}_sec_software_info_settings.xml" && \ 
+	# 	"./src/diff_patches/system/priv-app/SecSettings/${BUILD_TARGET_SDK_VERSION}_sec_top_level_settings.xml" ]]; then
+	# 		java -jar ./src/dependencies/bin/apktool.jar if ${SYSTEM_DIR}/framework/framework-res.apk &>/dev/null
+	# 		java -jar ./src/dependencies/bin/apktool.jar --only-main-classes decode ${SYSTEM_DIR}/priv-app/SecSettings/SecSettings.apk -o ./SecSettingsMOD &>/dev/null || abort "Failed to decompile the System Settings app" "build.sh"
+	# 		cp -af "./src/diff_patches/system/priv-app/SecSettings/${BUILD_TARGET_SDK_VERSION}_sec_software_info_settings.xml" ./SecSettingsMOD/res/xml/sec_software_info_settings.xml
+	# 		cp -af "./src/diff_patches/system/priv-app/SecSettings/${BUILD_TARGET_SDK_VERSION}_sec_top_level_settings.xml" ./SecSettingsMOD/res/xml/sec_top_level_settings.xml
+	# 		# change the default placeholder values
+	# 		xmlstarlet ed -L -N a="http://schemas.android.com/apk/res/android" -N s="http://schemas.android.com/apk/res-auto" \ 
+	# 			-u "//*[@a:key='tsukika_changelogs']/*[@a:data]/@a:data" -v "https://github.com/bocchi-the-dev/Tsukika/updaterConfigs/changelogs/${TSUKIKA_BUILD_NUMBER}/CHANGELOGS.md" "./SecSettingsMOD/res/xml/sec_software_info_settings.xml"
+	# 		xmlstarlet ed -L -N a="http://schemas.android.com/apk/res/android" -u "//*[@a:key='tsukika_codename']/@a:summary" -v "${CODENAME}" \
+	# 			-u "//*[@a:key='tsukika_version']/@a:summary" -v "${CODENAME_VERSION_REFERENCE_ID}" \
+	# 			-u "//*[@a:key='tsukika_builder']/@a:summary" -v "${BUILD_USERNAME}" \
+	# 			-u "//*[@a:key='tsukika_build_number']/@a:summary" -v "${TSUKIKA_BUILD_NUMBER}" "./SecSettingsMOD/res/xml/sec_top_level_settings.xml"
+	# 		for i in "./SecSettingsMOD/res/xml/sec_top_level_settings.xml" "./SecSettingsMOD/res/xml/sec_software_info_settings.xml"; do
+	# 			xmllint --noout ${i} &>/dev/null || abort "$(basename $i) has bad XML structure" "build.sh"
+	# 		done
+	# 		buildAndSignThePackage "./SecSettingsMOD/" "${SYSTEM_DIR}/priv-app/SecSettings/SecSettings.apk" false --skip-editing-version-info
+	# else
+	# 	console_print "Can't modify system settings, required modified XML files are not found!"
+	# fi
 fi
 
 # bootRecon init thing:
