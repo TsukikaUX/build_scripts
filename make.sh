@@ -65,15 +65,19 @@ for args in "$@"; do
         case "${lowerCaseArgument}" in
             arch=arm)
                 CC="${CC_ROOT}/armv7a-linux-androideabi${SDK}-clang"
+                continue;
             ;;
             arch=arm64)
                 CC="${CC_ROOT}/aarch64-linux-android${SDK}-clang"
+                continue;
             ;;
             arch=x86)
                 CC="${CC_ROOT}/i686-linux-android${SDK}-clang"
+                continue;
             ;;
             arch=x86_64)
                 CC="${CC_ROOT}/x86_64-linux-android${SDK}-clang"
+                continue;
             ;;
         esac
     fi
