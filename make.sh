@@ -27,8 +27,8 @@ UBER_SIGNER_JAR="./src/dependencies/bin/signer.jar"
 APKTOOL_JAR="./src/dependencies/bin/apktool.jar"
 HEADER_PATH="./src/include"
 HEADER_SOURCES="./src/include/tsukika.c ./src/include/tsukikautils.c"
-SOURCES=("./src/compileTest/test.c" "./src/BootRecon/main.c")
-SOURCE_BUILD_OUTPUT_PATH=("./hawksnext" "./src/BootRecon/BootRecon")
+SOURCES=("./src/tsukika/android_binaries/c/compileTest/test.c" "./src/tsukika/android_binaries/c/BootRecon/main.c")
+SOURCE_BUILD_OUTPUT_PATH=("./src/tsukika/android_binaries/c/compileTest/hawksnext" "./src/tsukika/android_binaries/c/BootRecon/bootrecon")
 SKIPSIGN=""
 OTA_MANIFEST_URL=""
 SDK=""
@@ -112,7 +112,7 @@ for args in "$@"; do
             fi
         ;;
         "clean")
-            sudo rm -rf "./src/tsukika/android_packages/TsukikaUpdater/dist" "./src/tsukika/android_packages/TsukikaUpdater/smali" ./src/tsukika/android_packages/TsukikaUpdater/smali_* "./src/tsukika/android_packages/TsukikaUpdater/build" "${BUILD_LOGFILE}" "./hawksnest" "./src/BootRecon/BootRecon"
+            sudo rm -rf "./src/tsukika/android_packages/TsukikaUpdater/dist" "./src/tsukika/android_packages/TsukikaUpdater/smali" ./src/tsukika/android_packages/TsukikaUpdater/smali_* "./src/tsukika/android_packages/TsukikaUpdater/build" "${BUILD_LOGFILE}" "${SOURCE_BUILD_OUTPUT_PATH[0]}" "${SOURCE_BUILD_OUTPUT_PATH[1]}"
 	        echo -e "\033[0;32mmake: Info: Clean complete.\033[0m"
         ;;
         "headertest"|"bootrecon")
