@@ -1,8 +1,12 @@
 #include <tsukika.h>
+#include <tsukika_props.h>
 char *batteryPercentageBlobFilePaths[] = {NULL};
 char *const resetprop = NULL;
 char *LOGFILE = "hua";
 bool useStdoutForAllLogs = true;
+bool __didAnyPropertyGetChanged = false;
+char **__properties_cached = NULL;
+char **__propertiesValue_cached = NULL;
 int main(void) {
     printf("TARGET_BUILD_SETUP_WIZARD_OUTRO_TEXT: %s\n", getpropFromFile("TARGET_BUILD_SETUP_WIZARD_OUTRO_TEXT", "./src/makeconfigs.prop"));
     prepareStockRecoveryCommandFile(SWITCH_LOCALE, "en", "mx");

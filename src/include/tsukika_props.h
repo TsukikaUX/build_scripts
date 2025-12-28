@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <tsukikautils.h>
 
 // variables to use to cache the properties.
 extern bool __didAnyPropertyGetChanged;
@@ -38,9 +39,20 @@ typedef struct {
     void *__propertyValue;
 } tsukikaProperty;
 
+// enum for __getProperty().
+enum propertyType {
+    PROPERTY_FROM_CACHE,
+    PROPERTY_FROM_FILE
+}; 
+
 // functions:
 bool __setProperty(const char *__propertyName, const void *__propertyValue);
+void *__getProperty(const char *__propertyName, enum propertyType thisProperty);
 void __readProperty(void *__cookie);
 void __cacheProperties();
 void __saveState();
+void __deleteProperty(const char *__propertyName);
+void __init();
+void __deinit();
+void __freeThisPointer(void **thisPointer);
 #endif
