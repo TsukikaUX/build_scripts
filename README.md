@@ -1,4 +1,4 @@
-![tsukika](https://github.com/bocchi-the-dev/banners/blob/main/tsukika-banner.png?raw=true)
+![tsukika](https://github.com/ikuyo-kita07/banners/blob/main/tsukika-banner.png?raw=true)
 
 # Tsukika
 
@@ -21,7 +21,7 @@ This project is licensed under the terms of the GNU General Public License v3.0.
 - [AROMA Installer](https://github.com/amarullz/AROMA-Installer), licensed under **Apache 2.0**
 - [Apktool](https://github.com/iBotPeaches/Apktool), licensed under **Apache 2.0**
 - [Magisk](https://github.com/topjohnwu/Magisk), licensed under **GPL 3.0**
-- [Minari](https://github.com/bocchi-the-dev/Minari), licensed under **GPL 3.0**
+- [Minari](https://github.com/ikuyo-kita07/Minari), licensed under **GPL 3.0**
 
 ## Contributors
 Thanks to all the peeps mentioned below, there's no Tsukika without you guys 🥹✌🏻

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2025 ぼっち <ayumi.aiko@outlook.com>
+# Copyright (C) 2025 —͟͞͞★ ɪᴋ𝘂ᵞο ᴋ𝖎𝘵𝕒 ★ <ayumi.aiko@outlook.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ jobs:
       - name: Configure Git Identity
         if: ${{ github.event.inputs.update_dependencies == 'Update' }}
         run: |
-          git config --global user.name "Bocchi"
+          git config --global user.name "Kitaaa"
           git config --global user.email "ayumi.aiko@outlook.com"
 
       - name: Download and Push Dependencies
