@@ -205,29 +205,31 @@ bool getDeviceState(enum expectedDeviceState exptx) {
     return false;
 }
 
-bool bootTraceState(enum bootTraceState theBootStage) {
-    FILE *initState = fopen("boottrace", "r");
-    if(!initState) {
-        consoleLog(LOG_LEVEL_ERROR, "bootTraceState", "Failed to open /dev/tmp/boottrace, please try again");
+bool verifyAndLogModule(void *runnableModule)
+{
+    int systemSDK = getSystemProperty__("ro.system.build.version.sdk");
+    tsukikaModule* thisInstanceModule = (tsukikaModule*)runnableModule;
+    // init state checks
+    if(thisInstanceModule->moduleRunState != LATE_FS && thisInstanceModule->moduleRunState != POST_FS && thisInstanceModule->moduleRunState != POST_FS_DATA)
+    {
+        consoleLog(LOG_LEVEL_ERROR, "verifyAndLogModule", "Module doesn't have a valid init state, returning back and verifying other modules...");
         return false;
     }
-    char content[15];
-    fgets(content, sizeof(content), initState);
-    fclose(initState);
-    // switch is faster.
-    switch(theBootStage) {
-        case LATE_FS:
-            return strcmp(content, "late-fs") == 0;
-        case INIT:
-            return strcmp(content, "init") == 0;
-        case POST_FS:
-            return strcmp(content, "post-fs") == 0;
-        case POST_FS_DATA:
-            return strcmp(content, "post-fs-data") == 0;
-        // undefined behaviour:
-        default:
-            return false;
+    // sdk checks
+    if(systemSDK > thisInstanceModule->maxSDK) {
+        consoleLog(LOG_LEVEL_ERROR, "verifyAndLogModule", "Cannot run module: system SDK is higher than supported.");
+        return false;
     }
+    else if(systemSDK < thisInstanceModule->minSDK) {
+        consoleLog(LOG_LEVEL_ERROR, "verifyAndLogModule", "Cannot run module: system SDK is lower than required.");
+        return false;
+    }
+    // log stuffs now:
+    consoleLog(LOG_LEVEL_INFO, "verifyAndLogModule", "Name of the module: %s", thisInstanceModule->moduleName);
+    consoleLog(LOG_LEVEL_INFO, "verifyAndLogModule", "Version of the module %s", thisInstanceModule->moduleVersion);
+    consoleLog(LOG_LEVEL_INFO, "verifyAndLogModule", "Author of the module %s", thisInstanceModule->moduleAuthor);
+    consoleLog(LOG_LEVEL_INFO, "verifyAndLogModule", "Module will run shortly! Please wait...");
+    return true;
 }
 
 char *getSystemProperty(const char *propertyVariableName) {
@@ -256,6 +258,7 @@ char *getSystemProperty(const char *propertyVariableName) {
 }
 
 void alertUser(char *message) {
+    if(getSystemProperty__("sys.boot_completed") != 1) return;
     if(isPackageInstalled("bellavita.toast") == 0) executeCommands("am", (char *const[]) {"am", "start", "-a", "android.intent.action.MAIN", "-e", "toasttext", message, "-n", "bellavita.toast/.MainActivity", NULL}, false);
     else executeCommands("cmd", (char *const[]) {"cmd", "notification", "post", "-S", "bigtext", "-t", "Tsukika", "Tag", message, NULL}, false);
 }
@@ -289,4 +292,50 @@ void androidPropertyCallback(void* cookie, const char* name, const char* value, 
     snprintf(handler->propertyValue, sizeof(handler->propertyValue), "%s", value);
     handler->propertySerial = serial;
     handler->found = 1;
+}
+
+void listModulesAndVerifyThem()
+{
+    tsukikaModule* module;
+    DIR *baseDirectory = opendir("/system/etc/init/modules/tsukika");
+    if(!baseDirectory)
+    {
+        consoleLog(LOG_LEVEL_ERROR, "listModulesAndVerifyThem", "Failed to open module directory.");
+        return;
+    }
+    struct dirent *directories;
+    while((directories = readdir(baseDirectory)))
+    {
+        // skip . and ..
+        if(strcmp(directories->d_name, ".") == 0 || strcmp(directories->d_name, "..") == 0) continue;
+        // allocate module per entry
+        module = malloc(sizeof(tsukikaModule));
+        if(!module) continue;
+        // build full module dir path
+        char moduleDir[512];
+        snprintf(moduleDir, sizeof(moduleDir), "/system/etc/init/modules/tsukika/%s", directories->d_name);
+        // check if it's a directory
+        struct stat st;
+        if(stat(moduleDir, &st) == -1 || !S_ISDIR(st.st_mode)) 
+        {
+            free(module);
+            continue;
+        }
+        // build module.prop path
+        char moduleProp[512];
+        snprintf(moduleProp, sizeof(moduleProp), "%s/module.prop", moduleDir);
+        // get values safely
+        char *name = getpropFromFile("name", moduleProp);
+        char *version = getpropFromFile("version", moduleProp);
+        char *author = getpropFromFile("author", moduleProp);
+        if(name) strcpy(module->moduleName, name);
+        if(version) strcpy(module->moduleVersion, version);
+        if(author) strcpy(module->moduleAuthor, author);
+        module->minSDK = atoi(getpropFromFile("minSDK", moduleProp));
+        module->maxSDK = atoi(getpropFromFile("maxSDK", moduleProp));
+        module->moduleRunState = atoi(getpropFromFile("runState", moduleProp));
+        verifyAndLogModule(module);
+        free(module);
+    }
+    closedir(baseDirectory);
 }
