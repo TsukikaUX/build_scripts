@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-
+#include <tsukika.h>
 #include <tsukikautils.h>
 
 int executeCommands(const char *command, char *const args[], bool requiresOutput) {
@@ -282,19 +282,19 @@ void consoleLog(enum elogLevel loglevel, const char *service, const char *messag
     switch(loglevel) {
         case LOG_LEVEL_INFO:
             if(!toFile) fprintf(out, "\033[2;30;47mINFO: ");
-            else fprintf(out, "INFO: %s(): ", service);
+            else fprintf(out, "INFO: %s::%s(): ", codenameForThisBinary, service);
         break;
         case LOG_LEVEL_WARN:
             if(!toFile) fprintf(out, "\033[1;33mWARNING: ");
-            else fprintf(out, "WARNING: %s(): ", service);
+            else fprintf(out, "WARNING: %s::%s(): ", codenameForThisBinary, service);
         break;
         case LOG_LEVEL_DEBUG:
             // prevent it from putting it in stderr or out cuz it looks ugly.
-            if(toFile) fprintf(out, "DEBUG: %s(): ", service);
+            if(toFile) fprintf(out, "DEBUG: %s::%s(): ", codenameForThisBinary, service);
         break;
         case LOG_LEVEL_ERROR:
             if(!toFile) fprintf(out, "\033[0;31mERROR: ");
-            else fprintf(out, "ERROR: %s(): ", service);
+            else fprintf(out, "ERROR: %s::%s(): ", codenameForThisBinary, service);
         break;
     }
     #pragma clang diagnostic pop

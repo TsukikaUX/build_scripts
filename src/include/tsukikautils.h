@@ -49,7 +49,7 @@ enum stringCases {
 // extern vars. VERY IMPORTANT!!
 extern char *LOGFILE;
 extern bool useStdoutForAllLogs;
- 
+
 // macro function(s):
 #define makeDir(thisDirectory) executeCommands("mkdir", (char * const[]) {"mkdir", "-p", thisDirectory}, false);
 
@@ -60,6 +60,7 @@ int searchBlockListedStrings(const char *__filename, const char *__search_str);
 int verifyScriptStatusUsingShell(const char *__filename);
 int checkBlocklistedStringsNChar(const char *__haystack);
 bool erase_file_content(const char *__file);
+char *executeCommandAndReturnOutput(const char*commandWithArgs, bool throwSTDERR);
 char *combineStringsFormatted(const char *format, ...);
 char *stringCase(char *string, enum stringCases thisStringCase);
 char *getpropFromFile(const char *variableName, const char *propFile);
