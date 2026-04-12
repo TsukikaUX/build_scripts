@@ -80,7 +80,8 @@ fi
 
 # DAYUMMMMM
 for i in $(seq 0 6); do
-    if ! git clone git@github.com:TsukikaUX/${cloneSource[$i]}.git ${cloneSourcePath[$i]}; then
+    rm -rf "${cloneSourcePath[$i]}"
+    if ! git clone https://github.com/TsukikaUX/${cloneSource[$i]}.git ${cloneSourcePath[$i]}; then
         echo "- Failed to clone \"${cloneSource[$i]}\", please try again with a stable internet connection."
         exit 1;
     fi
