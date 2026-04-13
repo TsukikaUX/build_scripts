@@ -185,22 +185,27 @@ bool killProcess(pid_t procID) {
 bool getDeviceState(enum expectedDeviceState exptx) {
     char *currentSetupWizardMode = getSystemProperty("ro.setupwizard.mode");
     if(!currentSetupWizardMode) return false;
-    if(exptx == DEVICE_SETUP_OVER) {
-        if(strcmp(getSystemProperty("persist.sys.setupwizard"), "FINISH") == 0 || strcmp(currentSetupWizardMode, "OPTIONAL")  == 0 || strcmp(currentSetupWizardMode, "DISABLED") == 0) return true;
-    }
-    else if(exptx == BOOTANIMATION_RUNNING) return (getSystemProperty__("service.bootanim.progress") == 1);
-    else if(exptx == BOOTANIMATION_EXITED) return (getSystemProperty__("service.bootanim.exit") == 1);
-    else if(exptx == DEVICE_BOOT_COMPLETED) return (getSystemProperty__("sys.boot_completed") == 1);
-    else if(exptx == DEVICE_TURNED_ON) {
-        FILE *fp = popen("dumpsys power | grep 'Display Power'", "r");
-        if(!fp) {
-            consoleLog(LOG_LEVEL_ERROR, "getDeviceState", "Failed to open stdout to gather information about the device display power status.");
-            return false;
+    switch(exptx)
+    {
+        case DEVICE_SETUP_OVER:
+            if(strcmp(getSystemProperty("persist.sys.setupwizard"), "FINISH") == 0 || strcmp(currentSetupWizardMode, "OPTIONAL")  == 0 || strcmp(currentSetupWizardMode, "DISABLED") == 0) return true;
+        case BOOTANIMATION_RUNNING:
+            return (getSystemProperty__("service.bootanim.progress") == 1);
+        case BOOTANIMATION_EXITED:
+            return (getSystemProperty__("service.bootanim.exit") == 1);
+        case DEVICE_BOOT_COMPLETED:
+            return (getSystemProperty__("sys.boot_completed") == 1);
+        case DEVICE_TURNED_ON: {
+            FILE *fp = popen("dumpsys power | grep 'Display Power'", "r");
+            if(!fp) {
+                consoleLog(LOG_LEVEL_ERROR, "getDeviceState", "Failed to open stdout to gather information about the device display power status.");
+                return false;
+            }
+            char buffer[4];
+            fgets(buffer, sizeof(buffer), fp);
+            pclose(fp);
+            return (strstr(buffer, "OFF") == NULL);
         }
-        char buffer[4];
-        fgets(buffer, sizeof(buffer), fp);
-        pclose(fp);
-        return (strstr(buffer, "OFF") == NULL);
     }
     return false;
 }
@@ -229,6 +234,8 @@ bool verifyAndLogModule(void *runnableModule)
     consoleLog(LOG_LEVEL_INFO, "verifyAndLogModule", "Version of the module %s", thisInstanceModule->moduleVersion);
     consoleLog(LOG_LEVEL_INFO, "verifyAndLogModule", "Author of the module %s", thisInstanceModule->moduleAuthor);
     consoleLog(LOG_LEVEL_INFO, "verifyAndLogModule", "Module will run shortly! Please wait...");
+    currentState = thisInstanceModule->moduleRunState;
+    runThisModule(runnableModule);
     return true;
 }
 
@@ -312,7 +319,7 @@ void listModulesAndVerifyThem()
         module = calloc(1, sizeof(tsukikaModule));
         if(!module) continue;
         char moduleProp[512];
-        snprintf(moduleProp, sizeof(moduleProp), "modules/%s/module.prop", directories->d_name);
+        snprintf(moduleProp, sizeof(moduleProp), "/system/etc/init/modules/tsukika/modules/%s/module.prop", directories->d_name);
         // get values safely
         char *name = getpropFromFile("name", moduleProp);
         char *version = getpropFromFile("version", moduleProp);
@@ -338,6 +345,7 @@ void listModulesAndVerifyThem()
         module->minSDK = minSDK ? atoi(minSDK) : 0;
         module->maxSDK = maxSDK ? atoi(maxSDK) : 0;
         module->moduleRunState = runState ? atoi(runState) : 0;
+        snprintf(module->pathOfTheModule, sizeof(module->pathOfTheModule), "/system/etc/init/modules/tsukika/modules/%s", directories->d_name);
         free(minSDK);
         free(maxSDK);
         free(runState);
@@ -345,4 +353,62 @@ void listModulesAndVerifyThem()
         free(module);
     }
     closedir(baseDirectory);
+}
+
+void runThisModule(void *thisModule)
+{
+    tsukikaModule* __thisModule = (tsukikaModule*)thisModule;
+    char *scriptPath = malloc(sizeof(__thisModule->pathOfTheModule) + 19);
+    if(!scriptPath)
+    {
+        consoleLog(LOG_LEVEL_ERROR, "runThisModule", "Failed to run this module due to unknown circumstances, please try again.");
+        return;
+    }
+    switch(__thisModule->moduleRunState)
+    {
+        
+        case INIT: {
+            if(currentState == LATE_FS) 
+            {
+                snprintf(scriptPath, sizeof(__thisModule->pathOfTheModule), "%s/init.sh", __thisModule->pathOfTheModule);
+                if(executeScripts(scriptPath, (char * const[]){scriptPath, NULL}, false) != 0) consoleLog(LOG_LEVEL_ERROR, "runThisModule", "Failed to run the module script.");
+            }
+        }
+        break;
+        case LATE_FS: {
+            if(currentState == LATE_FS) 
+            {
+                snprintf(scriptPath, sizeof(__thisModule->pathOfTheModule), "%s/late-fs.sh", __thisModule->pathOfTheModule);
+                if(executeScripts(scriptPath, (char * const[]){scriptPath, NULL}, false) != 0) consoleLog(LOG_LEVEL_ERROR, "runThisModule", "Failed to run the module script.");
+            }
+        }
+        break;
+        case POST_FS: {
+            if(currentState == POST_FS) 
+            {
+                snprintf(scriptPath, sizeof(__thisModule->pathOfTheModule), "%s/post-fs.sh", __thisModule->pathOfTheModule);
+                if(executeScripts(scriptPath, (char * const[]){scriptPath, NULL}, false) != 0) consoleLog(LOG_LEVEL_ERROR, "runThisModule", "Failed to run the module script.");
+            }
+        }
+        break;
+        case POST_FS_DATA: {
+            if(currentState == POST_FS_DATA)
+            {
+                snprintf(scriptPath, sizeof(__thisModule->pathOfTheModule), "%s/post-fs-data.sh", __thisModule->pathOfTheModule);
+                if(executeScripts(scriptPath, (char * const[]){scriptPath, NULL}, false) != 0) consoleLog(LOG_LEVEL_ERROR, "runThisModule", "Failed to run the module script.");
+            }
+        }
+        break;
+        case BOOT_COMPLETED: {
+            if(currentState == BOOT_COMPLETED)
+            {
+                snprintf(scriptPath, sizeof(__thisModule->pathOfTheModule), "%s/boot-completed.sh", __thisModule->pathOfTheModule);
+                if(executeScripts(scriptPath, (char * const[]){scriptPath, NULL}, false) != 0) consoleLog(LOG_LEVEL_ERROR, "runThisModule", "Failed to run the module script.");
+            }
+        }
+        break;
+        default:
+            consoleLog(LOG_LEVEL_ERROR, "runThisModule", "Unknown state.");
+    }
+    free(scriptPath);
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright (C) 2025 ぼっち <ayumi.aiko@outlook.com>
+# Copyright (C) 2025 —͟͞͞★ ɪᴋ𝘂ᵞο ᴋ𝖎𝘵𝕒 ★ <ayumi.aiko@outlook.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -861,23 +861,60 @@ if [[ "${TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER}" == "true" && ! -z "${TARGET
 	# fi
 fi
 
-# bootRecon init thing:
+# initStateModuleRunner init thing:
 {
-	echo "on late-fs"
-	echo -e "\twrite /dev/tmp/boottrace \"late-fs\""
-	echo "on init"
-	echo -e "\twrite /dev/tmp/boottrace \"init\""
-	echo "on post-fs"
-	echo -e "\twrite /dev/tmp/boottrace \"post-fs\""
-	echo "on post-fs-data"
-	echo -e "\twrite /dev/tmp/boottrace \"post-fs-data\""
-	echo "on property:sys.boot_completed"
-	echo -e "\twrite /dev/tmp/boottrace \"boot-completed\"\n"
-} > "${SYSTEM_DIR}/etc/init/init.bootTimeTrace.rc"
-sudo chmod 644 "${SYSTEM_DIR}/etc/init/init.bootTimeTrace.rc"
-sudo chown 0 "${SYSTEM_DIR}/etc/init/init.bootTimeTrace.rc"
-sudo chgrp 0 "${SYSTEM_DIR}/etc/init/init.bootTimeTrace.rc"
-sudo chcon u:object_r:system_file:s0 "${SYSTEM_DIR}/etc/init/init.bootTimeTrace.rc"
+    echo "#"
+    echo "# Copyright (C) 2025 —͟͞͞★ ɪᴋ𝘂ᵞο ᴋ𝖎𝘵𝕒 ★ <ayumi.aiko@outlook.com>"
+    echo "#"
+    echo "# This program is free software: you can redistribute it and/or modify"
+    echo "# it under the terms of the GNU General Public License as published by"
+    echo "# the Free Software Foundation, either version 3 of the License, or"
+    echo "# (at your option) any later version."
+    echo "#"
+    echo "# This program is distributed in the hope that it will be useful,"
+    echo "# but WITHOUT ANY WARRANTY; without even the implied warranty of"
+    echo "# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the"
+    echo "# GNU General Public License for more details."
+    echo "#"
+    echo "# You should have received a copy of the GNU General Public License"
+    echo "# along with this program.  If not, see <http://www.gnu.org/licenses/>."
+    echo "#"
+    echo "##########################################################################"
+    echo "We mash up the place, turn up the bass, and make them all have fun (Fun)"
+    echo "A-we a blaze the fire, make it bun dem"
+    echo "We mash up the place, turn up the bass, and make some sound boy run (Run)-"
+    echo "##########################################################################"
+    echo "# let's register a service."
+    echo "service initStateModuleRunner /system/bin/initStateModuleRunner"
+    echo -e "\tclass main"
+    echo -e "\toneshot"
+    echo -e "\tuser root"
+    echo -e "\tgroup root"
+    echo -e "\tgroup root"
+    echo ""
+    echo "# let's start it on every single init stage, yeah this is a bit insecure but i'll find a"
+    echo "# way to prevent bricks"
+    echo ""
+    echo "on late-fs"
+    echo -e "\tstart initStateModuleRunner"
+    echo ""
+    echo "on init"
+    echo -e "\tstart initStateModuleRunner"
+    echo ""
+    echo "on post-fs"
+    echo -e "\tstart initStateModuleRunner"
+    echo ""
+    echo "on post-fs-data"
+    echo -e "\tstart initStateModuleRunner"
+    echo ""
+    echo "on property:sys.boot_completed=1"
+    echo -e "\tstart initStateModuleRunner"
+    echo ""
+} > "${SYSTEM_DIR}/etc/init/init.initStateModuleRunner.rc"
+sudo chmod 644 "${SYSTEM_DIR}/etc/init/init.initStateModuleRunner.rc"
+sudo chown 0 "${SYSTEM_DIR}/etc/init/init.initStateModuleRunner.rc"
+sudo chgrp 0 "${SYSTEM_DIR}/etc/init/init.initStateModuleRunner.rc"
+sudo chcon u:object_r:system_file:s0 "${SYSTEM_DIR}/etc/init/init.initStateModuleRunner.rc"
 
 # knoxpatch
 if [[ "${TARGET_BUILD_ADD_KNOXPATCH}" == "true" ]]; then

@@ -29,6 +29,7 @@
 #include <dirent.h>
 
 // extern variables.
+extern int currentState;
 extern char *codenameForThisBinary;
 extern char *batteryPercentageBlobFilePaths[];
 extern char *const resetprop;
@@ -57,6 +58,7 @@ typedef struct {
 	char moduleVersion[16];
     char moduleAuthor[64];
 	char moduleExecutableName[20];
+	char pathOfTheModule[512];
 } tsukikaModule;
 
 // only used for void* based arguments.
@@ -97,7 +99,8 @@ enum bootTraceState {
 	LATE_FS,
 	INIT,
 	POST_FS,
-	POST_FS_DATA
+	POST_FS_DATA,
+	BOOT_COMPLETED,
 };
 
 // function declarations.
@@ -119,4 +122,5 @@ void prepareStockRecoveryCommandFile(enum openRecoveryScriptNextCommand ors, cha
 void daemonStateManager(enum setDaemonPropertyState daemonProp, char *daemonName);
 void androidPropertyCallback(void* cookie, const char* name, const char* value, uint32_t serial);
 void listModulesAndVerifyThem();
+void runThisModule(void *thisModule);
 #endif
