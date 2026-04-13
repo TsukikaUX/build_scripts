@@ -309,31 +309,38 @@ void listModulesAndVerifyThem()
         // skip . and ..
         if(strcmp(directories->d_name, ".") == 0 || strcmp(directories->d_name, "..") == 0) continue;
         // allocate module per entry
-        module = malloc(sizeof(tsukikaModule));
+        module = calloc(1, sizeof(tsukikaModule));
         if(!module) continue;
-        // build full module dir path
-        char moduleDir[512];
-        snprintf(moduleDir, sizeof(moduleDir), "/system/etc/init/modules/tsukika/%s", directories->d_name);
-        // check if it's a directory
-        struct stat st;
-        if(stat(moduleDir, &st) == -1 || !S_ISDIR(st.st_mode)) 
-        {
-            free(module);
-            continue;
-        }
-        // build module.prop path
         char moduleProp[512];
-        snprintf(moduleProp, sizeof(moduleProp), "%s/module.prop", moduleDir);
+        snprintf(moduleProp, sizeof(moduleProp), "modules/%s/module.prop", directories->d_name);
         // get values safely
         char *name = getpropFromFile("name", moduleProp);
         char *version = getpropFromFile("version", moduleProp);
         char *author = getpropFromFile("author", moduleProp);
-        if(name) strcpy(module->moduleName, name);
-        if(version) strcpy(module->moduleVersion, version);
-        if(author) strcpy(module->moduleAuthor, author);
-        module->minSDK = atoi(getpropFromFile("minSDK", moduleProp));
-        module->maxSDK = atoi(getpropFromFile("maxSDK", moduleProp));
-        module->moduleRunState = atoi(getpropFromFile("runState", moduleProp));
+        if(name) 
+        {
+            strncpy(module->moduleName, name, sizeof(module->moduleName) - 1);
+            free(name);
+        }
+        if(version) 
+        {
+            strncpy(module->moduleVersion, version, sizeof(module->moduleVersion) - 1);
+            free(version);
+        }
+        if(author) 
+        {
+            strncpy(module->moduleAuthor, author, sizeof(module->moduleAuthor) - 1);
+            free(author);
+        }
+        char *minSDK = getpropFromFile("minSDK", moduleProp);
+        char *maxSDK = getpropFromFile("maxSDK", moduleProp);
+        char *runState = getpropFromFile("runState", moduleProp);
+        module->minSDK = minSDK ? atoi(minSDK) : 0;
+        module->maxSDK = maxSDK ? atoi(maxSDK) : 0;
+        module->moduleRunState = runState ? atoi(runState) : 0;
+        free(minSDK);
+        free(maxSDK);
+        free(runState);
         verifyAndLogModule(module);
         free(module);
     }
