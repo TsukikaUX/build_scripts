@@ -26,12 +26,21 @@ int executeCommands(const char *command, char *const args[], bool requiresOutput
             consoleLog(LOG_LEVEL_ERROR, "executeCommands", "Failed to fork process.");
             return 1;
         case 0:
+            // throw stderr and stdout to /dev/null.
             if(!requiresOutput) {
                 int devNull = open("/dev/null", O_WRONLY);
                 if(devNull == -1) exit(EXIT_FAILURE);
                 dup2(devNull, STDOUT_FILENO);
                 dup2(devNull, STDERR_FILENO);
                 close(devNull);
+            }
+            // throw stderr and stdout to LOGFILE
+            else 
+            {
+                int logFile = open(LOGFILE, O_WRONLY);
+                dup2(logFile, STDOUT_FILENO);
+                dup2(logFile, STDERR_FILENO);
+                close(logFile);
             }
             execvp(command, args);
             consoleLog(LOG_LEVEL_ERROR, "executeCommands", "Failed to execute command: %s", command);
@@ -61,12 +70,21 @@ int executeScripts(const char *scriptFile, char *const args[], bool requiresOutp
             consoleLog(LOG_LEVEL_ERROR, "executeScripts", "Failed to fork process.");
             return 1;
         case 0:
+            // throw stderr and stdout to /dev/null.
             if(!requiresOutput) {
                 int devNull = open("/dev/null", O_WRONLY);
                 if(devNull == -1) exit(EXIT_FAILURE);
                 dup2(devNull, STDOUT_FILENO);
                 dup2(devNull, STDERR_FILENO);
                 close(devNull);
+            }
+            // throw stderr and stdout to LOGFILE
+            else 
+            {
+                int logFile = open(LOGFILE, O_WRONLY);
+                dup2(logFile, STDOUT_FILENO);
+                dup2(logFile, STDERR_FILENO);
+                close(logFile);
             }
             execv(scriptFile, args);
             consoleLog(LOG_LEVEL_ERROR, "executeScripts", "Failed to execute %s", scriptFile);
@@ -94,9 +112,11 @@ int searchBlockListedStrings(const char *filename, const char *search_str) {
     char boii[1000];
     FILE *fptr = fopen(filename, "r"); 
     if(!fptr) abort_instance("searchBlockListedStrings", "Failed to open file for reading: %s", filename);
-    while(fgets(boii, sizeof(boii), fptr) != NULL) {
+    while(fgets(boii, sizeof(boii), fptr)) 
+    {
         boii[strcspn(boii, "\n")] = '\0';
-        if(strstr(boii, search_str)) {
+        if(strstr(boii, search_str)) 
+        {
             fclose(fptr);
             consoleLog(LOG_LEVEL_ERROR, "searchBlockListedStrings", "Expected string found in given file: %s", filename);
             return 1;
@@ -135,6 +155,7 @@ int checkBlocklistedStringsNChar(const char *haystack) {
         "/bluetooth",
         "/cust",
         "/xbl",
+        "nvram",
         "/persist",
         "/dev/block/bootdevice/by-name/",
         "/dev/block/by-name/",

@@ -21,7 +21,7 @@
 int isPackageInstalled(const char *packageName) {
     FILE *fptr = popen("pm list packages | cut -d ':' -f 2", "r");
     if(!fptr) return -1;
-    char string[8000];
+    char string[1024];
     while(fgets(string, sizeof(string), fptr) != NULL) {
         string[strcspn(string, "\n")] = '\0';
         if(strcmp(string, packageName) == 0) {
@@ -210,35 +210,6 @@ bool getDeviceState(enum expectedDeviceState exptx) {
     return false;
 }
 
-bool verifyAndLogModule(void *runnableModule)
-{
-    int systemSDK = getSystemProperty__("ro.system.build.version.sdk");
-    tsukikaModule* thisInstanceModule = (tsukikaModule*)runnableModule;
-    // init state checks
-    if(thisInstanceModule->moduleRunState != LATE_FS && thisInstanceModule->moduleRunState != POST_FS && thisInstanceModule->moduleRunState != POST_FS_DATA)
-    {
-        consoleLog(LOG_LEVEL_ERROR, "verifyAndLogModule", "Module doesn't have a valid init state, returning back and verifying other modules...");
-        return false;
-    }
-    // sdk checks
-    if(systemSDK > thisInstanceModule->maxSDK) {
-        consoleLog(LOG_LEVEL_ERROR, "verifyAndLogModule", "Cannot run module: system SDK is higher than supported.");
-        return false;
-    }
-    else if(systemSDK < thisInstanceModule->minSDK) {
-        consoleLog(LOG_LEVEL_ERROR, "verifyAndLogModule", "Cannot run module: system SDK is lower than required.");
-        return false;
-    }
-    // log stuffs now:
-    consoleLog(LOG_LEVEL_INFO, "verifyAndLogModule", "Name of the module: %s", thisInstanceModule->moduleName);
-    consoleLog(LOG_LEVEL_INFO, "verifyAndLogModule", "Version of the module %s", thisInstanceModule->moduleVersion);
-    consoleLog(LOG_LEVEL_INFO, "verifyAndLogModule", "Author of the module %s", thisInstanceModule->moduleAuthor);
-    consoleLog(LOG_LEVEL_INFO, "verifyAndLogModule", "Module will run shortly! Please wait...");
-    currentState = thisInstanceModule->moduleRunState;
-    runThisModule(runnableModule);
-    return true;
-}
-
 char *getSystemProperty(const char *propertyVariableName) {
     // Update: use native functions from android-ndk itself!
     const prop_info* pi = __system_property_find(propertyVariableName);
@@ -246,7 +217,7 @@ char *getSystemProperty(const char *propertyVariableName) {
     if(pi) {
         PropertyHandler ctx = {0};
         __system_property_read_callback(pi, androidPropertyCallback, &ctx);
-        snprintf(globalPropertyValueBuffer, sizeof(globalPropertyValueBuffer), "%s", ctx.propertyValue);
+        snprintf(globalPropertyValueBuffer, PROP_VALUE_MAX, "%s", ctx.propertyValue);
         return globalPropertyValueBuffer;
     }
     else {
@@ -257,7 +228,8 @@ char *getSystemProperty(const char *propertyVariableName) {
             return NULL;
         }
         // remove the dawn newline char to get a clear value.
-        while(fgets(globalPropertyValueBuffer, sizeof(globalPropertyValueBuffer), fptr) != NULL) globalPropertyValueBuffer[strcspn(globalPropertyValueBuffer, "\n")] = '\0';
+        fgets(globalPropertyValueBuffer, PROP_VALUE_MAX, fptr);
+        globalPropertyValueBuffer[strcspn(globalPropertyValueBuffer, "\n")] = '\0';
         fclose(fptr);
         return globalPropertyValueBuffer;
     }
@@ -265,7 +237,7 @@ char *getSystemProperty(const char *propertyVariableName) {
 }
 
 void alertUser(char *message) {
-    if(getSystemProperty__("sys.boot_completed") != 1) return;
+    if(getDeviceState(DEVICE_BOOT_COMPLETED) != 0) return;
     if(isPackageInstalled("bellavita.toast") == 0) executeCommands("am", (char *const[]) {"am", "start", "-a", "android.intent.action.MAIN", "-e", "toasttext", message, "-n", "bellavita.toast/.MainActivity", NULL}, false);
     else executeCommands("cmd", (char *const[]) {"cmd", "notification", "post", "-S", "bigtext", "-t", "Tsukika", "Tag", message, NULL}, false);
 }
@@ -294,121 +266,13 @@ void daemonStateManager(enum setDaemonPropertyState daemonProp, char *daemonName
 
 void androidPropertyCallback(void* cookie, const char* name, const char* value, uint32_t serial) {
     PropertyHandler* handler = (PropertyHandler*)cookie;
-    if(handler == NULL) fprintf(stderr, "Error: Callback 'cookie' (PropertyHandler pointer) is NULL!\n");
+    if(handler == NULL) 
+    {
+        fprintf(stderr, "Error: Callback 'cookie' (PropertyHandler pointer) is NULL!\n");
+        return;
+    }
     snprintf(handler->propertyName, sizeof(handler->propertyName), "%s", name);
     snprintf(handler->propertyValue, sizeof(handler->propertyValue), "%s", value);
     handler->propertySerial = serial;
     handler->found = 1;
-}
-
-void listModulesAndVerifyThem()
-{
-    tsukikaModule* module;
-    DIR *baseDirectory = opendir("/system/etc/init/modules/tsukika");
-    if(!baseDirectory)
-    {
-        consoleLog(LOG_LEVEL_ERROR, "listModulesAndVerifyThem", "Failed to open module directory.");
-        return;
-    }
-    struct dirent *directories;
-    while((directories = readdir(baseDirectory)))
-    {
-        // skip . and ..
-        if(strcmp(directories->d_name, ".") == 0 || strcmp(directories->d_name, "..") == 0) continue;
-        // allocate module per entry
-        module = calloc(1, sizeof(tsukikaModule));
-        if(!module) continue;
-        char moduleProp[512];
-        snprintf(moduleProp, sizeof(moduleProp), "/system/etc/init/modules/tsukika/modules/%s/module.prop", directories->d_name);
-        // get values safely
-        char *name = getpropFromFile("name", moduleProp);
-        char *version = getpropFromFile("version", moduleProp);
-        char *author = getpropFromFile("author", moduleProp);
-        if(name) 
-        {
-            strncpy(module->moduleName, name, sizeof(module->moduleName) - 1);
-            free(name);
-        }
-        if(version) 
-        {
-            strncpy(module->moduleVersion, version, sizeof(module->moduleVersion) - 1);
-            free(version);
-        }
-        if(author) 
-        {
-            strncpy(module->moduleAuthor, author, sizeof(module->moduleAuthor) - 1);
-            free(author);
-        }
-        char *minSDK = getpropFromFile("minSDK", moduleProp);
-        char *maxSDK = getpropFromFile("maxSDK", moduleProp);
-        char *runState = getpropFromFile("runState", moduleProp);
-        module->minSDK = minSDK ? atoi(minSDK) : 0;
-        module->maxSDK = maxSDK ? atoi(maxSDK) : 0;
-        module->moduleRunState = runState ? atoi(runState) : 0;
-        snprintf(module->pathOfTheModule, sizeof(module->pathOfTheModule), "/system/etc/init/modules/tsukika/modules/%s", directories->d_name);
-        free(minSDK);
-        free(maxSDK);
-        free(runState);
-        verifyAndLogModule(module);
-        free(module);
-    }
-    closedir(baseDirectory);
-}
-
-void runThisModule(void *thisModule)
-{
-    tsukikaModule* __thisModule = (tsukikaModule*)thisModule;
-    char *scriptPath = malloc(sizeof(__thisModule->pathOfTheModule) + 19);
-    if(!scriptPath)
-    {
-        consoleLog(LOG_LEVEL_ERROR, "runThisModule", "Failed to run this module due to unknown circumstances, please try again.");
-        return;
-    }
-    switch(__thisModule->moduleRunState)
-    {
-        
-        case INIT: {
-            if(currentState == LATE_FS) 
-            {
-                snprintf(scriptPath, sizeof(__thisModule->pathOfTheModule), "%s/init.sh", __thisModule->pathOfTheModule);
-                if(executeScripts(scriptPath, (char * const[]){scriptPath, NULL}, false) != 0) consoleLog(LOG_LEVEL_ERROR, "runThisModule", "Failed to run the module script.");
-            }
-        }
-        break;
-        case LATE_FS: {
-            if(currentState == LATE_FS) 
-            {
-                snprintf(scriptPath, sizeof(__thisModule->pathOfTheModule), "%s/late-fs.sh", __thisModule->pathOfTheModule);
-                if(executeScripts(scriptPath, (char * const[]){scriptPath, NULL}, false) != 0) consoleLog(LOG_LEVEL_ERROR, "runThisModule", "Failed to run the module script.");
-            }
-        }
-        break;
-        case POST_FS: {
-            if(currentState == POST_FS) 
-            {
-                snprintf(scriptPath, sizeof(__thisModule->pathOfTheModule), "%s/post-fs.sh", __thisModule->pathOfTheModule);
-                if(executeScripts(scriptPath, (char * const[]){scriptPath, NULL}, false) != 0) consoleLog(LOG_LEVEL_ERROR, "runThisModule", "Failed to run the module script.");
-            }
-        }
-        break;
-        case POST_FS_DATA: {
-            if(currentState == POST_FS_DATA)
-            {
-                snprintf(scriptPath, sizeof(__thisModule->pathOfTheModule), "%s/post-fs-data.sh", __thisModule->pathOfTheModule);
-                if(executeScripts(scriptPath, (char * const[]){scriptPath, NULL}, false) != 0) consoleLog(LOG_LEVEL_ERROR, "runThisModule", "Failed to run the module script.");
-            }
-        }
-        break;
-        case BOOT_COMPLETED: {
-            if(currentState == BOOT_COMPLETED)
-            {
-                snprintf(scriptPath, sizeof(__thisModule->pathOfTheModule), "%s/boot-completed.sh", __thisModule->pathOfTheModule);
-                if(executeScripts(scriptPath, (char * const[]){scriptPath, NULL}, false) != 0) consoleLog(LOG_LEVEL_ERROR, "runThisModule", "Failed to run the module script.");
-            }
-        }
-        break;
-        default:
-            consoleLog(LOG_LEVEL_ERROR, "runThisModule", "Unknown state.");
-    }
-    free(scriptPath);
 }
