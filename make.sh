@@ -27,8 +27,8 @@ UBER_SIGNER_JAR="./src/dependencies/bin/signer.jar"
 APKTOOL_JAR="./src/dependencies/bin/apktool.jar"
 HEADER_PATH="./src/include"
 HEADER_SOURCES="./src/include/tsukika.c ./src/include/tsukikautils.c"
-SOURCES=("./src/tsukika/android_binaries/c/compileTest/test.c" "./src/tsukika/android_binaries/c/BootRecon/main.c")
-SOURCE_BUILD_OUTPUT_PATH=("./src/tsukika/android_binaries/c/compileTest/hawksnext" "./src/tsukika/android_binaries/c/BootRecon/bootrecon")
+SOURCES=("./src/tsukika/android_binaries/c/compileTest/test.c" "./src/tsukika/android_binaries/c/BootRecon/main.c" "./src/tsukika/android_binaries/c/initStateModuleRunner/main.c")
+SOURCE_BUILD_OUTPUT_PATH=("./src/tsukika/android_binaries/c/compileTest/hawksnext" "./src/tsukika/android_binaries/c/BootRecon/bootrecon" "./src/tsukika/android_binaries/c/initStateModuleRunner/initStateModuleRunner")
 SKIPSIGN=""
 OTA_MANIFEST_URL=""
 SDK=""
@@ -116,16 +116,21 @@ for args in "$@"; do
             fi
         ;;
         "clean")
-            sudo rm -rf "./src/tsukika/android_packages/TsukikaUpdater/dist" "./src/tsukika/android_packages/TsukikaUpdater/smali" ./src/tsukika/android_packages/TsukikaUpdater/smali_* "./src/tsukika/android_packages/TsukikaUpdater/build" "${BUILD_LOGFILE}" "${SOURCE_BUILD_OUTPUT_PATH[0]}" "${SOURCE_BUILD_OUTPUT_PATH[1]}"
+            sudo rm -rf "./src/tsukika/android_packages/TsukikaUpdater/dist" "./src/tsukika/android_packages/TsukikaUpdater/smali" ./src/tsukika/android_packages/TsukikaUpdater/smali_* "./src/tsukika/android_packages/TsukikaUpdater/build" "${BUILD_LOGFILE}" "${SOURCE_BUILD_OUTPUT_PATH[0]}" "${SOURCE_BUILD_OUTPUT_PATH[1]}" "${SOURCE_BUILD_OUTPUT_PATH[2]}"
 	        echo -e "\033[0;32mmake: Info: Clean complete.\033[0m"
         ;;
-        "headertest"|"bootrecon")
-            [ "${lowerCaseArgument}" == "headertest" ] && SOURCE_INDEX=0 || SOURCE_INDEX=1
+        "headertest"|"bootrecon"|"initmodules")
+            [ "${lowerCaseArgument}" == "headertest" ] && SOURCE_INDEX=0
+            [ "${lowerCaseArgument}" == "bootrecon" ] && SOURCE_INDEX=1 || {
+                HEADER_SOURCES="$HEADER_SOURCES ./src/include/tsukika_modules.c"
+                SOURCE_INDEX=2
+            }
             buildTargets;
         ;;
         "all")
-            for i in $(seq 0 1); do
+            for i in $(seq 0 2); do
                 SOURCE_INDEX="$i"
+                [ "$i" == "2" ] && HEADER_SOURCES="$HEADER_SOURCES ./src/include/tsukika_modules.c"
                 buildTargets
             done
         ;;

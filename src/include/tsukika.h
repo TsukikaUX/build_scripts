@@ -29,7 +29,6 @@
 #include <dirent.h>
 
 // extern variables.
-extern int currentState;
 extern char *codenameForThisBinary;
 extern char *batteryPercentageBlobFilePaths[];
 extern char *const resetprop;
@@ -49,17 +48,6 @@ typedef struct {
     char propertyName[PROP_NAME_MAX];
     char propertyValue[PROP_VALUE_MAX];
 } PropertyHandler;
-
-typedef struct {
-	int moduleRunState;
-	int maxSDK;
-	int minSDK;
-	char moduleName[50];
-	char moduleVersion[16];
-    char moduleAuthor[64];
-	char moduleExecutableName[20];
-	char pathOfTheModule[512];
-} tsukikaModule;
 
 // only used for void* based arguments.
 // compiler will throw errors if somebody tried to use a diff enum.
@@ -114,13 +102,10 @@ int getBatteryPercentage();
 int getPidOf(const char *proc);
 bool killProcess(pid_t procID);
 bool getDeviceState(enum expectedDeviceState exptx);
-bool verifyAndLogModule(void *runnableModule);
 char *combineStringsFormatted(const char *format, ...);
 char *getSystemProperty(const char *propertyVariableName);
 void alertUser(char *message);
 void prepareStockRecoveryCommandFile(enum openRecoveryScriptNextCommand ors, char *actionArgOne, char *actionArgTwo);
 void daemonStateManager(enum setDaemonPropertyState daemonProp, char *daemonName);
 void androidPropertyCallback(void* cookie, const char* name, const char* value, uint32_t serial);
-void listModulesAndVerifyThem();
-void runThisModule(void *thisModule);
 #endif
