@@ -113,10 +113,10 @@ function abort() {
     # why $3? because i dont provide $3 on anything except makefile.
     if [ -z "$3" ]; then
         tinkerWithCSCFeaturesFile --encode
-        sudo rm -rf $TMPDIR $TMPFILE ./local_build/etc/extract/*.img ./local_build/etc/extract/*.img.lz4 ./localFirmwareBuildPending
-        sudo umount ./local_build/etc/imageSetup/* &>/dev/null
+        rm -rf $TMPDIR $TMPFILE ./local_build/etc/extract/*.img ./local_build/etc/extract/*.img.lz4 ./localFirmwareBuildPending
+        umount ./local_build/etc/imageSetup/* &>/dev/null
     fi
-    sudo rm -rf $TMPDIR $TMPFILE
+    rm -rf $TMPDIR $TMPFILE
     export PATH="${OLDPATH}"
     exit 1
 }
@@ -240,10 +240,10 @@ function buildAndSignThePackage() {
     fi
 
     # Move signed APK to final location
-    sudo mv "$signed_apk" "$app_path/" || abort "Failed to move APK to target location: $app_path" "buildAndSignThePackage"
+    mv "$signed_apk" "$app_path/" || abort "Failed to move APK to target location: $app_path" "buildAndSignThePackage"
 
     # Clean up
-    sudo rm -rf "$extracted_dir_path/build" "$extracted_dir_path/dist/" "$extracted_dir_path/original/"
+    rm -rf "$extracted_dir_path/build" "$extracted_dir_path/dist/" "$extracted_dir_path/original/"
 }
 
 function catchDuplicatesInXML() {
@@ -267,6 +267,12 @@ function addFloatXMLValues() {
 
     #TODO:
     [ "$loggedFloatingFeaturePATH" == "no" ] && { debugPrint "addFloatXMLValues(): Floating feature path: ${BUILD_TARGET_FLOATING_FEATURE_PATH}"; loggedFloatingFeaturePATH="yes"; }
+
+    # check if the arg corresponds to the stuff mentioned:
+    if [ "$feature_code_value" == "--delete" ]; then
+        xmlstarlet ed -L -d "//*[contains(name(), '$feature_code')]" "$BUILD_TARGET_FLOATING_FEATURE_PATH"
+        return $?
+    fi
 
     # Check if the feature_code already exists in the XML file
     if [ "$(catchDuplicatesInXML "${feature_code}" "${BUILD_TARGET_FLOATING_FEATURE_PATH}")" == 0 ]; then
@@ -330,7 +336,8 @@ function tinkerWithCSCFeaturesFile() {
             for EXPECTED_CSC_FEATURE_XML_PATH in $PRODUCT_DIR/omc/*/conf/cscfeature.xml $OPTICS_DIR/configs/carriers/*/*/conf/system/cscfeature.xml; do
                 [ -f "${EXPECTED_CSC_FEATURE_XML_PATH}__decoded.xml" ] || continue
                 file "${EXPECTED_CSC_FEATURE_XML_PATH}__decoded.xml" | grep -q data && continue
-                sudo rm -rf ${EXPECTED_CSC_FEATURE_XML_PATH}; sudo touch $EXPECTED_CSC_FEATURE_XML_PATH
+                rm -rf ${EXPECTED_CSC_FEATURE_XML_PATH}; 
+                touch $EXPECTED_CSC_FEATURE_XML_PATH
                 debugPrint "tinkerWithCSCFeaturesFile(): File chosen: ${EXPECTED_CSC_FEATURE_XML_PATH}__decoded.xml"
                 if java -jar "$decoder_jar" -e -i "${EXPECTED_CSC_FEATURE_XML_PATH}__decoded.xml" -o "${EXPECTED_CSC_FEATURE_XML_PATH}" &>>$thisConsoleTempLogFile; then
                     debugPrint "CSC feature file successfully encoded: ${EXPECTED_CSC_FEATURE_XML_PATH}"
@@ -556,9 +563,9 @@ function applyDiffPatches() {
             abort "❌ Failed to cd into $theFilePath" "applyDiffPatches()"
         }
         # we need to manually type "y|yes" to proceed patching but 
-        # we can use this "yes" to the pipeline sudo command to skip typing and
+        # we can use this "yes" to the pipeline command to skip typing and
         # patch the file.
-        if yes | sudo patch -p0 --batch < "$tempFile" &> "$tempLog"; then
+        if yes | patch -p0 --batch < "$tempFile" &> "$tempLog"; then
             console_print "✔️ ${strippedFilePathOfPatchFile} got patched without errors"
         else
             console_print "❌ Failed to patch ${strippedFilePathOfPatchFile}"
@@ -725,16 +732,16 @@ function copyDeviceBlobsSafely() {
     local blobInROM="$2"
     local backupBlob="./local_build/tmp/tsuki/$(basename ${blobInROM}).bak"
     console_print "Trying to copy ${blobFromSource} to ${blobInROM}"
-    [ -f "$blobInROM" ] && sudo cp -af "$blobInROM" "$backupBlob"; 
+    [ -f "$blobInROM" ] && cp -af "$blobInROM" "$backupBlob"; 
     if [ ! -f "$blobInROM" ] && ask "${blobFromSource} is not found on the ROM, do you wanna copy this blob to the device?"; then
-        if ! sudo cp -af "${blobFromSource}" "${blobInROM}" 2>>${thisConsoleTempLogFile}; then
+        if ! cp -af "${blobFromSource}" "${blobInROM}" 2>>${thisConsoleTempLogFile}; then
             warns "Failed to copy ${blobFromSource}, this might cause a bootloop, attempting to restore original blob." "copyDeviceBlobsSafely()"
-            [ -f "$backupBlob" ] && sudo cp -af "$backupBlob" "$blobInROM"
+            [ -f "$backupBlob" ] && cp -af "$backupBlob" "$blobInROM"
         fi
     else
-        if ! sudo cp -af "${blobFromSource}" "${blobInROM}"; then
+        if ! cp -af "${blobFromSource}" "${blobInROM}"; then
             warns "Failed to copy ${blobFromSource}, this might cause a bootloop, attempting to restore original blob." "copyDeviceBlobsSafely()"
-            [ -f "$backupBlob" ] && sudo cp -af "$backupBlob" "$blobInROM"
+            [ -f "$backupBlob" ] && cp -af "$backupBlob" "$blobInROM"
         fi
     fi
     console_print "Finished copying given blobs!"
@@ -859,14 +866,14 @@ function setupLocalImage() {
         "erofs")
             dirt="${mountPath}__rw"
             mkdir -p "$dirt"
-            sudo fuse.erofs "${imagePath}" "${mountPath}" 2>>$thisConsoleTempLogFile || abort "Failed to mount EROFS image: ${imagePath}" "setupLocalImage"
-            sudo cp -a --preserve=all "${mountPath}" "${dirt}/" || abort "Failed to copy contents to writable directory: ${dirt}" "setupLocalImage"
+            fuse.erofs "${imagePath}" "${mountPath}" 2>>$thisConsoleTempLogFile || abort "Failed to mount EROFS image: ${imagePath}" "setupLocalImage"
+            cp -a --preserve=all "${mountPath}" "${dirt}/" || abort "Failed to copy contents to writable directory: ${dirt}" "setupLocalImage"
             [ -f "${dirt}/system/build.prop" ] && setMakeConfigs "$(echo "${imageBlock}" | tr '[:lower:]' '[:upper:]')_DIR" "${dirt}/system" "./src/makeconfigs.prop"
             [ -d "${dirt}/system/system_ext" ] && setMakeConfigs "SYSTEM_EXT_DIR" "${dirt}/system/system_ext" "./src/makeconfigs.prop"
             [ -f "${dirt}/build.prop" ] && setMakeConfigs "$(echo "${imageBlock}" | tr '[:lower:]' '[:upper:]')_DIR" "${dirt}" "./src/makeconfigs.prop"
         ;;
         "f2fs"|"ext4"|"ext2")
-            sudo mount -o rw,relatime "${imagePath}" "${mountPath}" || abort "Failed to mount ${imageBlock} as read-write" "setupLocalImage"
+            mount -o rw,relatime "${imagePath}" "${mountPath}" || abort "Failed to mount ${imageBlock} as read-write" "setupLocalImage"
             if [ -f "${mountPath}/system/build.prop" ]; then
                 setMakeConfigs "SYSTEM_DIR" "${mountPath}/system" "./src/makeconfigs.prop"
                 setMakeConfigs "SYSTEM_EXT_DIR" "${mountPath}/system/system_ext" "./src/makeconfigs.prop"
@@ -970,13 +977,13 @@ function buildImage() {
     mkdir -p ./local_build/buildedContents/
     if [[ "$blockPath" =~ __rw$ ]]; then
         console_print "EROFS fs detected, building an EROFS image..."
-        sudo mkfs.erofs -z lz4 --mount-point="${block}" "./local_build/buildedContents/${block}_built.img" "${blockPath}/" &>>$thisConsoleTempLogFile || abort "Failed to build EROFS image from ${blockPath}" "buildImage"
+        mkfs.erofs -z lz4 --mount-point="${block}" "./local_build/buildedContents/${block}_built.img" "${blockPath}/" &>>$thisConsoleTempLogFile || abort "Failed to build EROFS image from ${blockPath}" "buildImage"
     else 
         console_print "F2FS/EXT4 fs detected, unmounting the image..."
-        sudo umount "${blockPath}" || abort "Failed to unmount ${blockPath}, aborting this instance..."
+        umount "${blockPath}" || abort "Failed to unmount ${blockPath}, aborting this instance..."
         console_print "Successfully unmounted ${blockPath}."
         [ -f "$imagePath" ] && cp "$imagePath" "./local_build/buildedContents/${block}_built.img" &>>$thisConsoleTempLogFile || abort "Failed to copy the image to the build directory." "buildImage"
-        sudo rm "$imagePath"
+        rm "$imagePath"
     fi
     console_print "Successfully built ${block}.img"
     console_print "$block can be found at ./local_build/buildedContents/${block}_built.img"
@@ -1007,10 +1014,10 @@ function makeADirectory() {
     local directoryName="$1"
     local owner="$2"
     local group="$3"
-    sudo mkdir -p "${directoryName}"
-    sudo chmod 755 "${directoryName}"
-    sudo chown -R "${owner}:${group}" "${directoryName}"
-    sudo chcon u:object_r:system_file:s0 "${directoryName}"
+    mkdir -p "${directoryName}"
+    chmod 755 "${directoryName}"
+    chown -R "${owner}:${group}" "${directoryName}"
+    chcon u:object_r:system_file:s0 "${directoryName}"
 }
 
 function getLatestReleaseFromGithub() {
@@ -1037,18 +1044,18 @@ function setPerm() {
         console_print "usage: setPerm <file> <ownership> <group> <mod> <context>"
         abort "Not enough arguments" "setPerm"
     fi
-    sudo chown "$ownerShip":"$group" "$file"
-    sudo chmod "$mod" "$file"
+    chown "$ownerShip":"$group" "$file"
+    chmod "$mod" "$file"
     # OPTIONAL AS FREAK:
-    [ -z "$context" ] || sudo chcon "$context" "$file"
+    [ -z "$context" ] || chcon "$context" "$file"
 }
 
 function verify256Checksum() {
     local file="$1"
     local checksumHash="$2"
-    [ -f "$checksumHash" ] && [ "$(sudo sha256sum "${file}" | awk '{print $1}')" == "$(cat "${checksumHash}")" ] && return 0 || return 1
+    [ -f "$checksumHash" ] && [ "$(sha256sum "${file}" | awk '{print $1}')" == "$(cat "${checksumHash}")" ] && return 0 || return 1
     # we dont need to use the return commands here:
-    [ "$(sudo sha256sum "${file}" | awk '{print $1}')" == "${checksumHash}" ]
+    [ "$(sha256sum "${file}" | awk '{print $1}')" == "${checksumHash}" ]
 }
 
 function runModule() {
@@ -1112,4 +1119,18 @@ function removeApps() {
         debugPrint "removeApps(): Trying to remove ${fullPath}..."
         [ -d "${fullPath}" ] && rm -rf "${fullPath}" 2>>"${thisConsoleTempLogFile}" || debugPrint "removeApps(): Couldn't find ${appName}, don't worry, I will debloat it somehow :D"
     done
+}
+
+function getFloatingFeaturesValue()
+{
+    # floating feature conf depending on SDK version:
+    case "${BUILD_TARGET_SDK_VERSION}" in
+        28|29|30)
+            BUILD_TARGET_FLOATING_FEATURE_PATH="${VENDOR_DIR}/etc/floating_feature.xml"
+        ;;
+        31|32|33|34|35)
+            BUILD_TARGET_FLOATING_FEATURE_PATH="${SYSTEM_DIR}/etc/floating_feature.xml"
+        ;;
+    esac
+    echo "$(xmlstarlet sel -t -v "//$1" -n $BUILD_TARGET_FLOATING_FEATURE_PATH)"
 }

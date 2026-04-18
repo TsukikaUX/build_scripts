@@ -23,6 +23,9 @@ MY_KEYSTORE_PASSWORD="theDawnJKSPass"
 MY_KEYSTORE_PATH="./test-keys/tsukika.jks"
 MY_KEYSTORE_ALIAS_KEY_PASSWORD="theDawnJKSPass"
 
+# please put your stock floating features path here:
+STOCK_ROM_FLOATING_FEATURES_PATH=
+
 # replace these with your dir
 SYSTEM_DIR=
 SYSTEM_EXT_DIR=
