@@ -89,7 +89,7 @@ for i in $(seq 0 6); do
     fi
 done
 
-# let's cross verify dependencies:
+# let's check if dependencies are found or not
 echo ""
 echo "- Checking required dependencies..."
 for dep in "${dependencies[@]}"; do

@@ -90,21 +90,24 @@ compareDefaultMakeConfigs
 console_print "Starting to build Tsukika - ${CODENAME} on ${BUILD_USERNAME}'s computer..."
 console_print "Build started at $(date +%I:%M%p) on $(date +%d\ %B\ %Y)"
 
+# check root privilages
+[ "$(id -u)" != "0" ] && abort "Give root privilages before using this script";
+
 # sets sameOldFirmwarePackage to "true" to skip some extraction steps.
 [ "$(unzip -p "$argOne" ".uuid" 2>/dev/null)" == "$(grep_prop "previousBuildZipUUID" "./local_build/etc/buildNInfo/build.prop" 2>/dev/null)" ] && sameOldFirmwarePackage="true"
 
 # testenv:
 console_print "Testing if this environment can mount images..."	
-sudo dd if=/dev/zero of=./thetenacity count=10 bs=10M &>/dev/null
-sudo mkfs.ext4 ./thetenacity &>/dev/null
+dd if=/dev/zero of=./thetenacity count=10 bs=10M &>/dev/null
+mkfs.ext4 ./thetenacity &>/dev/null
 mkdir .sanitytest
-sudo mount -o rw,relatime ./thetenacity ./.sanitytest
-if ! sudo touch ./.sanitytest/test; then
-	sudo rm -rf ./.sanitytest ./thetenacity 
+mount -o rw,relatime ./thetenacity ./.sanitytest
+if ! touch ./.sanitytest/test; then
+	rm -rf ./.sanitytest ./thetenacity 
 	abort "[1] - Failed to mount images, please run this inside a real machine with real root privilages." "build.sh"
 fi
-sudo umount ./.sanitytest &>/dev/null
-sudo rm -rf ./.sanitytest ./thetenacity 
+umount ./.sanitytest &>/dev/null
+rm -rf ./.sanitytest ./thetenacity 
 debugPrint "build.sh: Passed image mount test, seems like the user is running on their own machine."
 
 # check:
@@ -128,8 +131,8 @@ if [ -n "$argOne" ]; then
 					mkdir -p "${mountPath}"
 					if stringFormat -l "$(file "${COMMON_FIRMWARE_BLOCKS}")" | grep -q "sparse"; then
 						simg2img "${COMMON_FIRMWARE_BLOCKS}" "${COMMON_FIRMWARE_BLOCKS}_rawFactor" &>/dev/null || abort "Failed to convert $(basename ${COMMON_FIRMWARE_BLOCKS} .img) into a raw image, please try again later.."
-						sudo rm -rf "${COMMON_FIRMWARE_BLOCKS}"
-						sudo mv "${COMMON_FIRMWARE_BLOCKS}_rawFactor" "${COMMON_FIRMWARE_BLOCKS}"
+						rm -rf "${COMMON_FIRMWARE_BLOCKS}"
+						mv "${COMMON_FIRMWARE_BLOCKS}_rawFactor" "${COMMON_FIRMWARE_BLOCKS}"
 					fi
 					setupLocalImage "${COMMON_FIRMWARE_BLOCKS}" "${mountPath}"
 				done
@@ -137,10 +140,10 @@ if [ -n "$argOne" ]; then
 					echo $images | grep -qE "system|vendor|product|optics" || continue
 					console_print "Setting up previous iteration.."
 					logInterpreter "Trying to extract ${images}.img from a LZ4 archive..." "lz4 -d ./local_build/etc/extract/${images}.img.lz4 ./local_build/etc/extract/${images}.img" || abort "Failed to extract $images from a lz4 archive." "build.sh"
-					sudo rm -rf ./local_build/etc/extract/${images}.img.lz4
+					rm -rf ./local_build/etc/extract/${images}.img.lz4
 					logInterpreter "Converting $images from sparse to raw image factor...." "simg2img ./local_build/etc/extract/${images}.img ./local_build/etc/extract/${images}_raw.img"
-					sudo rm ./local_build/etc/extract/${images}.img
-					sudo mv ./local_build/etc/extract/${images}_raw.img ./local_build/etc/extract/${images}.img
+					rm ./local_build/etc/extract/${images}.img
+					mv ./local_build/etc/extract/${images}_raw.img ./local_build/etc/extract/${images}.img
 					setupLocalImage ./local_build/etc/extract/${images}.img ./local_build/etc/imageSetup/${images}
 				done
 			else
@@ -148,7 +151,7 @@ if [ -n "$argOne" ]; then
 				logInterpreter "Trying to generate a uuid hash for $argOne" "uuidgen > .uuid" || abort "Failed to generate uuid hash for the zip file? check if uuidgen exists or not."
 				zip -q "$argOne" -j ".uuid" || abort "Failed to add uuid hash into the $argOne file."
 				setprop --custom "./local_build/etc/buildNInfo/build.prop" "previousBuildZipUUID" "$(cat .uuid)"
-				sudo rm .uuid
+				rm .uuid
 				# unzip -o test.zip nos/README_Kernel.txt -d nos | grep inflating | awk '{print $2}'
 				[[ "$(grep_prop "buildExtractedStuff_archive" "./local_build/etc/buildNInfo/build.prop")" == "AP" && "${sameOldFirmwarePackage}" == "true" ]] && console_print "Previous build was forcefully closed for some reason, extracting everything again..."
 				console_print "Trying to extract $(unzip -l $argOne | grep AP_ | awk '{print $4}') from the archive...."
@@ -167,11 +170,11 @@ if [ -n "$argOne" ]; then
 				console_print "Extracting ${cscStuff}..."
 				tar -C ./local_build/etc/extract/ -xf $extractedHomeCSCFilePath ${cscStuff}.img.lz4 &>> ${thisConsoleTempLogFile}
 				logInterpreter "Trying to extract ${cscStuff}.img from a LZ4 archive..." "lz4 -d ./local_build/etc/extract/${cscStuff}.img.lz4 ./local_build/etc/extract/${cscStuff}.img" || abort "Failed to extract $cscStuff from a lz4 archive." "logInterpreter"
-				sudo rm -rf ./local_build/etc/extract/${cscStuff}.img.lz4
+				rm -rf ./local_build/etc/extract/${cscStuff}.img.lz4
 				# TODO: convert images into raw if not already:
 				logInterpreter "Converting $cscStuff from sparse to raw image factor...." "simg2img ./local_build/etc/extract/${cscStuff}.img ./local_build/etc/extract/${cscStuff}_raw.img"
-				sudo rm ./local_build/etc/extract/${cscStuff}.img
-				sudo mv ./local_build/etc/extract/${cscStuff}_raw.img ./local_build/etc/extract/${cscStuff}.img
+				rm ./local_build/etc/extract/${cscStuff}.img
+				mv ./local_build/etc/extract/${cscStuff}_raw.img ./local_build/etc/extract/${cscStuff}.img
 				setupLocalImage ./local_build/etc/extract/${cscStuff}.img ./local_build/etc/imageSetup/${cscStuff}
 			done
 			for androidOS in super system vendor; do
@@ -189,12 +192,12 @@ if [ -n "$argOne" ]; then
 						./make.sh &>/dev/null || abort "Failed to build lptools, please try again.." "build.sh"
 						cd ../
 						# we are outside local_build
-						sudo mv ./local_build/lpunpack_and_lpmake/bin/* ./src/dependencies/bin/
+						mv ./local_build/lpunpack_and_lpmake/bin/* ./src/dependencies/bin/
 					fi
 					console_print "Extracting super..."
 					tar -C "./local_build/etc/extract/" -xf "$extractedAPFilePath" "super.img.lz4" &>> ${thisConsoleTempLogFile} || abort "Failed to extract super.img.lz4 from the tar file." "build.sh"
 					logInterpreter "Trying to extract super.img from a LZ4 archive..." "lz4 -d ./local_build/etc/extract/super.img.lz4 ./local_build/etc/extract/" || abort "Failed to extract super image from a lz4 archive." "build.sh"
-					sudo rm -rf ./local_build/etc/extract/super.img.lz4
+					rm -rf ./local_build/etc/extract/super.img.lz4
 					lpdump "./local_build/etc/extract/super.img" > ./local_build/etc/dumpOfTheSuperBlock &>>$thisConsoleTempLogFile || abort "Failed to dump metadata from super.img" "build.sh"
 					lpunpack "./local_build/etc/extract/super.img" "./local_build/etc/extract/super_extract/" &>>$thisConsoleTempLogFile || abort "Failed to unpack super.img" "build.sh"
 					for COMMON_FIRMWARE_BLOCKS in ./local_build/etc/extract/super_extract/*.img; do 
@@ -205,8 +208,8 @@ if [ -n "$argOne" ]; then
 						# would be a great idea to do such thing as below:
 						if stringFormat -l "$(file "${COMMON_FIRMWARE_BLOCKS}")" | grep -q "sparse"; then
 							simg2img "${COMMON_FIRMWARE_BLOCKS}" "${COMMON_FIRMWARE_BLOCKS}_rawFactor" &>/dev/null || abort "Failed to convert $(basename ${COMMON_FIRMWARE_BLOCKS} .img) into a raw image, please try again later.."
-							sudo rm -rf "${COMMON_FIRMWARE_BLOCKS}"
-							sudo mv "${COMMON_FIRMWARE_BLOCKS}_rawFactor" "${COMMON_FIRMWARE_BLOCKS}"
+							rm -rf "${COMMON_FIRMWARE_BLOCKS}"
+							mv "${COMMON_FIRMWARE_BLOCKS}_rawFactor" "${COMMON_FIRMWARE_BLOCKS}"
 						fi
 						setupLocalImage "${COMMON_FIRMWARE_BLOCKS}" "${mountPath}"
 					done
@@ -215,11 +218,11 @@ if [ -n "$argOne" ]; then
 					console_print "Extracting $androidOS..."
 					tar -tf "$extractedAPFilePath" | grep -q "${androidOS}.img.lz4" && tar -C ./local_build/etc/extract -xf $extractedAPFilePath ${androidOS}.img.lz4 &>> ${thisConsoleTempLogFile} || abort "Failed to extract $androidOS from a tar file." "build.sh"
 					logInterpreter "Trying to extract ${androidOS}.img from a LZ4 archive..." "lz4 -d ./local_build/etc/extract/${androidOS}.img.lz4 ./local_build/etc/extract/${androidOS}.img" || abort "Failed to extract $androidOS from a lz4 archive." "build.sh"
-					sudo rm -rf ./local_build/etc/extract/${androidOS}.img.lz4
+					rm -rf ./local_build/etc/extract/${androidOS}.img.lz4
 					# TODO: convert images into raw if not already:
 					logInterpreter "Converting $androidOS from sparse to raw image factor...." "simg2img ./local_build/etc/extract/${androidOS}.img ./local_build/etc/extract/${androidOS}_raw.img"
 					rm ./local_build/etc/extract/${androidOS}.img
-					sudo mv ./local_build/etc/extract/${androidOS}_raw.img ./local_build/etc/extract/${androidOS}.img
+					mv ./local_build/etc/extract/${androidOS}_raw.img ./local_build/etc/extract/${androidOS}.img
 					setupLocalImage ./local_build/etc/extract/${androidOS}.img ./local_build/etc/imageSetup/${androidOS}
 				fi
 			done
@@ -250,6 +253,7 @@ if [ -n "$argOne" ]; then
 else
 	# TODO: Check system,vendor before modding stuffs:
 	[[ -f "${SYSTEM_DIR}/build.prop" && -f "${VENDOR_DIR}/build.prop" ]] || abort "System or vendor partition is not a valid partition!" "build.sh"
+	[ -f "$STOCK_ROM_FLOATING_FEATURES_PATH" ] || abort "Floating features file is not added to the config file, please add it and try again." "build.sh"
 fi
 
 # Locate build.prop files
@@ -312,7 +316,7 @@ tinkerWithCSCFeaturesFile --decode || abort "Failed to decode the CSC files!"
 [ "$MY_KEYSTORE_PATH" == "./test-keys/tsukika.jks" ] && warns "NOTE: You are using Tsukika's test-key! This is not safe for public builds. Use your own key!" "TEST_KEY_WARNS"
 
 if [[ $BUILD_TARGET_ANDROID_VERSION -eq 14 ]]; then
-	sudo rm -rf ${SYSTEM_DIR}/etc/permissions/privapp-permissions-com.samsung.android.kgclient.xml ${SYSTEM_DIR}/etc/public.libraries-wsm.samsung.txt \
+	rm -rf ${SYSTEM_DIR}/etc/permissions/privapp-permissions-com.samsung.android.kgclient.xml ${SYSTEM_DIR}/etc/public.libraries-wsm.samsung.txt \
 	${SYSTEM_DIR}/lib/libhal.wsm.samsung.so ${SYSTEM_DIR}/lib/vendor.samsung.hardware.security.wsm.service-V1-ndk.so \
 	${SYSTEM_DIR}/lib64/libhal.wsm.samsung.so ${SYSTEM_DIR}/lib64/vendor.samsung.hardware.security.wsm.service-V1-ndk.so ${SYSTEM_DIR}/priv-app/KnoxGuard
 fi
@@ -364,6 +368,7 @@ if [ "$TARGET_FLOATING_FEATURE_BATTERY_SUPPORT_BSOH_SETTINGS" == "true" ]; then
 	console_print "This feature needs some patches to work on roms, if you don't"
 	console_print "see anything in the settings, please remove this on the next build."
 	addFloatXMLValues "SEC_FLOATING_FEATURE_BATTERY_SUPPORT_BSOH_SETTINGS" "TRUE"
+	addFloatXMLValues "SEC_FLOATING_FEATURE_BATTERY_SUPPORT_BSOH_GALAXYDIAGNOSTICS" "TRUE"
 fi
 
 [ "$TARGET_FLOATING_FEATURE_INCLUDE_CLOCK_LIVE_ICON" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_LAUNCHER_SUPPORT_CLOCK_LIVE_ICON" "TRUE" || \
@@ -440,7 +445,7 @@ if [ "$CUSTOM_WALLPAPER_RES_JSON_GENERATOR" == "true" ]; then
 	debugPrint "build.sh: User requested ${wallpaper_count} metadata to generate for wallpaper-res"
 	[[ "$wallpaper_count" =~ ^[0-9]+$ ]] && abort "\e[0;31m - Invalid input. Please enter a valid number. Exiting...\e[0;37m" "build.sh"
 	clear
-	sudo rm -rf ${DECODEDAPKTOOLPATHS[3]}/raw/resources_info.json
+	rm -rf ${DECODEDAPKTOOLPATHS[3]}/raw/resources_info.json
 	echo -e "{\n\t\"version\": \"0.0.1\",\n\t\"phone\": [" > ${DECODEDAPKTOOLPATHS[3]}/raw/resources_info.json
 	for ((i = 1; i <= wallpaper_count; i++)); do
 		[ "${i}" -ge "10" ] && special_index=0
@@ -484,7 +489,7 @@ if [ "$CUSTOM_WALLPAPER_RES_JSON_GENERATOR" == "true" ]; then
 		fi
 	done
 	echo -e "  ]\n}" >> ${DECODEDAPKTOOLPATHS[3]}/raw/resources_info.json
-	sudo rm -rf ${SYSTEM_DIR}/priv-app/wallpaper-res/*
+	rm -rf ${SYSTEM_DIR}/priv-app/wallpaper-res/*
 	buildAndSignThePackage "${DECODEDAPKTOOLPATHS[3]}" "${SYSTEM_DIR}/priv-app/wallpaper-res/" "false"
 	chmod 644 "${SYSTEM_DIR}/priv-app/wallpaper-res/tsukika-cust-wallpapers.apk"
 	chown root:root "${SYSTEM_DIR}/priv-app/wallpaper-res/tsukika-cust-wallpapers.apk"
@@ -513,7 +518,7 @@ if [ "$TARGET_REMOVE_USELESS_VENDOR_STUFFS" == "true" ]; then
                 [ -f "${proca}" ] && sed -i -e 's/^[^#]/# &/' ${proca} && console_print "Disabled Proca (Process Authenticator) service."
             done
         fi
-        sudo rm -rf "${VENDOR_DIR}/overlay/AccentColorBlack" "${VENDOR_DIR}/overlay/AccentColorCinnamon" "${VENDOR_DIR}/overlay/AccentColorGreen" \
+        rm -rf "${VENDOR_DIR}/overlay/AccentColorBlack" "${VENDOR_DIR}/overlay/AccentColorCinnamon" "${VENDOR_DIR}/overlay/AccentColorGreen" \
         "${VENDOR_DIR}/overlay/AccentColorOcean" "${VENDOR_DIR}/overlay/AccentColorOrchid" "${VENDOR_DIR}/overlay/AccentColorPurple" \
         "${VENDOR_DIR}/etc/init/boringssl_self_test.rc" "${VENDOR_DIR}/etc/init/dumpstate-default.rc" "${VENDOR_DIR}/etc/init/vendor_flash_recovery.rc" \
 		"${VENDOR_DIR}/etc/vintf/manifest/dumpstate-default.xml" "${VENDOR_DIR}/overlay/AccentColorSpace" &>/dev/null
@@ -542,10 +547,40 @@ if [ "$BUILD_TARGET_DISABLE_DYNAMIC_RANGE_COMPRESSION" == "true" ]; then
 	fi
 fi
 
+# add more floating features and do some debloats:
+addFloatXMLValues "SEC_FLOATING_FEATURE_COMMON_CONFIG_SEP_CATEGORY" "sep_basic"
+for fabCrypt in bin/fabric_crypto etc/init/fabric_crypto.rc etc/permissions/FabricCryptoLib.xml framework/FabricCryptoLib.jar \
+	framework/oat/*/FabricCryptoLib.odex framework/oat/arm/FabricCryptoLib.vdex lib64/com.samsung.security.fabric.cryptod-V1-cpp.so \
+	lib64/vendor.samsung.hardware.security.fkeymaster-V1-ndk.so priv-app/KmxService; do
+		[ -f "$SYSTEM_DIR/$fabCrypt" ] && rm -rf "$SYSTEM_DIR/$fabCrypt"
+done
+for icccShits in bin/hw/vendor.samsung.hardware.tlc.iccc@1.0-service etc/init/vendor.samsung.hardware.tlc.iccc@1.0-service.rc \
+	etc/vintf/manifest/vendor.samsung.hardware.tlc.iccc@1.0-manifest.xml lib64/vendor.samsung.hardware.tlc.iccc@1.0-impl.so \
+	lib64/vendor.samsung.hardware.tlc.iccc@1.0.so; do
+		[ -f "$VENDOR_DIR/$icccShits" ] && rm -rf "$VENDOR_DIR/$icccShits"
+done
+for audioConfig in CONFIG_REMOTE_MIC CONFIG_SOUNDALIVE_VERSION CONFIG_VOLUMEMONITOR_GAIN CONFIG_VOLUMEMONITOR_STAGE SUPPORT_VOLUME_MONITOR; do
+	floatAttr="$(getFloatingFeaturesValue "SEC_FLOATING_FEATURE_AUDIO_$audioConfig")"
+	[ -z "${floatAttr}" ] continue;
+	addFloatXMLValues "SEC_FLOATING_FEATURE_AUDIO_$audioConfig" "$floatAttr"
+done
+[ ! -z "$(getFloatingFeaturesValue SEC_FLOATING_FEATURE_SETTINGS_CONFIG_ELECTRIC_RATED_VALUE)" ] && \
+	addFloatXMLValues "SEC_FLOATING_FEATURE_SETTINGS_CONFIG_ELECTRIC_RATED_VALUE" "$(getFloatingFeaturesValue SEC_FLOATING_FEATURE_SETTINGS_CONFIG_ELECTRIC_RATED_VALUE)"
+
+[ ! -z "$(getFloatingFeaturesValue SEC_FLOATING_FEATURE_SYSTEM_CONFIG_SIOP_POLICY_FILENAME)" ] && \
+	addFloatXMLValues "SEC_FLOATING_FEATURE_SYSTEM_CONFIG_SIOP_POLICY_FILENAME" "$(getFloatingFeaturesValue SEC_FLOATING_FEATURE_SYSTEM_CONFIG_SIOP_POLICY_FILENAME)"
+addFloatXMLValues "SEC_FLOATING_FEATURE_CAMERA_SUPPORT_PRIVACY_TOGGLE" "TRUE"
+addFloatXMLValues "SEC_FLOATING_FEATURE_CAMERA_CONFIG_STRIDE_OCR_VERSION" "V1"
+
+for cameraChimera in CAMID_TELE_BINNING MEMORY_USAGE_LEVEL QRCODE_INTERVAL UW_DISTORTION_CORRECTION AVATAR_MAX_FACE_NUM \
+	CAMID_TELE_STANDARD_CROP HIGH_RESOLUTION_MAX_CAPTURE NIGHT_FRONT_DISPLAY_FLASH_TRANSPARENT; do
+		floatAttr="$(getFloatingFeaturesValue "SEC_FLOATING_FEATURE_CAMERA_CONFIG_$audioConfig")"
+		[ -z "${floatAttr}" ] continue;
+		addFloatXMLValues "SEC_FLOATING_FEATURE_CAMERA_CONFIG_$audioConfig" "$floatAttr"
+done
+
 # disables samsung asks
 [ "$TARGET_DISABLE_SAMSUNG_ASKS_SIGNATURE_VERFICATION" == "true" ] && setprop --system ro.build.official.release false
-
-#[[ -n "${roynaWhat}" ]] && buildAndSignThePackage "${DECODED-APKTOOLPATHS[4]}" "$TSUKIKA_FALLBACK_OVERLAY_PATH" "false" --skip-editing-version-info
 
 if [ "$TARGET_BUILD_REMOVE_SYSTEM_LOGGING" == "true" ]; then
 	addFloatXMLValues "SEC_FLOATING_FEATURE_SYSTEM_CONFIG_SYSINT_DQA_LOGLEVEL" '3'
@@ -642,7 +677,7 @@ if [ "$TARGET_BUILD_MAKE_DEODEXED_ROM" == "true" ]; then
 		${PRODUCT_DIR}/app/*/*/*.odex ${PRODUCT_DIR}/priv-app/*/*/*.vdex \
 		${VENDOR_DIR}/app/*/*/*.odex ${VENDOR_DIR}/priv-app/*/*/*.vdex \
 		$SYSTEM_EXT_DIR/app/*/*/*.odex $SYSTEM_EXT_DIR/app/*/*/*.vdex $SYSTEM_EXT_DIR/priv-app/*/*/*.odex $SYSTEM_EXT_DIR/priv-app/*/*/*.vdex; do
-		[ -f "${deletableO_VDexFiles}" ] && sudo rm -rf "${deletableO_VDexFiles}"
+		[ -f "${deletableO_VDexFiles}" ] && rm -rf "${deletableO_VDexFiles}"
 	done
 fi
 
@@ -669,7 +704,10 @@ fi
 
 # verify if the device is capable of running Generative AI and it's related actions.
 if [ "${BUILD_TARGET_IS_CAPABLE_FOR_GENERATIVE_AI}" == "true" ]; then
-	sudo rm -rf "${SYSTEM_DIR}/priv-app/PhotoEditor_Full/PhotoEditor_Full.apk"
+    addFloatXMLValues SEC_FLOATING_FEATURE_COMMON_DISABLE_NATIVE_AI --delete
+    addFloatXMLValues "SEC_FLOATING_FEATURE_VISION_SUPPORT_AI_MY_FAVORITE_CONTENTS" "TRUE"
+    addFloatXMLValues "SEC_FLOATING_FEATURE_COMMON_CONFIG_AI_VERSION" "20261"
+	rm -rf "${SYSTEM_DIR}/priv-app/PhotoEditor_Full/PhotoEditor_Full.apk"
 	makeADirectory "${SYSTEM_DIR}/priv-app/PhotoEditor_AIFull" "root" "root"
 	cp "${SYSTEMREPLACABLEASSETS[0]}" "${SYSTEM_DIR}/priv-app/PhotoEditor_AIFull/"
 	chmod 644 "${SYSTEM_DIR}/priv-app/PhotoEditor_AIFull/PhotoEditor_AIFull.apk"
@@ -721,13 +759,13 @@ if [ "${TARGET_BUILD_ADD_SCREENRESOLUTION_CHANGER}" == "true" ]; then
 		console_print "Trying to add screenResolution controller app into the device..."
 		cp "./src/tsukika/android_packages_xml/permissions/privapp_permissions-de-dylt.yanndroid.screenresolution.xml" "${SYSTEM_DIR}/etc/permissions/"
 		setPerm "${SYSTEM_DIR}/etc/permissions/privapp-permissions-de.dylt.yanndroid.screenresolution.xml" 0 0 644 u:object_r:system_file:s0
-		sudo rm -rf "${SYSTEM_DIR}/priv-app/screenResolution"
+		rm -rf "${SYSTEM_DIR}/priv-app/screenResolution"
 		makeADirectory "${SYSTEM_DIR}/priv-app/screenResolution" "root" "root"
 		[ -f "${DECODEDAPKTOOLPATHS[5]}" ] || logInterpreter "Trying to extract the screenResolution app.." "tar -C ./src/tsukika/android_packages/ -xf ${DECODEDAPKTOOLPATHS[5]}.tar"
 		buildAndSignThePackage "${DECODEDAPKTOOLPATHS[5]}" "${SYSTEM_DIR}/priv-app/screenResolution/screenResolution.apk" "false" || abort "Failed to build screenResolution, please try again" "build.sh"
-		sudo chmod 644 ${SYSTEM_DIR}/priv-app/screenResolution/*.apk
-		sudo chown root:root ${SYSTEM_DIR}/priv-app/screenResolution/*.apk
-		sudo chcon u:object_r:system_file:s0 ${SYSTEM_DIR}/priv-app/screenResolution/*.apk
+		chmod 644 ${SYSTEM_DIR}/priv-app/screenResolution/*.apk
+		chown root:root ${SYSTEM_DIR}/priv-app/screenResolution/*.apk
+		chcon u:object_r:system_file:s0 ${SYSTEM_DIR}/priv-app/screenResolution/*.apk
 		console_print "Finished adding screenResolution!"
 	else
 		console_print "Your display resolution is not valid for adding screen resolution controller app, skipping the building process..."
@@ -743,17 +781,17 @@ if [[ "${BUILD_TARGET_SDK_VERSION}" =~ ^(34|35)$ && "$BRINGUP_CN_SMARTMANAGER_DE
 		# now move these for a quick revert if anything goes wrong.
 		# xmls
 		for i in ${SYSTEM_DIR}/etc/permissions/privapp-permissions-com.* ${SYSTEM_DIR}/etc/permissions/signature-permissions-com.samsung.android.*; do
-			[ ! -f "${i}" ] || sudo mv "${i}" "./local_build/etc/permissions/"
+			[ ! -f "${i}" ] || mv "${i}" "./local_build/etc/permissions/"
 		done
 		# actual thing
-		sudo mv ${SYSTEM_DIR}/app/SmartManager_v6_DeviceSecurity/* "./local_build/etc/app/SmartManager_v6_DeviceSecurity"
-		sudo mv ${SYSTEM_DIR}/app/SmartManager_v6_DeviceSecurity_CN/* "./local_build/etc/app/SmartManager_v6_DeviceSecurity_CN"
-		sudo mv ${SYSTEM_DIR}/priv-app/SmartManager_v5/* "./local_build/etc/priv-app/SmartManager_v5"
-		sudo mv ${SYSTEM_DIR}/priv-app/SmartManager_v6_DeviceSecurity/* "./local_build/etc/priv-app/SmartManager_v6_DeviceSecurity"
-		sudo mv ${SYSTEM_DIR}/priv-app/SmartManagerCN/* "./local_build/etc/priv-app/SmartManagerCN"
-		sudo mv ${SYSTEM_DIR}/priv-app/SmartManager_v6_DeviceSecurity_CN/* "./local_build/etc/priv-app/SmartManager_v6_DeviceSecurity_CN"
-		sudo mv ${SYSTEM_DIR}/priv-app/SAppLock/* "./local_build/etc/priv-app/SAppLock"
-		sudo mv ${SYSTEM_DIR}/priv-app/Firewall/* "./local_build/etc/priv-app/Firewall"
+		mv ${SYSTEM_DIR}/app/SmartManager_v6_DeviceSecurity/* "./local_build/etc/app/SmartManager_v6_DeviceSecurity"
+		mv ${SYSTEM_DIR}/app/SmartManager_v6_DeviceSecurity_CN/* "./local_build/etc/app/SmartManager_v6_DeviceSecurity_CN"
+		mv ${SYSTEM_DIR}/priv-app/SmartManager_v5/* "./local_build/etc/priv-app/SmartManager_v5"
+		mv ${SYSTEM_DIR}/priv-app/SmartManager_v6_DeviceSecurity/* "./local_build/etc/priv-app/SmartManager_v6_DeviceSecurity"
+		mv ${SYSTEM_DIR}/priv-app/SmartManagerCN/* "./local_build/etc/priv-app/SmartManagerCN"
+		mv ${SYSTEM_DIR}/priv-app/SmartManager_v6_DeviceSecurity_CN/* "./local_build/etc/priv-app/SmartManager_v6_DeviceSecurity_CN"
+		mv ${SYSTEM_DIR}/priv-app/SAppLock/* "./local_build/etc/priv-app/SAppLock"
+		mv ${SYSTEM_DIR}/priv-app/Firewall/* "./local_build/etc/priv-app/Firewall"
 	} &>>$thisConsoleTempLogFile
 	debugPrint "build.sh: Moved SmartManager and Device Care to a temporary directory.."
 	for i in ${SMARTMANAGER_CN_DOWNLOADABLE_CONTENTS[@]}; do
@@ -762,17 +800,17 @@ if [[ "${BUILD_TARGET_SDK_VERSION}" =~ ^(34|35)$ && "$BRINGUP_CN_SMARTMANAGER_DE
 				{
 					debugPrint "build.sh: looks like one of the loop is failed, restoring the backup..."
 					# actual thing
-					sudo mv ./local_build/etc/priv-app/Firewall/* "${SYSTEM_DIR}/priv-app/Firewall/"
-					sudo mv ./local_build/etc/priv-app/SAppLock/* "${SYSTEM_DIR}/priv-app/SAppLock/"
-					sudo mv ./local_build/etc/priv-app/SmartManager_v6_DeviceSecurity_CN/* "${SYSTEM_DIR}/priv-app/SmartManager_v6_DeviceSecurity_CN/"
-					sudo mv ./local_build/etc/priv-app/SmartManagerCN/* "${SYSTEM_DIR}/priv-app/SmartManagerCN/"
-					sudo mv ./local_build/etc/priv-app/SmartManager_v6_DeviceSecurity/* "${SYSTEM_DIR}/priv-app/SmartManager_v6_DeviceSecurity/"
-					sudo mv ./local_build/etc/priv-app/SmartManager_v5/* "${SYSTEM_DIR}/priv-app/SmartManager_v5/"
-					sudo mv ./local_build/etc/app/SmartManager_v6_DeviceSecurity_CN/* "${SYSTEM_DIR}/app/SmartManager_v6_DeviceSecurity_CN/"
-					sudo mv ./local_build/etc/app/SmartManager_v6_DeviceSecurity/* "${SYSTEM_DIR}/app/SmartManager_v6_DeviceSecurity/"
+					mv ./local_build/etc/priv-app/Firewall/* "${SYSTEM_DIR}/priv-app/Firewall/"
+					mv ./local_build/etc/priv-app/SAppLock/* "${SYSTEM_DIR}/priv-app/SAppLock/"
+					mv ./local_build/etc/priv-app/SmartManager_v6_DeviceSecurity_CN/* "${SYSTEM_DIR}/priv-app/SmartManager_v6_DeviceSecurity_CN/"
+					mv ./local_build/etc/priv-app/SmartManagerCN/* "${SYSTEM_DIR}/priv-app/SmartManagerCN/"
+					mv ./local_build/etc/priv-app/SmartManager_v6_DeviceSecurity/* "${SYSTEM_DIR}/priv-app/SmartManager_v6_DeviceSecurity/"
+					mv ./local_build/etc/priv-app/SmartManager_v5/* "${SYSTEM_DIR}/priv-app/SmartManager_v5/"
+					mv ./local_build/etc/app/SmartManager_v6_DeviceSecurity_CN/* "${SYSTEM_DIR}/app/SmartManager_v6_DeviceSecurity_CN/"
+					mv ./local_build/etc/app/SmartManager_v6_DeviceSecurity/* "${SYSTEM_DIR}/app/SmartManager_v6_DeviceSecurity/"
 					# xmls
 					for j in ./local_build/etc/permissions/privapp-permissions-com.* ./local_build/etc/permissions/signature-permissions-com.samsung.android.*; do
-						[ ! -f "${j}" ] || sudo mv "${j}" "${SYSTEM_DIR}/etc/permissions/"
+						[ ! -f "${j}" ] || mv "${j}" "${SYSTEM_DIR}/etc/permissions/"
 					done
 					debugPrint "build.sh: Seems like i did restore those files, didn't i?"
 					warns "Failed to download stuffs from @saadelasfur's github repo, moved everything to their places!" "FAILED_TO_DOWNLOAD_SMARTMANAGER"
@@ -814,7 +852,7 @@ fi
 
 # oh boy.
 if [[ "${TARGET_BUILD_ADD_RAM_MANAGEMENT_FIX}" == "true" && "${BUILD_TARGET_SDK_VERSION}" -ge 29 ]]; then
-	sudo touch "${SYSTEM_DIR}/etc/init/init.drmgmt.rc" || abort "Failed to create a file in ${SYSTEM_DIR}/etc/init" "build.sh"
+	touch "${SYSTEM_DIR}/etc/init/init.drmgmt.rc" || abort "Failed to create a file in ${SYSTEM_DIR}/etc/init" "build.sh"
 	{
 		echo -ne "# taken from: https://github.com/crok/crokrammgmtfix\n"
 		echo -ne "on post-fs-data\n"
@@ -824,19 +862,19 @@ if [[ "${TARGET_BUILD_ADD_RAM_MANAGEMENT_FIX}" == "true" && "${BUILD_TARGET_SDK_
 		echo -ne "\texec_background -- /system/bin/cmd settings put global settings_enable_monitor_phantom_procs false\n"
 		echo -ne "\texec_background -- /system/bin/cmd device_config set_sync_disabled_for_tests persistent"
 	} > "${SYSTEM_DIR}/etc/init/init.drmgmt.rc"
-	sudo chmod 644 "${SYSTEM_DIR}/etc/init/init.drmgmt.rc"
-	sudo chown 0 "${SYSTEM_DIR}/etc/init/init.drmgmt.rc"
-	sudo chgrp 0 "${SYSTEM_DIR}/etc/init/init.drmgmt.rc"
-	sudo chcon u:object_r:system_file:s0 "${SYSTEM_DIR}/etc/init/init.drmgmt.rc"
+	chmod 644 "${SYSTEM_DIR}/etc/init/init.drmgmt.rc"
+	chown 0 "${SYSTEM_DIR}/etc/init/init.drmgmt.rc"
+	chgrp 0 "${SYSTEM_DIR}/etc/init/init.drmgmt.rc"
+	chcon u:object_r:system_file:s0 "${SYSTEM_DIR}/etc/init/init.drmgmt.rc"
 fi
 
 # ota implementation.
 if [[ "${TARGET_BUILD_ADD_DEPRECATED_UNICA_UPDATER}" == "true" && ! -z "${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" && "${BUILD_TARGET_SDK_VERSION}" -ge "29" ]]; then
 	makeADirectory "${SYSTEM_DIR}/app/TsukikaUpdater" "root" "root"
 	./make.sh OTA_MANIFEST_URL="${TARGET_BUILD_UNICA_UPDATER_OTA_MANIFEST_URL}" SKIPSIGN=false UN1CAUpdater
-	sudo cp "${DECODEDAPKTOOLPATHS[8]}/dist/TsukikaUpdater-aligned-signed.apk" "${SYSTEM_DIR}/app/TsukikaUpdater" || abort "Failed to copy the updater app into the ROM" "build.sh"
-	sudo cp "./src/tsukika/android_packages_xml/permissions/privapp_whitelist_com.mesalabs.ten.update.xml" "${SYSTEM_DIR}/etc/permissions/"
-	sudo cp "./src/tsukika/android_packages_xml/default-permissions/default-permissions_com.mesalabs.ten.update.xml" "${SYSTEM_DIR}/etc/default-permissions/"
+	cp "${DECODEDAPKTOOLPATHS[8]}/dist/TsukikaUpdater-aligned-signed.apk" "${SYSTEM_DIR}/app/TsukikaUpdater" || abort "Failed to copy the updater app into the ROM" "build.sh"
+	cp "./src/tsukika/android_packages_xml/permissions/privapp_whitelist_com.mesalabs.ten.update.xml" "${SYSTEM_DIR}/etc/permissions/"
+	cp "./src/tsukika/android_packages_xml/default-permissions/default-permissions_com.mesalabs.ten.update.xml" "${SYSTEM_DIR}/etc/default-permissions/"
 	console_print "Successfully added updater app into the rom."
 	# console_print "Trying to mod SecSettings.."
 	# if [[ -f "./src/diff_patches/system/priv-app/SecSettings/${BUILD_TARGET_SDK_VERSION}_sec_software_info_settings.xml" && \ 
@@ -911,10 +949,10 @@ fi
     echo -e "\tstart initStateModuleRunner"
     echo ""
 } > "${SYSTEM_DIR}/etc/init/init.initStateModuleRunner.rc"
-sudo chmod 644 "${SYSTEM_DIR}/etc/init/init.initStateModuleRunner.rc"
-sudo chown 0 "${SYSTEM_DIR}/etc/init/init.initStateModuleRunner.rc"
-sudo chgrp 0 "${SYSTEM_DIR}/etc/init/init.initStateModuleRunner.rc"
-sudo chcon u:object_r:system_file:s0 "${SYSTEM_DIR}/etc/init/init.initStateModuleRunner.rc"
+chmod 644 "${SYSTEM_DIR}/etc/init/init.initStateModuleRunner.rc"
+chown 0 "${SYSTEM_DIR}/etc/init/init.initStateModuleRunner.rc"
+chgrp 0 "${SYSTEM_DIR}/etc/init/init.initStateModuleRunner.rc"
+chcon u:object_r:system_file:s0 "${SYSTEM_DIR}/etc/init/init.initStateModuleRunner.rc"
 
 # knoxpatch
 if [[ "${TARGET_BUILD_ADD_KNOXPATCH}" == "true" ]]; then
@@ -950,8 +988,8 @@ for i in $TSUKIKA_PRODUCT_PROPERTY_FILE $TSUKIKA_SYSTEM_PROPERTY_FILE $TSUKIKA_S
 	setprop --custom "${i}" "wifi.interface" "wlan0"
 done
 [ -f "${SYSTEM_DIR}/system_dlkm/etc/build.prop" ] && setprop --custom "${SYSTEM_DIR}/system_dlkm/etc/build.prop" "wifi.interface "wlan0" || setprop --vendor "wifi.interface "wlan0"
-sudo rm -rf "${SYSTEM_DIR}/hidden" "${SYSTEM_DIR}/preload" "${SYSTEM_DIR}/recovery-from-boot.p" "${SYSTEM_DIR}/bin/install-recovery.sh"
-sudo cp -af ./src/misc/etc/ringtones_and_etc/media/audio/* "${SYSTEM_DIR}/media/audio/"
+rm -rf "${SYSTEM_DIR}/hidden" "${SYSTEM_DIR}/preload" "${SYSTEM_DIR}/recovery-from-boot.p" "${SYSTEM_DIR}/bin/install-recovery.sh"
+cp -af ./src/misc/etc/ringtones_and_etc/media/audio/* "${SYSTEM_DIR}/media/audio/"
 addFloatXMLValues "SEC_FLOATING_FEATURE_COMMON_SUPPORT_SAMSUNG_MARKETING_INFO" "FALSE"
 [ "$TARGET_INCLUDE_CUSTOM_BRAND_NAME" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_SETTINGS_CONFIG_BRAND_NAME" "${BUILD_TARGET_CUSTOM_BRAND_NAME}"
 for i in "logcat.live disable" "sys.dropdump.on Off" "profiler.force_disable_err_rpt 1" "profiler.force_disable_ulog 1" \
@@ -1028,8 +1066,7 @@ fi
 # if this would work or not.. i hope one day somebody just tells me if this worked or not.
 [[ ${BUILD_TARGET_SDK_VERSION} -eq 35 && ! -z "${BUILD_TARGET_HIGHEST_DEVICE_REFRESH_RATE}" ]] && setprop --vendor "ro.surface_flinger.game_default_frame_rate_override" "$BUILD_TARGET_HIGHEST_DEVICE_REFRESH_RATE"
 tinkerWithCSCFeaturesFile --encode && debugPrint "CSC feature file(s) successfully encoded." || abort "Failed to encode the CSC files!"
-sudo rm -rf "$TMPDIR" "$TMPFILE"
-
+rm -rf "$TMPDIR" "$TMPFILE"
 if [ -f "./localFirmwareBuildPending" ]; then
 	if [ -f "./local_build/etc/extract/super_extract/system" ]; then
 		repackSuperFromDump "./local_build/etc/buildedContents/super.img" 
