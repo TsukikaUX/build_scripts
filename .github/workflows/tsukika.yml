@@ -22,14 +22,6 @@ on:
     - cron: '0 0 * * *'
   workflow_dispatch:
     inputs:
-      update_dependencies:
-        description: "Do you want to Update dependencies?"
-        required: true
-        default: "Update"
-        type: choice
-        options:
-          - Update
-          - Skip
       updateSystemBinaries:
         description: "Do you want to update system packages before running?"
         required: true
@@ -79,8 +71,12 @@ jobs:
           git config --global user.name "Kitaaa"
           git config --global user.email "ayumi.aiko@outlook.com"
 
+      - name: Setup Repository
+        run: |
+          chmod +x ./setup.sh
+          bash ./setup.sh --skip-dependencies
+
       - name: Download and Push Dependencies
-        if: ${{ github.event.inputs.update_dependencies == 'Update' }}
         run: |
           chmod +x ./src/misc/tsukika.sh
           bash ./src/misc/tsukika.sh --update-dependencies

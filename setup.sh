@@ -89,20 +89,22 @@ for i in $(seq 0 6); do
     fi
 done
 
-# let's check if dependencies are found or not
-echo ""
-echo "- Checking required dependencies..."
-for dep in "${dependencies[@]}"; do
-    command -v "$dep" &> /dev/null || missing+=("$dep")
-done
-if [ ${#missing[@]} -ne 0 ]; then
-    echo "- Missing dependencies:"
-    for m in "${missing[@]}"; do
-        echo "  • $m"
-    done
+# let's check if dependencies are found or not if the user did ask or idk
+if [  -z "$1" ]; then
     echo ""
-    echo "- Please install them before continuing."
-    exit 1
-else
-    echo "- All dependencies are satisfied."
+    echo "- Checking required dependencies..."
+    for dep in "${dependencies[@]}"; do
+        command -v "$dep" &> /dev/null || missing+=("$dep")
+    done
+    if [ ${#missing[@]} -ne 0 ]; then
+        echo "- Missing dependencies:"
+        for m in "${missing[@]}"; do
+            echo "  • $m"
+        done
+        echo ""
+        echo "- Please install them before continuing."
+        exit 1
+    else
+        echo "- All dependencies are satisfied."
+    fi
 fi
