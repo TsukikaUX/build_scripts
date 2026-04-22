@@ -31,23 +31,37 @@ extern char **__propertiesValue_cached;
 #define MAX_PROPERTY_NAME_LENGTH 30
 #define MAX_PROPERTY_VALUE_LENGTH 26
 
-// struct that is used for property stuffs.
+// enum for __getProperty().
+enum propertyFetchType {
+    PROPERTY_FROM_CACHE,
+    PROPERTY_FROM_FILE
+};
+
+// enum for casting property value.
+enum propertyCastType {
+    CAST_TYPE_INT,
+    CAST_TYPE_FLOAT,
+    CAST_TYPE_STRING,
+    CAST_TYPE_BOOL
+};
+
+// struct that is used for property stuffs like
+// returning it's value or finding the index and type
 typedef struct {
     int __found;
     int __propertyIndex;
     char *__propertyName;
-    void *__propertyValue;
+    union {
+        int __propertyIntegerValue;
+        float __propertyFloatValue;
+        bool __propertyBoolValue;
+        char *__propertyStringValue;
+    } value; 
+    enum propertyCastType typeProp;
 } tsukikaProperty;
-
-// enum for __getProperty().
-enum propertyType {
-    PROPERTY_FROM_CACHE,
-    PROPERTY_FROM_FILE
-}; 
 
 // functions:
 bool __setProperty(const char *__propertyName, const void *__propertyValue);
-void *__getProperty(const char *__propertyName, enum propertyType thisProperty);
 void __readProperty(void *__cookie);
 void __cacheProperties();
 void __saveState();
@@ -55,4 +69,5 @@ void __deleteProperty(const char *__propertyName);
 void __init();
 void __deinit();
 void __freeThisPointer(void **thisPointer);
+tsukikaProperty __getProperty(const char *__propertyName, enum propertyFetchType thisProperty);
 #endif

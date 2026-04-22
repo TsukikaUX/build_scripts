@@ -59,7 +59,7 @@ int executeScripts(const char *__script__file, char *const args[], bool requires
 int searchBlockListedStrings(const char *__filename, const char *__search_str);
 int verifyScriptStatusUsingShell(const char *__filename);
 int checkBlocklistedStringsNChar(const char *__haystack);
-bool erase_file_content(const char *__file);
+bool eraseFile(const char *__file);
 char *executeCommandAndReturnOutput(const char*commandWithArgs, bool throwSTDERR);
 char *combineStringsFormatted(const char *format, ...);
 char *stringCase(char *string, enum stringCases thisStringCase);

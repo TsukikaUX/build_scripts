@@ -176,7 +176,7 @@ int checkBlocklistedStringsNChar(const char *haystack) {
     return 0;
 }
 
-bool erase_file_content(const char *file) {
+bool eraseFile(const char *file) {
     FILE *fileConstantAgain = fopen(file, "w");
     if(!fileConstantAgain) return false;
     fclose(fileConstantAgain);
