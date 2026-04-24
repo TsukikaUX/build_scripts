@@ -77,13 +77,20 @@ void listModulesAndVerifyThem()
         char *name = getpropFromFile("name", moduleProp);
         char *version = getpropFromFile("version", moduleProp);
         char *author = getpropFromFile("author", moduleProp);
-        if(name) 
+        // let's prevent nonsensical issues.
+        if(!name || !version || !author)
         {
-            strncpy(module->moduleName, name, sizeof(module->moduleName) - 1);
-            free(name);
+            consoleLog(LOG_LEVEL_ERROR, "listModulesAndVerifyThem", "Internal fetching error, skipping this module...");
+            continue;
         }
+        strncpy(module->moduleName, name, sizeof(module->moduleName) - 1);
+        free(name);
+        strncpy(module->moduleVersion, version, sizeof(module->moduleVersion) - 1);
+        free(version);
+        strncpy(module->moduleAuthor, author, sizeof(module->moduleAuthor) - 1);
+        free(author);
         // skip making others and just check if it's in the blocklist:
-        if(isModuleInTheBlocklist((char *)name))
+        if(isModuleInTheBlocklist((char *)module->moduleName))
         {
             consoleLog(LOG_LEVEL_INFO, "listModulesAndVerifyThem", "Module is in the blocklist, skipping fetching for it...");
             free(version);
@@ -91,19 +98,15 @@ void listModulesAndVerifyThem()
             free(module);
             continue;
         }
-        if(version) 
-        {
-            strncpy(module->moduleVersion, version, sizeof(module->moduleVersion) - 1);
-            free(version);
-        }
-        if(author) 
-        {
-            strncpy(module->moduleAuthor, author, sizeof(module->moduleAuthor) - 1);
-            free(author);
-        }
         char *minSDK = getpropFromFile("minSDK", moduleProp);
         char *maxSDK = getpropFromFile("maxSDK", moduleProp);
         char *runState = getpropFromFile("runState", moduleProp);
+        // again, if things go south.
+        if(!minSDK || !maxSDK || !runState)
+        {
+            consoleLog(LOG_LEVEL_ERROR, "listModulesAndVerifyThem", "Internal fetching error, skipping this module...");
+            continue;
+        }
         module->minSDK = minSDK ? atoi(minSDK) : 0;
         module->maxSDK = maxSDK ? atoi(maxSDK) : 0;
         module->moduleRunState = runState ? atoi(runState) : 0;
