@@ -27,7 +27,7 @@ extern char **__properties_cached;
 extern char **__propertiesValue_cached;
 
 // macro:
-#define PROPERTY_FILE "thisProperty"
+#define PROPERTY_FILE "/data/adb/Tsukika/thisProperty"
 #define MAX_PROPERTY_NAME_LENGTH 30
 #define MAX_PROPERTY_VALUE_LENGTH 26
 
@@ -69,5 +69,5 @@ void __deleteProperty(const char *__propertyName);
 void __init();
 void __deinit();
 void __freeThisPointer(void **thisPointer);
-tsukikaProperty __getProperty(const char *__propertyName, enum propertyFetchType thisProperty);
+tsukikaProperty __getPropertyMetadata(const char *__propertyName);
 #endif

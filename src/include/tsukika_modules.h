@@ -1,4 +1,5 @@
 #include <tsukika.h>
+#include <tsukika_props.h>
 
 // extern variables
 extern int currentState;

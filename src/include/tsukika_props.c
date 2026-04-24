@@ -16,6 +16,10 @@
 //
 #include <tsukika_props.h>
 
+// the real reason i didn't put any error on the
+// same value because it's pointless, if you add one
+// it's just some junk that is in the codebase
+// it won't provide any good to this.
 bool __setProperty(const char *__propertyName, const void *__propertyValue)
 {
     __didAnyPropertyGetChanged = false;
@@ -77,6 +81,18 @@ void __readProperty(void *__cookie)
         {
             strtok(cachedProp, "=");
             char *value = strtok(NULL, "\n");
+            if(strcmp(value, "DELETED") == 0)
+            {
+                consoleLog(LOG_LEVEL_ERROR, "__readProperty", "Property is yet to be deleted after a sync, skipping fetching metadata for %s", cachedProp);
+                if(strcmp(cachedProp, thisInstanceTsukika->__propertyName) == 0)
+                {
+                    consoleLog(LOG_LEVEL_ERROR, "__readProperty", "Property is yet to be deleted after a sync, skipping fetching metadata for %s", cachedProp);
+                    consoleLog(LOG_LEVEL_ERROR, "__readProperty", "Please try to either fix the property name or fetch information");
+                    consoleLog(LOG_LEVEL_ERROR, "__readProperty", "for a different property if you want.");
+                    return;
+                }
+                continue;
+            }
             if(value) 
             {
                 // set the property type, set string as the default case.
@@ -106,6 +122,11 @@ void __readProperty(void *__cookie)
                     break;
                 }
                 fclose(propertyFilePointer);
+                return;
+            }
+            else
+            {
+                consoleLog(LOG_LEVEL_ERROR, "__readProperty", "Failed to fetch property value.");
                 return;
             }
         }
@@ -228,12 +249,12 @@ void __freeThisPointer(void **thisPointer)
     }
 }
 
-tsukikaProperty __getProperty(const char *__propertyName, enum propertyFetchType thisProperty)
+tsukikaProperty __getPropertyMetadata(const char *__propertyName)
 {
     tsukikaProperty getprop = {0};
     getprop.__propertyName = malloc(MAX_PROPERTY_NAME_LENGTH);
     if(!getprop.__propertyName) {
-        consoleLog(LOG_LEVEL_ERROR, "__getProperty", "malloc failed for __propertyName");
+        consoleLog(LOG_LEVEL_ERROR, "__getProperty::tsukikaProperty", "malloc failed for __propertyName");
         return getprop;
     }
     // copy the prop name for fetching info on struct.
@@ -241,32 +262,8 @@ tsukikaProperty __getProperty(const char *__propertyName, enum propertyFetchType
     __readProperty(&getprop);
     // not found, ig
     if(getprop.__found != 0) {
-        __freeThisPointer((void **)&getprop.__propertyName);
+        consoleLog(LOG_LEVEL_ERROR, "__getProperty::tsukikaProperty", "Property doesn't exist.");
         return getprop;
     }
-    void *dataSource = NULL;
-    if(thisProperty == PROPERTY_FROM_CACHE) dataSource = __propertiesValue_cached[getprop.__propertyIndex];
-    else dataSource = getprop.value.__propertyStringValue;
-    if(!dataSource) {
-        __freeThisPointer((void **)&getprop.__propertyName);
-        return getprop;
-    }
-    switch(getprop.typeProp)
-    {
-        case CAST_TYPE_INT:
-            getprop.value.__propertyIntegerValue = atoi((char *)dataSource);
-        break;
-        case CAST_TYPE_FLOAT:
-            getprop.value.__propertyFloatValue = (float)atof((char *)dataSource);
-        break;
-        case CAST_TYPE_BOOL:
-            getprop.value.__propertyBoolValue = (strcmp((char *)dataSource, "true") == 0 || strcmp((char *)dataSource, "1") == 0);
-        break;
-        case CAST_TYPE_STRING:
-        default:
-            getprop.value.__propertyStringValue = (char *)dataSource;
-        break;
-    }
-    __freeThisPointer((void **)&getprop.__propertyName);
     return getprop;
 }
