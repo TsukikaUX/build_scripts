@@ -328,3 +328,11 @@ void consoleLog(enum elogLevel loglevel, const char *service, const char *messag
     if(!useStdoutForAllLogs && out) fclose(out);
     va_end(args);
 }
+
+void __freeThisPointer(void **thisPointer)
+{    
+    if(thisPointer && *thisPointer) {
+        free(*thisPointer);
+        *thisPointer = NULL;
+    }
+}
