@@ -22,14 +22,16 @@
 #include <tsukikautils.h>
 
 // variables to use to cache the properties.
+extern int __properties_count;
 extern bool __didAnyPropertyGetChanged;
 extern char **__properties_cached;
 extern char **__propertiesValue_cached;
 
 // macro:
 #define PROPERTY_FILE "/data/adb/Tsukika/thisProperty"
-#define MAX_PROPERTY_NAME_LENGTH 30
-#define MAX_PROPERTY_VALUE_LENGTH 26
+#define MAX_PROPERTY_NAME_LENGTH 40
+#define MAX_PROPERTY_VALUE_LENGTH 25
+#define MAX_PROPERTIES 1000
 
 // enum for __getProperty().
 enum propertyFetchType {
@@ -66,8 +68,7 @@ void __readProperty(void *__cookie);
 void __cacheProperties();
 void __saveState();
 void __deleteProperty(const char *__propertyName);
-void __init();
-void __deinit();
-void __freeThisPointer(void **thisPointer);
+void __init__properties();
+void __deinit__properties();
 tsukikaProperty __getPropertyMetadata(const char *__propertyName);
 #endif

@@ -66,5 +66,5 @@ char *stringCase(char *string, enum stringCases thisStringCase);
 char *getpropFromFile(const char *variableName, const char *propFile);
 void abort_instance(const char *service, const char *format, ...);
 void consoleLog(enum elogLevel loglevel, const char *service, const char *message, ...);
-
+void __freeThisPointer(void **thisPointer);
 #endif

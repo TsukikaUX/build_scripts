@@ -18,8 +18,7 @@
 
 // the real reason i didn't put any error on the
 // same value because it's pointless, if you add one
-// it's just some junk that is in the codebase
-// it won't provide any good to this.
+// it's just going to be some junk.
 bool __setProperty(const char *__propertyName, const void *__propertyValue)
 {
     __didAnyPropertyGetChanged = false;
@@ -32,68 +31,42 @@ bool __setProperty(const char *__propertyName, const void *__propertyValue)
     }
     snprintf(setProp.__propertyName, MAX_PROPERTY_NAME_LENGTH, "%s", __propertyName);
     __readProperty(&setProp);
-    const char *inputStr = (const char *)__propertyValue;
     if(setProp.__found == 0) {
         __freeThisPointer((void**)&__propertiesValue_cached[setProp.__propertyIndex]);
         __propertiesValue_cached[setProp.__propertyIndex] = malloc(MAX_PROPERTY_VALUE_LENGTH);
         if(!__propertiesValue_cached[setProp.__propertyIndex]) {
             consoleLog(LOG_LEVEL_DEBUG, "__setProperty", "__propertiesValue_cached[setProp.__propertyIndex]: malloc");
             consoleLog(LOG_LEVEL_ERROR, "__setProperty", "Failed to set given property.");
+            __freeThisPointer((void**)&setProp.__propertyName);
             return false;
-        }
-        char buffer[MAX_PROPERTY_VALUE_LENGTH];
-        switch(setProp.typeProp) {
-            case CAST_TYPE_INT:
-                snprintf(buffer, sizeof(buffer), "%d", atoi(inputStr));
-            break;
-            case CAST_TYPE_FLOAT:
-                snprintf(buffer, sizeof(buffer), "%f", atof(inputStr));
-            break;
-            case CAST_TYPE_BOOL:
-                snprintf(buffer, sizeof(buffer), "%s", (strcmp(inputStr, "true") == 0 || strcmp(inputStr, "1") == 0) ? "true" : "false");
-            break;
-            case CAST_TYPE_STRING:
-            default:
-                snprintf(buffer, sizeof(buffer), "%s", inputStr);
-            break;
         }
         snprintf(__propertiesValue_cached[setProp.__propertyIndex], MAX_PROPERTY_VALUE_LENGTH, "%s", (const char *)__propertyValue);
         __didAnyPropertyGetChanged = true;
     }
-    free(setProp.__propertyName);
+    __freeThisPointer((void**)&setProp.__propertyName);
+    //__freeThisPointer((void**)&__propertyValue);
+    //__freeThisPointer((void**)&__propertyName);
     return __didAnyPropertyGetChanged;
 }
 
 void __readProperty(void *__cookie)
 {
     tsukikaProperty* thisInstanceTsukika = (tsukikaProperty*)__cookie;
-    if(thisInstanceTsukika == NULL) return;
-    FILE *propertyFilePointer = fopen(PROPERTY_FILE, "r");
-    if(!propertyFilePointer) return;
+    if(!thisInstanceTsukika) return;
     // reset the property index to zero.
     thisInstanceTsukika->__propertyIndex = 0;
     thisInstanceTsukika->__found = 1;
-    char cachedProp[1024];
-    while(fgets(cachedProp, sizeof(cachedProp), propertyFilePointer)) 
+    for(int i = 0; i < __properties_count; i++)
     {
         // set the value of __found to 0 and put the value to the __propertyValue if it's found to be with a value.
-        if(strncmp(cachedProp, thisInstanceTsukika->__propertyName, strlen(thisInstanceTsukika->__propertyName)) == 0)
+        if(__properties_cached[i] && strcmp(__properties_cached[i], thisInstanceTsukika->__propertyName) == 0)
         {
-            strtok(cachedProp, "=");
-            char *value = strtok(NULL, "\n");
-            if(strcmp(value, "DELETED") == 0)
+            if(strcmp(__propertiesValue_cached[i], "DELETED") == 0)
             {
-                consoleLog(LOG_LEVEL_ERROR, "__readProperty", "Property is yet to be deleted after a sync, skipping fetching metadata for %s", cachedProp);
-                if(strcmp(cachedProp, thisInstanceTsukika->__propertyName) == 0)
-                {
-                    consoleLog(LOG_LEVEL_ERROR, "__readProperty", "Property is yet to be deleted after a sync, skipping fetching metadata for %s", cachedProp);
-                    consoleLog(LOG_LEVEL_ERROR, "__readProperty", "Please try to either fix the property name or fetch information");
-                    consoleLog(LOG_LEVEL_ERROR, "__readProperty", "for a different property if you want.");
-                    return;
-                }
-                continue;
+                consoleLog(LOG_LEVEL_ERROR, "__readProperty", "Property is yet to be deleted after a sync, skipping fetching metadata for %s", __properties_cached[i]);
+                return;
             }
-            if(value) 
+            if(__propertiesValue_cached[i])
             {
                 // set the property type, set string as the default case.
                 thisInstanceTsukika->typeProp = CAST_TYPE_STRING;
@@ -104,27 +77,26 @@ void __readProperty(void *__cookie)
                 switch(thisInstanceTsukika->typeProp)
                 {
                     case CAST_TYPE_INT:
-                        thisInstanceTsukika->value.__propertyIntegerValue = atoi(value);
+                        thisInstanceTsukika->value.__propertyIntegerValue = atoi(__propertiesValue_cached[i]);
                     break;
                     case CAST_TYPE_FLOAT:
                         char *endptr;
-                        thisInstanceTsukika->value.__propertyFloatValue = (float)strtof(value, &endptr);
+                        thisInstanceTsukika->value.__propertyFloatValue = (float)strtof(__propertiesValue_cached[i], &endptr);
                     break;
                     case CAST_TYPE_BOOL:
-                        thisInstanceTsukika->value.__propertyBoolValue = (strcmp(value, "true") == 0 || strcmp(value, "1") == 0);
+                        thisInstanceTsukika->value.__propertyBoolValue = (strcmp(__propertiesValue_cached[i], "true") == 0 || strcmp(__propertiesValue_cached[i], "1") == 0);
                     break;
                     case CAST_TYPE_STRING:
                     default:
                         thisInstanceTsukika->value.__propertyStringValue = malloc(MAX_PROPERTY_VALUE_LENGTH);
                         if(thisInstanceTsukika->value.__propertyStringValue) 
-                            snprintf(thisInstanceTsukika->value.__propertyStringValue, MAX_PROPERTY_VALUE_LENGTH, "%s", value);
+                            snprintf(thisInstanceTsukika->value.__propertyStringValue, MAX_PROPERTY_VALUE_LENGTH, "%s", __propertiesValue_cached[i]);
 
                     break;
                 }
-                fclose(propertyFilePointer);
                 return;
             }
-            else
+            else 
             {
                 consoleLog(LOG_LEVEL_ERROR, "__readProperty", "Failed to fetch property value.");
                 return;
@@ -134,7 +106,6 @@ void __readProperty(void *__cookie)
         // this index helps us to fetch it faster.
         thisInstanceTsukika->__propertyIndex++;
     }
-    fclose(propertyFilePointer);
 }
 
 void __cacheProperties()
@@ -146,53 +117,67 @@ void __cacheProperties()
         consoleLog(LOG_LEVEL_ERROR, "__cacheProperties", "Failed to open up property file.");
         exit(EXIT_FAILURE);
     }
-    // stupid thing, put the index to zero.
-    int i = 0;
+    // reset values back, just in case:
+    __properties_count = 0;
     char cachedProp[1024];
     // I WAS STUPID AND I FORGOT TO DO THIS:
-    __freeThisPointer((void **)&__properties_cached);
-    __freeThisPointer((void **)&__propertiesValue_cached);
-    // we can have this thing go up to a lot.
-    __properties_cached = malloc(3040);
-    if(!__properties_cached) {
+    __freeThisPointer((void **)&__properties_cached); // DEFAULT-free
+    __freeThisPointer((void **)&__propertiesValue_cached); // DEFAULT-free
+    // we can have this thing go up to a thousand.
+    __properties_cached = malloc(sizeof(char*) * MAX_PROPERTIES);
+    if(!__properties_cached) // DEFAULT
+    {
         consoleLog(LOG_LEVEL_DEBUG, "__cacheProperties", "__properties_cached: malloc error.");
         consoleLog(LOG_LEVEL_ERROR, "__cacheProperties", "Failed to cache properties.");
         return;
     }
-    __propertiesValue_cached = malloc(3040);
-    if(!__propertiesValue_cached) {
+    __propertiesValue_cached = malloc(sizeof(char*) * MAX_PROPERTIES);
+    if(!__propertiesValue_cached)  // DEFAULT
+    {
         consoleLog(LOG_LEVEL_DEBUG, "__cacheProperties", "__propertiesValue_cached: malloc error.");
         consoleLog(LOG_LEVEL_ERROR, "__cacheProperties", "Failed to cache properties.");
         return;
     }
     // loop-read the file.
-    while(fgets(cachedProp, sizeof(cachedProp), propertyFilePointer)) {
+    while(fgets(cachedProp, sizeof(cachedProp), propertyFilePointer)) 
+    {
         // freeing stuff BECAUSE WE NEED TO:
         // it is unnecessary to do that but we are doing just to be safe enough.
         // this will not crash the app btw.
-        __freeThisPointer((void **)&__properties_cached[i]);
-        __freeThisPointer((void **)&__propertiesValue_cached[i]);
-        // anyways, malloc-cate the pointers so we can give it some value.
-        __properties_cached[i] = malloc(MAX_PROPERTY_NAME_LENGTH);
-        if(!__properties_cached[i]) {
-            consoleLog(LOG_LEVEL_DEBUG, "__cacheProperties", "__properties_cached[%d]: malloc error.", i);
-            consoleLog(LOG_LEVEL_ERROR, "__cacheProperties", "Failed to cache properties.");
-            return;
+        __freeThisPointer((void **)&__properties_cached[__properties_count]); // DEFAULT
+        __freeThisPointer((void **)&__propertiesValue_cached[__properties_count]); // DEFAULT
+        // check if we exceed the MAX_PROPERTIES cap and quit the application cuz we dont have- 
+        // we can't do anything with this.
+        if(__properties_count >= MAX_PROPERTIES) 
+        {
+            consoleLog(LOG_LEVEL_ERROR, "__cacheProperties", "Exceeded MAX_PROPERTIES limit, quitting the application...");
+            exit(EXIT_FAILURE);
         }
-        __propertiesValue_cached[i] = malloc(MAX_PROPERTY_VALUE_LENGTH);
-        if(!__propertiesValue_cached[i]) {
-            consoleLog(LOG_LEVEL_DEBUG, "__cacheProperties", "__propertiesValue_cached[%d]: malloc error.", i);
+        // anyways, malloc-cate the pointers so we can give it some value.
+        __properties_cached[__properties_count] = malloc(MAX_PROPERTY_NAME_LENGTH);
+        if(!__properties_cached[__properties_count]) 
+        {
+            // DEFAULT-index-malloc:check
+            consoleLog(LOG_LEVEL_DEBUG, "__cacheProperties", "__properties_cached[%d]: malloc error.", __properties_count);
             consoleLog(LOG_LEVEL_ERROR, "__cacheProperties", "Failed to cache properties.");
-            __freeThisPointer((void **)&__properties_cached[i]);
-            return;
+            __deinit();
+        }
+        __propertiesValue_cached[__properties_count] = malloc(MAX_PROPERTY_VALUE_LENGTH); // DEFAULT-malloc
+        if(!__propertiesValue_cached[__properties_count]) 
+        { 
+            // DEFAULT-index-malloc:check
+            consoleLog(LOG_LEVEL_DEBUG, "__cacheProperties", "__propertiesValue_cached[%d]: malloc error.", __properties_count);
+            consoleLog(LOG_LEVEL_ERROR, "__cacheProperties", "Failed to cache properties.");
+            __deinit();
         }
         // copy the values to the thing.
-        strtok(cachedProp, "=");
+        char *key = strtok(cachedProp, "=");
         char *value = strtok(NULL, "\n");
+        // skip if the value itself is empty.
         if(!value) continue;
-        snprintf(__properties_cached[i], MAX_PROPERTY_NAME_LENGTH, "%s", cachedProp);
-        snprintf(__propertiesValue_cached[i], MAX_PROPERTY_VALUE_LENGTH, "%s", value);
-        i++;
+        snprintf(__properties_cached[__properties_count], MAX_PROPERTY_NAME_LENGTH, "%s", key);
+        snprintf(__propertiesValue_cached[__properties_count], MAX_PROPERTY_VALUE_LENGTH, "%s", value);
+        __properties_count++;
     }
 }
 
@@ -208,7 +193,11 @@ void __saveState()
         return;
     }
     // write the new content back to the file.
-    for(int i = 0; __properties_cached[i] != NULL; i++) fprintf(thisPropertyFile, "%s=%s\n", __properties_cached[i], __propertiesValue_cached[i]);
+    for(int i = 0; i < __properties_count; i++)
+    {
+        if(!__properties_cached[i] || !__propertiesValue_cached[i]) continue;
+        fprintf(thisPropertyFile, "%s=%s\n", __properties_cached[i], __propertiesValue_cached[i]);
+    }
     fclose(thisPropertyFile);
 }
 
@@ -220,12 +209,12 @@ void __deleteProperty(const char *__propertyName)
     __saveState();
 }
 
-void __init()
+void __init__properties()
 {
     // before caching and all of that stuff, let's check some stuff.
     if(access(PROPERTY_FILE, F_OK) != 0) {
-        consoleLog(LOG_LEVEL_DEBUG, "__init", "access(PROPERTY_FILE, F_OK): %d", access(PROPERTY_FILE, F_OK));
-        consoleLog(LOG_LEVEL_ERROR, "__init", "Failed to initialize property stuff.");
+        consoleLog(LOG_LEVEL_DEBUG, "__init__properties", "access(PROPERTY_FILE, F_OK): %d", access(PROPERTY_FILE, F_OK));
+        consoleLog(LOG_LEVEL_ERROR, "__init__properties", "Failed to initialize property stuff.");
         exit(EXIT_FAILURE);
     }
     // wipe the old logs because we don't want it to be like Epic- ifykyk.
@@ -233,20 +222,17 @@ void __init()
     __cacheProperties();
 }
 
-void __deinit()
+void __deinit__properties()
 {
-    consoleLog(LOG_LEVEL_DEBUG, "__deinit", "deinit started, savin' state and clearin' some stuff up.");
+    consoleLog(LOG_LEVEL_DEBUG, "__deinit__properties", "deinit started, savin' state and clearin' some stuff up.");
     __saveState();
+    for(int i = 0; i < __properties_count; i++)
+    {
+        __freeThisPointer((void **)&__properties_cached[i]);
+        __freeThisPointer((void **)&__propertiesValue_cached[i]);
+    }
     __freeThisPointer((void **)&__properties_cached);
     __freeThisPointer((void **)&__propertiesValue_cached);
-}
-
-void __freeThisPointer(void **thisPointer)
-{    
-    if(thisPointer && *thisPointer) {
-        free(*thisPointer);
-        *thisPointer = NULL;
-    }
 }
 
 tsukikaProperty __getPropertyMetadata(const char *__propertyName)
