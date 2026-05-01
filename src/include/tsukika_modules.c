@@ -140,9 +140,10 @@ void addModuleToBlocklist(char* moduleName)
         consoleLog(LOG_LEVEL_INFO, "addModuleToBlocklist", "Added %s to the blocklists", moduleName);
         __setProperty(__thisScopeStuffs.__propertyName, combineStringsFormatted("%s,", moduleName));
     }
-    consoleLog(LOG_LEVEL_INFO, "addModuleToBlocklist", "Added %s to the blocklists", moduleName);
-    __setProperty(__thisScopeStuffs.__propertyName, combineStringsFormatted("%s%s,", __thisScopeStuffs->value.__propertyStringValue, moduleName));
-    return;
+    {
+        consoleLog(LOG_LEVEL_INFO, "addModuleToBlocklist", "Added %s to the blocklists", moduleName);
+        __setProperty(__thisScopeStuffs.__propertyName, combineStringsFormatted("%s%s,", __thisScopeStuffs->value.__propertyStringValue, moduleName));
+    }
 }
 
 void runThisModule(void *thisModule)
