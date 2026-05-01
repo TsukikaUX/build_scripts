@@ -69,6 +69,6 @@ void __cacheProperties();
 void __saveState();
 void __deleteProperty(const char *__propertyName);
 void __init__properties();
-void __deinit__properties();
+void __deinit__properties(bool saveTheProps);
 tsukikaProperty __getPropertyMetadata(const char *__propertyName);
 #endif

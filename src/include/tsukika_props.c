@@ -117,7 +117,7 @@ void __cacheProperties()
         consoleLog(LOG_LEVEL_ERROR, "__cacheProperties", "Failed to open up property file.");
         exit(EXIT_FAILURE);
     }
-    // reset values back, just in case:
+    // reset value back, just in case:
     __properties_count = 0;
     char cachedProp[1024];
     // I WAS STUPID AND I FORGOT TO DO THIS:
@@ -160,7 +160,7 @@ void __cacheProperties()
             // DEFAULT-index-malloc:check
             consoleLog(LOG_LEVEL_DEBUG, "__cacheProperties", "__properties_cached[%d]: malloc error.", __properties_count);
             consoleLog(LOG_LEVEL_ERROR, "__cacheProperties", "Failed to cache properties.");
-            __deinit();
+            __deinit__properties(false);
         }
         __propertiesValue_cached[__properties_count] = malloc(MAX_PROPERTY_VALUE_LENGTH); // DEFAULT-malloc
         if(!__propertiesValue_cached[__properties_count]) 
@@ -168,7 +168,7 @@ void __cacheProperties()
             // DEFAULT-index-malloc:check
             consoleLog(LOG_LEVEL_DEBUG, "__cacheProperties", "__propertiesValue_cached[%d]: malloc error.", __properties_count);
             consoleLog(LOG_LEVEL_ERROR, "__cacheProperties", "Failed to cache properties.");
-            __deinit();
+            __deinit__properties(false);
         }
         // copy the values to the thing.
         char *key = strtok(cachedProp, "=");
@@ -196,6 +196,7 @@ void __saveState()
     for(int i = 0; i < __properties_count; i++)
     {
         if(!__properties_cached[i] || !__propertiesValue_cached[i]) continue;
+        if(strcmp(__propertiesValue_cached[i], "DELETED") == 0) continue;
         fprintf(thisPropertyFile, "%s=%s\n", __properties_cached[i], __propertiesValue_cached[i]);
     }
     fclose(thisPropertyFile);
@@ -222,10 +223,10 @@ void __init__properties()
     __cacheProperties();
 }
 
-void __deinit__properties()
+void __deinit__properties(bool saveTheProps)
 {
     consoleLog(LOG_LEVEL_DEBUG, "__deinit__properties", "deinit started, savin' state and clearin' some stuff up.");
-    __saveState();
+    if(saveTheProps) __saveState();
     for(int i = 0; i < __properties_count; i++)
     {
         __freeThisPointer((void **)&__properties_cached[i]);

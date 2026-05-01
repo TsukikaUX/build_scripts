@@ -180,19 +180,18 @@ if [ -n "$argOne" ]; then
 			for androidOS in super system vendor; do
 				if [ "${androidOS}" == "super" ]; then
 					tar -tf "$extractedAPFilePath" | grep -q "super.img.lz4" || continue
-					if [ ! -f "./local_build/lpunpack_and_lpmake" ]; then
+					if [ ! -f "./local_build/android_super_image_tools" ]; then
 						checkInternetConnection "build.sh" &>/dev/null || abort "Please proceed with an active internet connection to build LonelyFool's lptools from source." "build.sh"
 						cd ./local_build/
-						ask "Your build SDK version is above or equal to 30 right?" && branchToFork=android11
-						git clone --branch $branchToFork "https://github.com/LonelyFool/lpunpack_and_lpmake.git" &>/dev/null
-						cd lpunpack_and_lpmake
+						git clone --branch main "https://github.com/TsukikaUX/android_super_image_tools.git" &>/dev/null
+						cd android_super_image_tools
 						chmod +x ./make.sh
 						console_print "Building LonelyFool's lptools from source, this might take sometime..."
 						console_print "This is a one time build, future builds won't rebuild the tool or require internet connection to build."
 						./make.sh &>/dev/null || abort "Failed to build lptools, please try again.." "build.sh"
 						cd ../
 						# we are outside local_build
-						mv ./local_build/lpunpack_and_lpmake/bin/* ./src/dependencies/bin/
+						mv ./local_build/android_super_image_tools/bin/* ./src/dependencies/bin/
 					fi
 					console_print "Extracting super..."
 					tar -C "./local_build/etc/extract/" -xf "$extractedAPFilePath" "super.img.lz4" &>> ${thisConsoleTempLogFile} || abort "Failed to extract super.img.lz4 from the tar file." "build.sh"
@@ -688,19 +687,19 @@ fi
 [  "${TARGET_BUILD_DISABLE_GBOARD_HOME_ICON}" == "true" ] && buildAndSignThePackage "${DECODEDAPKTOOLPATHS[6]}" "${TSUKIKA_VENDOR_OVERLAY}" "false"
 
 # hehe~
-# if [ "${TARGET_BUILD_OVERLAY_CUSTOMGIFLOADER}" == "true" ]; then
-# 	maxGIFLoadables=19
-# 	gifIndexSuffix="preload_gif_"
-# 	overlayGIFIndexPath="${DECODEDAPKTOOLPATHS[7]}/res/raw"
-# 	gifIndex=0
-# 	[ ! -f "${DECODEDAPKTOOLPATHS[7]}/AndroidManifest.xml" ] && abort "- Leaflit overlay not found, exiting." "leaflit.sh";
-# 	[[ -z "${gifPaths[@]}" ]] && abort "Error: No GIF paths found in leaflit.conf" "leaflit.sh";
-# 	for (( i=0; i<=$maxGIFIndex; i++ )); do
-# 		cp "${gifPaths[${i}]}" "${overlayGIFIndexPath}/${gifIndexSuffix}${gifIndex}.gif"
-# 		(( gifIndex++ ))
-# 	done
-# 	buildAndSignThePackage "${DECODEDAPKTOOLPATHS[7]}" "${TSUKIKA_FALLBACK_OVERLAY_PATH}" "false" --skip-editing-version-info || abort "- Failed to build the leaflit overlay package." "leaflit.sh";
-# fi
+if [ "${TARGET_BUILD_OVERLAY_CUSTOMGIFLOADER}" == "true" ]; then
+ 	maxGIFLoadables=19
+ 	gifIndexSuffix="preload_gif_"
+ 	overlayGIFIndexPath="${DECODEDAPKTOOLPATHS[7]}/res/raw"
+ 	gifIndex=0
+ 	[ ! -f "${DECODEDAPKTOOLPATHS[7]}/AndroidManifest.xml" ] && abort "- Leaflit overlay not found, exiting." "leaflit.sh";
+ 	[[ -z "${gifPaths[@]}" ]] && abort "Error: No GIF paths found in leaflit.conf" "leaflit.sh";
+ 	for (( i=0; i<=$maxGIFIndex; i++ )); do
+ 		cp "${gifPaths[${i}]}" "${overlayGIFIndexPath}/${gifIndexSuffix}${gifIndex}.gif"
+ 		(( gifIndex++ ))
+ 	done
+ 	buildAndSignThePackage "${DECODEDAPKTOOLPATHS[7]}" "${TSUKIKA_FALLBACK_OVERLAY_PATH}" "false" --skip-editing-version-info || abort "- Failed to build the leaflit overlay package." "leaflit.sh";
+fi
 
 # verify if the device is capable of running Generative AI and it's related actions.
 if [ "${BUILD_TARGET_IS_CAPABLE_FOR_GENERATIVE_AI}" == "true" ]; then
@@ -1037,14 +1036,12 @@ if [ "${BUILD_TARGET_ENABLE_VULKAN_UI_RENDERING}" == "true" ]; then
 				if ask "Are you sure you want to enable Vulkan for UI rendering?"; then
 					setprop --vendor "debug.hwui.renderer" "skiavk"
 					setprop --vendor "ro.hwui.use_vulkan" "true"
-					setprop --system "ro.hwui.use_vulkan" "true"
 				fi
 			;;
 		0x00402000|0x004020A2|0x00403000|0x004030105) # Vulkan 1.2, 1.2.162, 1.3, 1.3.261
 				warns "Your device met the requirements of ui rendering in vulkan. It could render UI elements via Vulkan but may cause performance issues." "FORCE_VULKAN_UI_SHADING"
 				setprop --vendor "debug.hwui.renderer" "skiavk"
 				setprop --vendor "ro.hwui.use_vulkan" "true"
-				setprop --system "ro.hwui.use_vulkan" "true"
 			;;
 		*) # Unknown or unsupported Vulkan version
 				warns "Unsupported or unknown Vulkan version detected: ${BUILD_TARGET_GPU_VULKAN_VERSION}." "FORCE_VULKAN_UI_SHADING"
