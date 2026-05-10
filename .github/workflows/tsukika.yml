@@ -22,6 +22,14 @@ on:
     - cron: '0 0 * * *'
   workflow_dispatch:
     inputs:
+      update_dependencies:
+        description: "Do you want to Update dependencies?"
+        required: true
+        default: "Update"
+        type: choice
+        options:
+          - Update
+          - Skip
       updateSystemBinaries:
         description: "Do you want to update system packages before running?"
         required: true
@@ -38,14 +46,6 @@ on:
         options:
           - Install
           - Skip
-      update_dependencies:
-        description: "Do you want to update dependencies?"
-        required: true
-        default: "Install"
-        type: choice
-        options:
-          - Update
-          - Skip
 
 permissions:
   contents: write
@@ -61,8 +61,8 @@ jobs:
           submodules: recursive
 
       - name: Update Binaries
-        if: ${{ github.event.inputs.updateSystemBinaries == 'Update' }}
         run: |
+        if: ${{ github.event.inputs.updateSystemBinaries == 'Update' }}
           sudo apt update -y && sudo apt upgrade -y
           sudo apt install aria2 curl -y
 
@@ -73,8 +73,14 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
 
+      - name: Configure Git Identity
+        if: ${{ github.event.inputs.update_dependencies == 'Update' }}
+        run: |
+          git config --global user.name "Kitaaa"
+          git config --global user.email "171214813+ikuyo-kita07@users.noreply.github.com"
+
       - name: Download and Push Dependencies
         if: ${{ github.event.inputs.update_dependencies == 'Update' }}
         run: |
-          chmod +x "$GITHUB_WORKSPACE/src/misc/tsukika.sh"
-          bash "$GITHUB_WORKSPACE/src/misc/tsukika.sh" --update-dependencies
+          chmod +x ./src/misc/tsukika.sh
+          bash ./src/misc/tsukika.sh --update-dependencies
