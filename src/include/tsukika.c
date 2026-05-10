@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-
+#ifdef TSUKIKA_PROPS_H
 #include <tsukika.h>
 #include <tsukikautils.h>
 
@@ -43,7 +43,7 @@ int getSystemProperty__(const char *propertyVariableName) {
     }
     else {
         consoleLog(LOG_LEVEL_ERROR, "getSystemProperty__", "%s not found in system, trying to gather property value from resetprop...", propertyVariableName);
-        FILE *fptr = popen(combineStringsFormatted("resetprop %s", propertyVariableName), "r");
+        FILE *fptr = popen(combineStringsFormatted("%s %s", resetprop, propertyVariableName), "r");
         if(!fptr) {
             consoleLog(LOG_LEVEL_ERROR, "getSystemProperty__", "uh, major hiccup, failed to open resetprop in popen()");
             return -1;
@@ -75,13 +75,10 @@ int maybeSetProp(char* property, void* expectedPropertyValue, enum expectedDataT
             castValueStr = buffer;
         }
         break;
-        case TYPE_STRING: {
+        case TYPE_STRING:
+        default: {
             castValueStr = (char*)expectedPropertyValue;
         }
-        break;
-        default:
-            consoleLog(LOG_LEVEL_ERROR, "maybeSetProp", "Invalid data type requested.");
-            return -1;
     }
     char* currentValue = getSystemProperty(property);
     int needsChange = (!currentValue || strcmp(currentValue, castValueStr) != 0);
@@ -100,12 +97,11 @@ int DoWhenPropisinTheSameForm(const char *property, void *expectedPropertyValue,
             castValueStr = buffer;
             return (getSystemProperty(property) == castValueStr);
         }
-        case TYPE_STRING: {
+        case TYPE_STRING:
+        default: {
             castValueStr = (const char *)expectedPropertyValue;
             return strcmp(getSystemProperty(property), castValueStr);
         }
-        default:
-            abort_instance("DoWhenPropisinTheSameForm", "Force exit due to undefined behaviour, hope abort cleans the memory.");
     }
     return 1;
 }
@@ -127,12 +123,11 @@ int setprop(char *property, void *propertyValue, enum expectedDataType Type) {
             castValueStr = buffer;
             consoleLog(LOG_LEVEL_DEBUG, "setprop", "%s with %.2f", property, castValueStr);
         }
-        case TYPE_STRING: {
+        case TYPE_STRING:
+        default: {
             castValueStr = (char *)propertyValue;
             consoleLog(LOG_LEVEL_DEBUG, "setprop", "%s with %s", property, castValueStr);
         }
-        default:
-            abort_instance("setprop", "Force exit due to undefined behaviour, hope abort cleans the memory.");
     }
     if(executeCommands(resetprop, (char *const[]) {resetprop, (char *)property, (char *)castValueStr, NULL}, false) == 0) return 0;
     consoleLog(LOG_LEVEL_WARN, "setprop", "Failed to set requested property!");
@@ -276,3 +271,4 @@ void androidPropertyCallback(void* cookie, const char* name, const char* value, 
     handler->propertySerial = serial;
     handler->found = 1;
 }
+#endif 

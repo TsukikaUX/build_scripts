@@ -38,6 +38,14 @@ on:
         options:
           - Install
           - Skip
+      update_dependencies:
+        description: "Do you want to update dependencies?"
+        required: true
+        default: "Install"
+        type: choice
+        options:
+          - Update
+          - Skip
 
 permissions:
   contents: write
@@ -53,8 +61,8 @@ jobs:
           submodules: recursive
 
       - name: Update Binaries
-        run: |
         if: ${{ github.event.inputs.updateSystemBinaries == 'Update' }}
+        run: |
           sudo apt update -y && sudo apt upgrade -y
           sudo apt install aria2 curl -y
 
@@ -65,18 +73,8 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
 
-      - name: Configure Git Identity
+      - name: Download and Push Dependencies
         if: ${{ github.event.inputs.update_dependencies == 'Update' }}
         run: |
-          git config --global user.name "Kitaaa"
-          git config --global user.email "ayumi.aiko@outlook.com"
-
-      - name: Setup Repository
-        run: |
-          chmod +x ./setup.sh
-          bash ./setup.sh --skip-dependencies
-
-      - name: Download and Push Dependencies
-        run: |
-          chmod +x ./src/misc/tsukika.sh
-          bash ./src/misc/tsukika.sh --update-dependencies
+          chmod +x "$GITHUB_WORKSPACE/src/misc/tsukika.sh"
+          bash "$GITHUB_WORKSPACE/src/misc/tsukika.sh" --update-dependencies

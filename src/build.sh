@@ -37,7 +37,6 @@ quotes=(
 randomQuote="${quotes[$RANDOM % ${#quotes[@]}]}"
 BUILD_START_TIME=$(date +%s)
 sameOldFirmwarePackage=false
-branchToFork=android10
 
 # Trap the SIGINT signal (Ctrl+C) and call handle_sigint when it's caught
 trap 'abort "Aborting the build....." "build.sh"' SIGINT
@@ -147,8 +146,8 @@ if [ -n "$argOne" ]; then
 					setupLocalImage ./local_build/etc/extract/${images}.img ./local_build/etc/imageSetup/${images}
 				done
 			else
-				# generate a uuid value to identify a file:
-				logInterpreter "Trying to generate a uuid hash for $argOne" "uuidgen > .uuid" || abort "Failed to generate uuid hash for the zip file? check if uuidgen exists or not."
+				# generate an uuid value to identify a file:
+				logInterpreter "Trying to generate an uuid hash for $argOne" "uuidgen > .uuid" || abort "Failed to generate uuid hash for the zip file? check if uuidgen exists or not."
 				zip -q "$argOne" -j ".uuid" || abort "Failed to add uuid hash into the $argOne file."
 				setprop --custom "./local_build/etc/buildNInfo/build.prop" "previousBuildZipUUID" "$(cat .uuid)"
 				rm .uuid
@@ -187,7 +186,7 @@ if [ -n "$argOne" ]; then
 						cd android_super_image_tools
 						chmod +x ./make.sh
 						console_print "Building LonelyFool's lptools from source, this might take sometime..."
-						console_print "This is a one time build, future builds won't rebuild the tool or require internet connection to build."
+						console_print "This is an one time build, future builds won't rebuild the tool or require internet connection to build."
 						./make.sh &>/dev/null || abort "Failed to build lptools, please try again.." "build.sh"
 						cd ../
 						# we are outside local_build

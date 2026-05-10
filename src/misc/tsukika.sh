@@ -17,7 +17,8 @@
 #
 
 # source the functions script:
-source ./src/misc/build_scripts/util_functions.sh
+chmod +x $GITHUB_WORKSPACE/src/misc/util_functions.sh
+source $GITHUB_WORKSPACE/src/misc/util_functions.sh
 
 # dependencies urls:
 apktool="https://api.github.com/repos/iBotPeaches/Apktool/releases/latest"
@@ -28,46 +29,38 @@ apktoolVersion=$(curl -s "$apktool" | grep -oP '"tag_name": "\K(.*)(?=")')
 uberApkSignerVersion=$(curl -s "$uberApkSigner" | grep -oP '"tag_name": "\K(.*)(?=")' | sed 's/[^0-9.]//g')
 
 # local version of those dependencies:
-apktoolLocalVersion=v$(java -jar "./src/dependencies/bin/apktool.jar" --version 2>/dev/null)
-uberApkSignerLocalVersion=$(java -jar "./src/dependencies/bin/signer.jar" --version 2>/dev/null | sed 's/[^0-9.]//g')
+apktoolLocalVersion=v$(java -jar "$GITHUB_WORKSPACE/src/dependencies/bin/apktool.jar" --version 2>/dev/null)
+uberApkSignerLocalVersion=$(java -jar "$GITHUB_WORKSPACE/src/dependencies/bin/signer.jar" --version 2>/dev/null | sed 's/[^0-9.]//g')
 
 if [ "$1" == "--update-dependencies" ]; then
     if [[ "${apktoolVersion}" == "${apktoolLocalVersion}" ]]; then
         console_print "Apktool is up to date with the repo."
     else
-        console_print "Trying to update Apktool..."
-        if downloadRequestedFile "$(getLatestReleaseFromGithub "${apktool}")" "./src/dependencies/bin/apktool.jarNEW"; then
-            console_print "Apktool updated successfully to version ${apktoolVersion}."
-        else
-            abort "Failed to update Apktool."
-        fi
-        if [ "$(sha256sum "./src/dependencies/bin/apktool.jar" | awk '{print '$1'}')" != "$(sha256sum "./src/dependencies/bin/apktool.jarNEW" | awk '{print '$1'}')" ]; then
-            rm -rf "./src/dependencies/bin/apktool.jar"
-            mv "./src/dependencies/bin/apktool.jarNEW" "./src/dependencies/bin/apktool.jar"
-            git add "./src/dependencies/bin/apktool.jar"
-            textAppend[0]="apktool updated from ${apktoolLocalVersion} to version ${apktoolVersion}"
-        fi
+        console_print "Trying to update Apktool from ${apktoolLocalVersion} to ${apktoolVersion}..."
+        downloadRequestedFile "$(getLatestReleaseFromGithub "${apktool}")" "$GITHUB_WORKSPACE/src/dependencies/bin/apktool.jarNEW" || abort "Failed to update Apktool."
+        # Only compare hashes if the original exists; otherwise always replace
+        original="$GITHUB_WORKSPACE/src/dependencies/bin/apktool.jar"
+        new="$GITHUB_WORKSPACE/src/dependencies/bin/apktool.jarNEW"
+        mv "$new" "$original"
+        git add "$original"
+        textAppend[0]="apktool updated from ${apktoolLocalVersion} to ${apktoolVersion}"
     fi
     if [[ "${uberApkSignerVersion}" == "${uberApkSignerLocalVersion}" ]]; then
         console_print "Uber Apk Signer is up to date with the repo."
     else
-        console_print "Trying to update Uber Apk Signer..."
-        if downloadRequestedFile "$(getLatestReleaseFromGithub "${uberApkSigner}")" "./src/dependencies/bin/signer.jarNEW"; then
-            console_print "Uber Apk Signer updated successfully to version ${uberApkSignerVersion}."
-        else
-            abort "Failed to update Uber Apk Signer."
-        fi
-        if [ "$(sha256sum "./src/dependencies/bin/signer.jar" | awk '{print '$1'}')" != "$(sha256sum "./src/dependencies/bin/signer.jarNEW" | awk '{print '$1'}')" ]; then
-            rm -rf "./src/dependencies/bin/signer.jar"
-            mv "./src/dependencies/bin/signer.jarNEW" "./src/dependencies/bin/signer.jar"
-            git add "./src/dependencies/bin/signer.jar"
-            textAppend[1]="uber-apk-signer updated from ${uberApkSignerLocalVersion} to version ${uberApkSignerVersion}"
-        fi
+        console_print "Trying to update Uber Apk Signer from ${uberApkSignerLocalVersion} to ${uberApkSignerVersion}..."
+        downloadRequestedFile "$(getLatestReleaseFromGithub "${uberApkSigner}")" "$GITHUB_WORKSPACE/src/dependencies/bin/signer.jarNEW" || abort "Failed to update Uber Apk Signer."
+        original="$GITHUB_WORKSPACE/src/dependencies/bin/signer.jar"
+        new="$GITHUB_WORKSPACE/src/dependencies/bin/signer.jarNEW"
+        mv "$new" "$original"
+        git add "$original"
+        textAppend[1]="uber-apk-signer updated from ${uberApkSignerLocalVersion} to ${uberApkSignerVersion}"
     fi
-    # let's push the changes to the repository:
-    if git diff --exit-code; then
+    if git diff --cached --quiet; then
         console_print "No changes to commit."
     else
+        git config --global user.name "—͟͞͞★ ɪᴋ𝘂ᵞο ᴋ𝖎𝘵𝕒 ★"
+        git config --global user.email "171214813+ikuyo-kita07@users.noreply.github.com"
         console_print "Committing changes..."
         joined=$(IFS=', '; echo "${textAppend[*]}")
         git commit -m "github-actions: dependencies: ${joined}"
@@ -79,7 +72,7 @@ if [ "$1" == "--update-dependencies" ]; then
 fi
 
 # cleanup:
-rm -rf "./src/dependencies/bin/apktool.jarNEW" "./src/dependencies/bin/signer.jarNEW"
+rm -f "$GITHUB_WORKSPACE/src/dependencies/bin/apktool.jarNEW" "$GITHUB_WORKSPACE/src/dependencies/bin/signer.jarNEW"
 
 # fix failure:
 exit 0

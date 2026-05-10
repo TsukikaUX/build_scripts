@@ -260,7 +260,7 @@ function addFloatXMLValues() {
         28|29|30)
             BUILD_TARGET_FLOATING_FEATURE_PATH="${VENDOR_DIR}/etc/floating_feature.xml"
         ;;
-        31|32|33|34|35)
+        31|32|33|34|35|36|37)
             BUILD_TARGET_FLOATING_FEATURE_PATH="${SYSTEM_DIR}/etc/floating_feature.xml"
         ;;
     esac
@@ -1058,6 +1058,7 @@ function verify256Checksum() {
     [ "$(sha256sum "${file}" | awk '{print $1}')" == "${checksumHash}" ]
 }
 
+# i know that someone can easily bypass these shitty restrictions.
 function runModule() {
     local moduleName="$1"
     local moduleProp="./src/outskirts/addon-modules/${moduleName}/module.prop"
@@ -1105,7 +1106,7 @@ function applyHexPatches() {
     set -e
     console_print "Applied ${patches_applied}/${total_patches} patches\n"
     
-    # Return success if at least one patch was applied
+    # Return success if at least one patch is applied
     [ $patches_applied -gt 0 ]
 }
 
@@ -1128,7 +1129,7 @@ function getFloatingFeaturesValue()
         28|29|30)
             BUILD_TARGET_FLOATING_FEATURE_PATH="${VENDOR_DIR}/etc/floating_feature.xml"
         ;;
-        31|32|33|34|35)
+        31|32|33|34|35|36|37)
             BUILD_TARGET_FLOATING_FEATURE_PATH="${SYSTEM_DIR}/etc/floating_feature.xml"
         ;;
     esac

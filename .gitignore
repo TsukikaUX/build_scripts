@@ -4,3 +4,5 @@ test
 hawksnext
 ./local_build/logs/*.log
 hua
+test.sh
+a.out
