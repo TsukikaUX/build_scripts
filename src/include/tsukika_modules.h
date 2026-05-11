@@ -19,32 +19,34 @@
 #include <tsukika.h>
 #include <tsukika_props.h>
 
+// max prop length:
+#define MAX_MODULE_PROPERTY_NAME 50
+#define MAX_MODULE_PROPERTY_VERSION 16 
+#define MAX_MODULE_PROPERTY_AUTHOR 20
+#define MAX_MODULE_PROPERTY_CO_AUTHOR 64 
+#define MAX_MODULE_PATH 512
+
 // extern variables
 extern int currentState;
-extern int blocklistedModulesCount;
-extern char**blocklistedModules;
 
 // module identifier.
 typedef struct {
 	int moduleRunState;
 	int maxSDK;
 	int minSDK;
-	char moduleName[50];
-	char moduleVersion[16];
-    char moduleAuthor[64];
-	char moduleExecutableName[20];
-	char pathOfTheModule[512];
+	char *moduleName;
+	char *moduleVersion;
+    char *moduleAuthor;
+    char *moduleCOAuthor;
+	char *pathOfTheModule;
 } tsukikaModule;
 
 // function declarations:
-bool verifyAndLogModule(void *runnableModule);
-bool isModuleInTheBlocklist(char *moduleNameAuthor);
-void listModulesAndVerifyThem();
-void addModuleToBlocklist(char* moduleName);
-void runThisModule(void *thisModule);
-void __cleanModuleMetadata(void *__moduleMetadata);
+bool __isModuleInTheBlocklist(char *moduleNameAuthor);
+void __listModulesAndVerifyThem();
+void __addModuleToBlocklist(char* moduleName);
+void __runThisModule(void *thisModule);
+void __cleanModuleMetadata(void *__moduleMetadata__);
 void __cleanPointers();
-void __cacheBlocklists();
-void __init__modules();
-void __deinit__modules();
+void __verifyAndLogModule(void *runnableModule);
 #endif 

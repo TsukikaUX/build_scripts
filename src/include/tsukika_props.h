@@ -44,7 +44,8 @@ enum propertyCastType {
     CAST_TYPE_INT,
     CAST_TYPE_FLOAT,
     CAST_TYPE_STRING,
-    CAST_TYPE_BOOL
+    CAST_TYPE_BOOL,
+    CAST_NONE
 };
 
 // struct that is used for property stuffs like
@@ -70,5 +71,6 @@ void __saveState();
 void __deleteProperty(const char *__propertyName);
 void __init__properties();
 void __deinit__properties(bool saveTheProps);
+void __wipeMetadata(void *__cookie);
 tsukikaProperty __getPropertyMetadata(const char *__propertyName);
 #endif

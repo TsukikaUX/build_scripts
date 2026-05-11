@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#ifdef TSUKIKA_PROPS_H
 #include <tsukika.h>
 #include <tsukikautils.h>
 
@@ -271,4 +270,3 @@ void androidPropertyCallback(void* cookie, const char* name, const char* value, 
     handler->propertySerial = serial;
     handler->found = 1;
 }
-#endif 

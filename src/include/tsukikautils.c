@@ -183,7 +183,7 @@ bool eraseFile(const char *file) {
     return true;
 }
 
-// NOTE: THIS FUNCTION RETURNS STACK AND SHOULD BE CLEARED!!
+// NOTE: THIS FUNCTION RETURNS HEAP AND SHOULD BE CLEARED!!
 char *combineStringsFormatted(const char *format, ...) {
     va_list args;
     va_start(args, format);

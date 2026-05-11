@@ -6,3 +6,5 @@ hawksnext
 hua
 test.sh
 a.out
+local_build/logs/makeErrors.log
+src/tsukika/android_binaries/c/initStateModuleRunner/initStateModuleRunner

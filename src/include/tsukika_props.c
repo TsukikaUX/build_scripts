@@ -236,6 +236,19 @@ void __deinit__properties(bool saveTheProps)
     __freeThisPointer((void **)&__propertiesValue_cached);
 }
 
+void __wipeMetadata(void *__cookie)
+{
+    tsukikaProperty* __thisModule = (tsukikaProperty*)__cookie;
+    __thisModule->__found = -1;
+    __thisModule->__propertyIndex = -1;
+    __thisModule->value.__propertyIntegerValue = -1;
+    __thisModule->value.__propertyFloatValue = 1.0;
+    __thisModule->value.__propertyBoolValue = false;
+    __freeThisPointer((void*)__thisModule->__propertyName);
+    __freeThisPointer((void*)__thisModule->value.__propertyStringValue);
+    __thisModule->typeProp = CAST_NONE;
+}
+
 tsukikaProperty __getPropertyMetadata(const char *__propertyName)
 {
     tsukikaProperty getprop = {0};
