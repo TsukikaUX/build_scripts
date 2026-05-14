@@ -43,10 +43,10 @@ typedef struct {
 
 // function declarations:
 bool __isModuleInTheBlocklist(char *moduleNameAuthor);
-void __listModulesAndVerifyThem();
 void __addModuleToBlocklist(char* moduleName);
 void __runThisModule(void *thisModule);
 void __cleanModuleMetadata(void *__moduleMetadata__);
 void __cleanPointers();
 void __verifyAndLogModule(void *runnableModule);
-#endif 
+void *__listModulesAndVerifyThem(void *nullArg);
+#endif

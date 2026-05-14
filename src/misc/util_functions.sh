@@ -16,8 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# source 
-
 # fix makefile:
 [ -z "${thisConsoleTempLogFile}" ] && thisConsoleTempLogFile="./local_build/logs/tsuki_build.log"
 [ -z "${TMPFILE}" ] && TMPFILE="$(mktemp)"

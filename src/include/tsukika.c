@@ -86,21 +86,22 @@ int maybeSetProp(char* property, void* expectedPropertyValue, enum expectedDataT
     return executeCommands(resetprop, (char* const[]){ resetprop, (char*)property, (char*)castValueStr, NULL }, 0);
 }
 
-int DoWhenPropisinTheSameForm(const char *property, void *expectedPropertyValue, enum expectedDataType Type) {
+int doWhenPropValueIsMatchedWithExpected(const char *property, void *expectedPropertyValue, enum expectedDataType Type) {
     char buffer[PROP_VALUE_MAX];
-    const char *castValueStr = NULL;
     switch(Type) {
         case TYPE_INT: {
             int castValue = *(int *)expectedPropertyValue;
             snprintf(buffer, sizeof(buffer), "%d", castValue);
-            castValueStr = buffer;
-            return (getSystemProperty(property) == castValueStr);
+            return (getSystemProperty(property) == buffer);
+        }
+        case TYPE_FLOAT: {
+            float castValue = *(float *)expectedPropertyValue;
+            snprintf(buffer, sizeof(buffer), "%.2f", castValue);
+            return strcmp(getSystemProperty(property), buffer);
         }
         case TYPE_STRING:
-        default: {
-            castValueStr = (const char *)expectedPropertyValue;
-            return strcmp(getSystemProperty(property), castValueStr);
-        }
+        default:
+            return strcmp(getSystemProperty(property), (const char *)expectedPropertyValue);
     }
     return 1;
 }
@@ -114,21 +115,17 @@ int setprop(char *property, void *propertyValue, enum expectedDataType Type) {
             int castValue = *(int *)propertyValue;
             snprintf(buffer, sizeof(buffer), "%d", castValue);
             castValueStr = buffer;
-            consoleLog(LOG_LEVEL_DEBUG, "setprop", "%s with %d", property, castValueStr);
         }
         case TYPE_FLOAT: {
             float castValue = *(float *)propertyValue;
             snprintf(buffer, sizeof(buffer), "%.2f", castValue);
             castValueStr = buffer;
-            consoleLog(LOG_LEVEL_DEBUG, "setprop", "%s with %.2f", property, castValueStr);
         }
         case TYPE_STRING:
-        default: {
+        default:
             castValueStr = (char *)propertyValue;
-            consoleLog(LOG_LEVEL_DEBUG, "setprop", "%s with %s", property, castValueStr);
-        }
     }
-    if(executeCommands(resetprop, (char *const[]) {resetprop, (char *)property, (char *)castValueStr, NULL}, false) == 0) return 0;
+    if(executeCommands(resetprop, (char *const[]) {resetprop, property, castValueStr, NULL}, false) == 0) return 0;
     consoleLog(LOG_LEVEL_WARN, "setprop", "Failed to set requested property!");
     return 1;
 }
@@ -173,7 +170,7 @@ int getPidOf(const char *proc) {
 }
 
 bool killProcess(pid_t procID) {
-    return (executeCommands("su", (char *const[]) {"su", "-c", "kill", combineStringsFormatted("%d", procID)}, false) == 0);
+    return (executeCommands("kill", (char *const[]) {"kill", combineStringsFormatted("%d", procID)}, false) == 0);
 }
 
 bool getDeviceState(enum expectedDeviceState exptx) {
@@ -202,6 +199,86 @@ bool getDeviceState(enum expectedDeviceState exptx) {
         }
     }
     return false;
+}
+
+// this is the one of the most lamest function here, thank me later!
+bool setSystemSettings(enum systemTable table, char *name, char *value)
+{
+    char *state;
+    switch(table)
+    {
+        case TABLE_GLOBAL:
+            state = "global";
+        break;    
+        case TABLE_SECURE:
+            state = "global";
+        break;
+        case TABLE_SYSTEM:
+        default:
+            state = "system";
+        break;
+    }
+    // since we can only use cli for now, let's just abuse it for now. 
+    // i know it sounds bad to pro people who could set up a literal 
+    // socket to manage things between the system, i promise you
+    // i will do that one day if i learn them, till then, peace ✌🏻
+    return (executeCommands("settings", (char *const[]) {"settings", "put", (char *)state, name, value}, false) == 0);
+}
+
+// cast the value as an int, float or even a bool if you know wat you are getting.
+char *getSystemSettings(enum systemTable table, char *name, bool skipNewlinesAtStart)
+{
+    int index = 0;
+    char *state;
+    char *command;
+    char value[1024];
+    switch(table)
+    {
+        case TABLE_GLOBAL:
+            state = "global";
+        break;    
+        case TABLE_SECURE:
+            state = "secure";
+        break;
+        case TABLE_SYSTEM:
+        default:
+            state = "system";
+        break;
+    }
+    size_t sizeOfCommand = strlen(name) + strlen(state) + strlen("settings get ") + 2;
+    command = malloc(sizeOfCommand);
+    if(!command)
+    {
+        consoleLog(LOG_LEVEL_ERROR, "getSystemSettings", "Failed to get system settings value. Please try again.");
+        consoleLog(LOG_LEVEL_DEBUG, "getSystemSettings", "!command");
+        return NULL;
+    }
+    snprintf(command, sizeOfCommand, "settings get %s %s", state, name);
+    FILE *fptr = popen(command, "r");
+    if(!fptr)
+    {
+        __freeThisPointer((void**)&command);
+        consoleLog(LOG_LEVEL_ERROR, "getSystemSettings", "Failed to get system settings value. Please try again.");
+        consoleLog(LOG_LEVEL_DEBUG, "getSystemSettings", "!fptr");
+        return NULL;
+    }
+    while(fgets(value, sizeof(value), fptr))
+    {
+        // if we suspect a NULL newline value at the beginning and sspecially in a certain circumstance, let's just put a useless warning and end the loop 
+        // if and only the dev thinks that this is a weird unga bunga moment.
+        if(skipNewlinesAtStart && index == 0 && strcspn(value, "\n") == 0)
+        {
+            __freeThisPointer((void**)&command);
+            pclose(fptr);
+            consoleLog(LOG_LEVEL_ERROR, "getSystemSettings", "Provided system table variable does not seem to have a value.");
+            return NULL;
+        }
+        // we'll increment this just to not hit that if statement:
+        index++;
+    }
+    __freeThisPointer((void**)&command);
+    pclose(fptr);
+    return strdup(value);
 }
 
 char *getSystemProperty(const char *propertyVariableName) {

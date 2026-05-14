@@ -82,7 +82,8 @@ enum openRecoveryScriptNextCommand {
 	SWITCH_LOCALE
 };
 
-// used for tracking the current init state.
+// used for tracking the current init state- no, it's not
+// it's repurposed for tsukika_modules now
 enum bootTraceState {
 	LATE_FS,
 	INIT,
@@ -91,18 +92,26 @@ enum bootTraceState {
 	BOOT_COMPLETED,
 };
 
+// used for manipulating the system settings configs:
+enum systemTable {
+	TABLE_SECURE,
+	TABLE_GLOBAL,
+	TABLE_SYSTEM
+};
+
 // function declarations.
 int isPackageInstalled(const char packageName[250]);
 int getSystemProperty__(const char *propertyVariableName);
 int maybeSetProp(char* property, void* expectedPropertyValue, enum expectedDataType Type);
-int DoWhenPropisinTheSameForm(const char *property, void *expectedPropertyValue, enum expectedDataType Type);
+int doWhenPropValueIsMatchedWithExpected(const char *property, void *expectedPropertyValue, enum expectedDataType Type);
 int setprop(char *property, void *propertyValue, enum expectedDataType Type);
 int removeProperty(char *const property);
 int getBatteryPercentage();
 int getPidOf(const char *proc);
 bool killProcess(pid_t procID);
 bool getDeviceState(enum expectedDeviceState exptx);
-char *combineStringsFormatted(const char *format, ...);
+bool setSystemSettings(enum systemTable table, char *name, char *value);
+char *getSystemSettings(enum systemTable table, char *name, bool skipNewlinesAtStart);
 char *getSystemProperty(const char *propertyVariableName);
 void alertUser(char *message);
 void prepareStockRecoveryCommandFile(enum openRecoveryScriptNextCommand ors, char *actionArgOne, char *actionArgTwo);
