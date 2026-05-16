@@ -79,11 +79,10 @@ int maybeSetProp(char* property, void* expectedPropertyValue, enum expectedDataT
             castValueStr = (char*)expectedPropertyValue;
         }
     }
-    char* currentValue = getSystemProperty(property);
-    int needsChange = (!currentValue || strcmp(currentValue, castValueStr) != 0);
-    free(currentValue);
-    if(!needsChange) return 0;
-    return executeCommands(resetprop, (char* const[]){ resetprop, (char*)property, (char*)castValueStr, NULL }, 0);
+    char* currentValue = strdup(getSystemProperty(property));
+    if(!currentValue) return -1;
+    if(strcmp(currentValue, castValueStr) != 0) return executeCommands(resetprop, (char* const[]){ resetprop, (char*)property, (char*)castValueStr, NULL }, 0);
+    else return -1;
 }
 
 int doWhenPropValueIsMatchedWithExpected(const char *property, void *expectedPropertyValue, enum expectedDataType Type) {
@@ -128,6 +127,33 @@ int setprop(char *property, void *propertyValue, enum expectedDataType Type) {
     if(executeCommands(resetprop, (char *const[]) {resetprop, property, castValueStr, NULL}, false) == 0) return 0;
     consoleLog(LOG_LEVEL_WARN, "setprop", "Failed to set requested property!");
     return 1;
+}
+
+int setpropIfDifferent(char *property, void *propertyValue, enum expectedDataType Type) {
+    if(!property || !propertyValue) return -1;
+    char buffer[PROP_VALUE_MAX];
+    char* castValueStr = NULL;
+    switch(Type) {
+        case TYPE_INT: {
+            int castValue = *(int*)propertyValue;
+            snprintf(buffer, sizeof(buffer), "%d", castValue);
+            castValueStr = buffer;
+        }
+        break;
+        case TYPE_FLOAT: {
+            float castValue = *(float*)propertyValue;
+            snprintf(buffer, sizeof(buffer), "%g", castValue);
+            castValueStr = buffer;
+        }
+        break;
+        case TYPE_STRING:
+        default: {
+            castValueStr = (char*)propertyValue;
+        }
+    }
+    char* currentValue = getSystemProperty(property);
+    if(strcmp(currentValue, castValueStr) == 0) return 1;
+    else return executeCommands(resetprop, (char* const[]){ resetprop, property, castValueStr, NULL }, 0);
 }
 
 int removeProperty(char *const property) {

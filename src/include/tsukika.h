@@ -105,6 +105,7 @@ int getSystemProperty__(const char *propertyVariableName);
 int maybeSetProp(char* property, void* expectedPropertyValue, enum expectedDataType Type);
 int doWhenPropValueIsMatchedWithExpected(const char *property, void *expectedPropertyValue, enum expectedDataType Type);
 int setprop(char *property, void *propertyValue, enum expectedDataType Type);
+int setpropIfDifferent(char *property, void *propertyValue, enum expectedDataType Type);
 int removeProperty(char *const property);
 int getBatteryPercentage();
 int getPidOf(const char *proc);
