@@ -24,8 +24,8 @@
 // variables to use to cache the properties.
 extern int __properties_count;
 extern bool __didAnyPropertyGetChanged;
-extern char **__properties_cached;
-extern char **__propertiesValue_cached;
+extern char *_Nonnull*_Nonnull __properties_cached;
+extern char *_Nonnull*_Nonnull __propertiesValue_cached;
 
 // macro:
 #define PROPERTY_FILE "/data/adb/Tsukika/thisProperty"
@@ -53,24 +53,24 @@ enum propertyCastType {
 typedef struct {
     int __found;
     int __propertyIndex;
-    char *__propertyName;
+    char *_Nonnull __propertyName;
     union {
         int __propertyIntegerValue;
         float __propertyFloatValue;
         bool __propertyBoolValue;
-        char *__propertyStringValue;
+        char *_Nonnull __propertyStringValue;
     } value; 
     enum propertyCastType typeProp;
 } tsukikaProperty;
 
 // functions:
-bool __setProperty(const char *__propertyName, const void *__propertyValue);
-void __readProperty(void *__cookie);
+bool __setProperty(const char *_Nonnull __propertyName, const void *_Nonnull __propertyValue);
+void __readProperty(void *_Nonnull __cookie);
 void __cacheProperties();
 void __saveState();
-void __deleteProperty(const char *__propertyName);
+void __deleteProperty(const char *_Nonnull __propertyName);
 void __init__properties();
 void __deinit__properties(bool saveTheProps);
-void __wipeMetadata(void *__cookie);
-tsukikaProperty __getPropertyMetadata(const char *__propertyName);
+void __wipeMetadata(void *_Nonnull __cookie);
+tsukikaProperty __getPropertyMetadata(const char *_Nonnull __propertyName);
 #endif

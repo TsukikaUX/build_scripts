@@ -17,13 +17,16 @@
 #include <tsukika.h>
 #include <tsukikautils.h>
 
-int isPackageInstalled(const char *packageName) {
+int isPackageInstalled(const char *_Nonnull packageName)
+{
     FILE *fptr = popen("pm list packages | cut -d ':' -f 2", "r");
     if(!fptr) return -1;
     char string[1024];
-    while(fgets(string, sizeof(string), fptr) != NULL) {
-        string[strcspn(string, "\n")] = '\0';
-        if(strcmp(string, packageName) == 0) {
+    while(fgets(string, sizeof(string), fptr))
+    {
+        // let's just compare it to the whole string but not with the newline char.
+        if(strncmp(packageName, string, strlen(packageName) - 1) == 0)
+        {
             fclose(fptr);
             return 0;
         }
@@ -32,174 +35,57 @@ int isPackageInstalled(const char *packageName) {
     return 1;
 }
 
-int getSystemProperty__(const char *propertyVariableName) {
-    // Update: use native functions from android-ndk itself!
-    const prop_info* pi = __system_property_find(propertyVariableName);
-    if(pi) {
-        PropertyHandler ctx = {0};
-        __system_property_read_callback(pi, androidPropertyCallback, &ctx);
-        return atoi(ctx.propertyValue);
-    }
-    else {
-        consoleLog(LOG_LEVEL_ERROR, "getSystemProperty__", "%s not found in system, trying to gather property value from resetprop...", propertyVariableName);
-        FILE *fptr = popen(combineStringsFormatted("%s %s", resetprop, propertyVariableName), "r");
-        if(!fptr) {
-            consoleLog(LOG_LEVEL_ERROR, "getSystemProperty__", "uh, major hiccup, failed to open resetprop in popen()");
-            return -1;
-        }
-        char eval[PROP_VALUE_MAX];
-        fgets(eval, sizeof(eval), fptr);
-        // remove the dawn newline char to get a clear value.
-        eval[strcspn(eval, "\n")] = '\0';
-        fclose(fptr);
-        return atoi(eval);
-    }
-    return -1;
-}
-
-int maybeSetProp(char* property, void* expectedPropertyValue, enum expectedDataType Type) {
-    if(!property || !expectedPropertyValue) return -1;
-    char buffer[PROP_VALUE_MAX];
-    char* castValueStr = NULL;
-    switch(Type) {
-        case TYPE_INT: {
-            int castValue = *(int*)expectedPropertyValue;
-            snprintf(buffer, sizeof(buffer), "%d", castValue);
-            castValueStr = buffer;
-        }
-        break;
-        case TYPE_FLOAT: {
-            float castValue = *(float*)expectedPropertyValue;
-            snprintf(buffer, sizeof(buffer), "%g", castValue);
-            castValueStr = buffer;
-        }
-        break;
-        case TYPE_STRING:
-        default: {
-            castValueStr = (char*)expectedPropertyValue;
-        }
-    }
-    char* currentValue = strdup(getSystemProperty(property));
-    if(!currentValue) return -1;
-    if(strcmp(currentValue, castValueStr) != 0) return executeCommands(resetprop, (char* const[]){ resetprop, (char*)property, (char*)castValueStr, NULL }, 0);
-    else return -1;
-}
-
-int doWhenPropValueIsMatchedWithExpected(const char *property, void *expectedPropertyValue, enum expectedDataType Type) {
-    char buffer[PROP_VALUE_MAX];
-    switch(Type) {
-        case TYPE_INT: {
-            int castValue = *(int *)expectedPropertyValue;
-            snprintf(buffer, sizeof(buffer), "%d", castValue);
-            return (getSystemProperty(property) == buffer);
-        }
-        case TYPE_FLOAT: {
-            float castValue = *(float *)expectedPropertyValue;
-            snprintf(buffer, sizeof(buffer), "%.2f", castValue);
-            return strcmp(getSystemProperty(property), buffer);
-        }
-        case TYPE_STRING:
-        default:
-            return strcmp(getSystemProperty(property), (const char *)expectedPropertyValue);
-    }
-    return 1;
-}
-
-int setprop(char *property, void *propertyValue, enum expectedDataType Type) {
-    char buffer[PROP_VALUE_MAX];
-    char *castValueStr = NULL;
-    consoleLog(LOG_LEVEL_DEBUG, "setprop", "Trying to change the requested prop's value...");
-    switch(Type) {
-        case TYPE_INT: {
-            int castValue = *(int *)propertyValue;
-            snprintf(buffer, sizeof(buffer), "%d", castValue);
-            castValueStr = buffer;
-        }
-        case TYPE_FLOAT: {
-            float castValue = *(float *)propertyValue;
-            snprintf(buffer, sizeof(buffer), "%.2f", castValue);
-            castValueStr = buffer;
-        }
-        case TYPE_STRING:
-        default:
-            castValueStr = (char *)propertyValue;
-    }
-    if(executeCommands(resetprop, (char *const[]) {resetprop, property, castValueStr, NULL}, false) == 0) return 0;
-    consoleLog(LOG_LEVEL_WARN, "setprop", "Failed to set requested property!");
-    return 1;
-}
-
-int setpropIfDifferent(char *property, void *propertyValue, enum expectedDataType Type) {
-    if(!property || !propertyValue) return -1;
-    char buffer[PROP_VALUE_MAX];
-    char* castValueStr = NULL;
-    switch(Type) {
-        case TYPE_INT: {
-            int castValue = *(int*)propertyValue;
-            snprintf(buffer, sizeof(buffer), "%d", castValue);
-            castValueStr = buffer;
-        }
-        break;
-        case TYPE_FLOAT: {
-            float castValue = *(float*)propertyValue;
-            snprintf(buffer, sizeof(buffer), "%g", castValue);
-            castValueStr = buffer;
-        }
-        break;
-        case TYPE_STRING:
-        default: {
-            castValueStr = (char*)propertyValue;
-        }
-    }
-    char* currentValue = getSystemProperty(property);
-    if(strcmp(currentValue, castValueStr) == 0) return 1;
-    else return executeCommands(resetprop, (char* const[]){ resetprop, property, castValueStr, NULL }, 0);
-}
-
-int removeProperty(char *const property) {
-    return executeCommands(resetprop, (char *const[]){resetprop, "-d", property}, false);
-}
-
-int getBatteryPercentage() {
-    const char *blobPath;
-    size_t sizeTea = sizeof((char *)batteryPercentageBlobFilePaths) / sizeof((char *)batteryPercentageBlobFilePaths[0]);
-    for(size_t i = 0; i < sizeTea; i++) {
-        if(access(batteryPercentageBlobFilePaths[i], F_OK) == 0) {
-            blobPath = batteryPercentageBlobFilePaths[i];
+int getBatteryPercentage()
+{
+    for(size_t i = 0; !batteryPercentageBlobFilePaths[i]; i++)
+    {
+        if(access(batteryPercentageBlobFilePaths[i], F_OK) == 0)
+        {
+            batteryPercentageBlobIndex = i;
             break;
         }
-        // return -1 if we cannot find the correct blob.
-        else if(i == sizeTea) return -1;
     }
-    FILE *fptr = fopen(blobPath, "r");
+    FILE *batteryBlob = fopen(batteryPercentageBlobFilePaths[batteryPercentageBlobIndex], "r");
     // return -1 if we cannot open the file.
-    if(!fptr) return -1;
+    if(!batteryBlob) return -1;
     // localhost@christian:~$ echo "10" | wc -c
     // 3
     // localhost@christian:~$ echo "100" | wc -c
     // 4
     // uh, 5-6 should be more than enough i guess...
     char percent[6];
-    fgets(percent, sizeof(percent), fptr);
+    fgets(percent, sizeof(percent), batteryBlob);
     percent[strcspn(percent, "\n")] = '\0';
-    fclose(fptr);
+    fclose(batteryBlob);
     return atoi(percent);
 }
 
-int getPidOf(const char *proc) {
-    FILE *fptr = popen(combineStringsFormatted("pidof %s", proc), "r");
-    if(!fptr) return -1;
-    char procID[8];
-    fgets(procID, sizeof(procID), fptr);
-    fclose(fptr);
-    return atoi(procID);
+bool manageProperty(char *_Nonnull property, void*_Nullable expressivePropertyValue, enum propertyTinkerState propertyState)
+{
+    char* currentValue = strdup(getSystemProperty(property));
+    if(!currentValue) return -1;
+    switch(propertyState)
+    {
+        case MAYBE_SETPROP:
+            if(!expressivePropertyValue) return false;
+            if(strcmp(currentValue, (char *)expressivePropertyValue) != 0) return (executeCommands(resetprop, (char* const[]){ resetprop, property, (char *)expressivePropertyValue, NULL }, false) == 0);
+        case SET_IF_DIFF:
+            if(!expressivePropertyValue) return false;
+            if(strcmp(currentValue, (char *)expressivePropertyValue) == 0) return false;
+            else return (executeCommands(resetprop, (char* const[]){resetprop, property, (char *)expressivePropertyValue, NULL}, false) == 0);
+        case REMOVE_PROPERTY:
+            return (executeCommands(resetprop, (char *const[]){resetprop, "-d", property}, false) == 0);
+        case SETPROP:
+            if(!expressivePropertyValue) return false;
+            return (executeCommands(resetprop, (char *const[]) {resetprop, property, (char *)expressivePropertyValue, NULL}, false) == 0);
+        case MATCHED_WITH_EXPECTED:
+            if(!expressivePropertyValue) return false;
+            return (strcmp(getSystemProperty(property), (char *)expressivePropertyValue) == 0);
+    }
 }
 
-bool killProcess(pid_t procID) {
-    return (executeCommands("kill", (char *const[]) {"kill", combineStringsFormatted("%d", procID)}, false) == 0);
-}
-
-bool getDeviceState(enum expectedDeviceState exptx) {
+bool getDeviceState(enum expectedDeviceState exptx)
+{
     char *currentSetupWizardMode = getSystemProperty("ro.setupwizard.mode");
     if(!currentSetupWizardMode) return false;
     switch(exptx)
@@ -207,11 +93,11 @@ bool getDeviceState(enum expectedDeviceState exptx) {
         case DEVICE_SETUP_OVER:
             if(strcmp(getSystemProperty("persist.sys.setupwizard"), "FINISH") == 0 || strcmp(currentSetupWizardMode, "OPTIONAL")  == 0 || strcmp(currentSetupWizardMode, "DISABLED") == 0) return true;
         case BOOTANIMATION_RUNNING:
-            return (getSystemProperty__("service.bootanim.progress") == 1);
+            return (atoi(getSystemProperty("service.bootanim.progress")) == 1);
         case BOOTANIMATION_EXITED:
-            return (getSystemProperty__("service.bootanim.exit") == 1);
+            return (atoi(getSystemProperty("service.bootanim.exit")) == 1);
         case DEVICE_BOOT_COMPLETED:
-            return (getSystemProperty__("sys.boot_completed") == 1);
+            return (atoi(getSystemProperty("sys.boot_completed")) == 1);
         case DEVICE_TURNED_ON: {
             FILE *fp = popen("dumpsys power | grep 'Display Power'", "r");
             if(!fp) {
@@ -228,7 +114,7 @@ bool getDeviceState(enum expectedDeviceState exptx) {
 }
 
 // this is the one of the most lamest function here, thank me later!
-bool setSystemSettings(enum systemTable table, char *name, char *value)
+bool setSystemSettings(enum systemTable table, char *_Nonnull name, char *_Nullable value)
 {
     char *state;
     switch(table)
@@ -244,15 +130,16 @@ bool setSystemSettings(enum systemTable table, char *name, char *value)
             state = "system";
         break;
     }
+    if(!state) return false;
     // since we can only use cli for now, let's just abuse it for now. 
     // i know it sounds bad to pro people who could set up a literal 
     // socket to manage things between the system, i promise you
     // i will do that one day if i learn them, till then, peace ✌🏻
-    return (executeCommands("settings", (char *const[]) {"settings", "put", (char *)state, name, value}, false) == 0);
+    return (executeCommands("settings", (char *const[]) {"settings", "put", state, name, value}, false) == 0);
 }
 
 // cast the value as an int, float or even a bool if you know wat you are getting.
-char *getSystemSettings(enum systemTable table, char *name, bool skipNewlinesAtStart)
+char *_Nullable getSystemSettings(enum systemTable table, char *_Nonnull name, bool skipNewlinesAtStart)
 {
     int index = 0;
     char *state;
@@ -271,6 +158,7 @@ char *getSystemSettings(enum systemTable table, char *name, bool skipNewlinesAtS
             state = "system";
         break;
     }
+    if(!state) return NULL;
     size_t sizeOfCommand = strlen(name) + strlen(state) + strlen("settings get ") + 2;
     command = malloc(sizeOfCommand);
     if(!command)
@@ -307,25 +195,27 @@ char *getSystemSettings(enum systemTable table, char *name, bool skipNewlinesAtS
     return strdup(value);
 }
 
-char *getSystemProperty(const char *propertyVariableName) {
+char *_Nullable getSystemProperty(const char *_Nonnull propertyVariableName)
+{
     // Update: use native functions from android-ndk itself!
     const prop_info* pi = __system_property_find(propertyVariableName);
-    static char globalPropertyValueBuffer[PROP_VALUE_MAX];
-    if(pi) {
+    if(pi)
+    {
         PropertyHandler ctx = {0};
         __system_property_read_callback(pi, androidPropertyCallback, &ctx);
-        snprintf(globalPropertyValueBuffer, PROP_VALUE_MAX, "%s", ctx.propertyValue);
-        return globalPropertyValueBuffer;
+        // google really uses string for properties. HELL
+        return strdup(ctx.propertyValue);
     }
     else {
+        static char globalPropertyValueBuffer[PROP_VALUE_MAX];
         consoleLog(LOG_LEVEL_ERROR, "getSystemProperty", "%s not found in system, trying to gather property value from resetprop...", propertyVariableName);
         FILE *fptr = popen(combineStringsFormatted("%s %s", resetprop, propertyVariableName), "r");
         if(!fptr) {
             consoleLog(LOG_LEVEL_ERROR, "getSystemProperty", "uh, major hiccup, failed to open resetprop in popen()");
             return NULL;
         }
-        // remove the dawn newline char to get a clear value.
         fgets(globalPropertyValueBuffer, PROP_VALUE_MAX, fptr);
+        // remove the dawn newline char to get a clear value.
         globalPropertyValueBuffer[strcspn(globalPropertyValueBuffer, "\n")] = '\0';
         fclose(fptr);
         return globalPropertyValueBuffer;
@@ -333,13 +223,15 @@ char *getSystemProperty(const char *propertyVariableName) {
     return NULL;
 }
 
-void alertUser(char *message) {
+void alertUser(char *_Nonnull message)
+{
     if(getDeviceState(DEVICE_BOOT_COMPLETED) != 0) return;
     if(isPackageInstalled("bellavita.toast") == 0) executeCommands("am", (char *const[]) {"am", "start", "-a", "android.intent.action.MAIN", "-e", "toasttext", message, "-n", "bellavita.toast/.MainActivity", NULL}, false);
     else executeCommands("cmd", (char *const[]) {"cmd", "notification", "post", "-S", "bigtext", "-t", "Tsukika", "Tag", message, NULL}, false);
 }
 
-void prepareStockRecoveryCommandFile(enum openRecoveryScriptNextCommand ors, char *actionArgOne, char *actionArgTwo) {
+void prepareStockRecoveryCommandFile(enum openRecoveryScriptNextCommand ors, char * _Nullable actionArgOne, char * _Nullable actionArgTwo)
+{
     makeDir("/cache/recovery");
     FILE *recoveryCommandFile = fopen("/cache/recovery/command", "w");
     if(!recoveryCommandFile) abort_instance("prepareStockRecoveryCommandFile", "Failed to open recovery command file to prepare given action on next boot.");
@@ -350,22 +242,26 @@ void prepareStockRecoveryCommandFile(enum openRecoveryScriptNextCommand ors, cha
     fclose(recoveryCommandFile);
 }
 
-void daemonStateManager(enum setDaemonPropertyState daemonProp, char *daemonName) {
-    if(daemonProp == DAEMON_START) {
-        if(setprop("ctl.start", (void *)daemonName, TYPE_STRING) == 0) consoleLog(LOG_LEVEL_INFO, "startDaemon", "Daemon %s started successfully.", daemonName);
+void daemonStateManager(enum setDaemonPropertyState daemonProp, char *_Nonnull daemonName)
+{
+    if(daemonProp == DAEMON_START)
+    {
+        if(manageProperty("ctl.start", (void *)daemonName, SETPROP) == 0) consoleLog(LOG_LEVEL_INFO, "startDaemon", "Daemon %s started successfully.", daemonName);
         else consoleLog(LOG_LEVEL_WARN, "daemonStateManager", "Failed to start %s daemon service.", daemonName);
     }
-    else if(daemonProp == DAEMON_STOP) {
-        if(setprop("ctl.stop", (void *)daemonName, TYPE_STRING) == 0) consoleLog(LOG_LEVEL_INFO, "stopDaemon", "Daemon %s stopped successfully.", daemonName);
+    else if(daemonProp == DAEMON_STOP)
+    {
+        if(manageProperty("ctl.stop", (void *)daemonName, SETPROP) == 0) consoleLog(LOG_LEVEL_INFO, "stopDaemon", "Daemon %s stopped successfully.", daemonName);
         else consoleLog(LOG_LEVEL_WARN, "daemonStateManager", "Failed to stop %s daemon service.", daemonName);
     }
 }
 
-void androidPropertyCallback(void* cookie, const char* name, const char* value, uint32_t serial) {
+void androidPropertyCallback(void*_Nonnull cookie, const char*_Nonnull name, const char*_Nonnull value, uint32_t serial)
+{
     PropertyHandler* handler = (PropertyHandler*)cookie;
     if(handler == NULL) 
     {
-        fprintf(stderr, "Error: Callback 'cookie' (PropertyHandler pointer) is NULL!\n");
+        consoleLog(LOG_LEVEL_ERROR, "androidPropertyCallback", "Error: Callback 'cookie' (PropertyHandler pointer) is NULL!");
         return;
     }
     snprintf(handler->propertyName, sizeof(handler->propertyName), "%s", name);

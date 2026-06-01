@@ -14,10 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-
 #ifndef TSUKIKAUTILS_H
 #define TSUKIKAUTILS_H
-
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
@@ -47,24 +45,23 @@ enum stringCases {
 };
 
 // extern vars. VERY IMPORTANT!!
-extern char *LOGFILE;
+extern char *_Nonnull tsukikaLogFile;
 extern bool useStdoutForAllLogs;
 
 // macro function(s):
 #define makeDir(thisDirectory) executeCommands("mkdir", (char * const[]) {"mkdir", "-p", thisDirectory}, false);
 
 // function declarations.
-int executeCommands(const char *command, char *const args[], bool requiresOutput);
-int executeScripts(const char *__script__file, char *const args[], bool requiresOutput);
-int searchBlockListedStrings(const char *__filename, const char *__search_str);
-int verifyScriptStatusUsingShell(const char *__filename);
-int checkBlocklistedStringsNChar(const char *__haystack);
-bool eraseFile(const char *__file);
-char *executeCommandAndReturnOutput(const char*commandWithArgs, bool throwSTDERR);
-char *combineStringsFormatted(const char *format, ...);
-char *stringCase(char *string, enum stringCases thisStringCase);
-char *getpropFromFile(const char *variableName, const char *propFile);
-void abort_instance(const char *service, const char *format, ...);
-void consoleLog(enum elogLevel loglevel, const char *service, const char *message, ...);
-void __freeThisPointer(void **thisPointer);
+int executeCommands(const char *_Nonnull command, char * const _Nonnull args[_Nonnull], bool requiresOutput);
+int executeScripts(const char *_Nonnull scriptFile, char * const _Nonnull args[_Nonnull], bool requiresOutput);
+int searchBlockListedStrings(const char *_Nonnull filename, const char *_Nonnull search_str);
+int verifyScriptStatusUsingShell(const char *_Nonnull filename);
+int checkBlocklistedStringsNChar(const char *_Nonnull haystack);
+bool eraseFile(const char *_Nonnull file);
+char *_Nullable combineStringsFormatted(const char *_Nonnull format, ...);
+char *_Nonnull stringCase(char *_Nonnull string, enum stringCases thisStringCase);
+char *_Nullable getpropFromFile(const char *_Nonnull variableName, const char *_Nonnull propFile);
+void abort_instance(const char *_Nonnull service, const char *_Nonnull message, ...);
+void consoleLog(enum elogLevel loglevel, const char *_Nonnull service, const char *_Nonnull message, ...);
+void __freeThisPointer(void *_Nonnull*_Nonnull thisPointer);
 #endif

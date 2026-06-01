@@ -19,22 +19,25 @@
 // the real reason i didn't put any error on the
 // same value because it's pointless, if you add one
 // it's just going to be some junk.
-bool __setProperty(const char *__propertyName, const void *__propertyValue)
+bool __setProperty(const char *_Nonnull __propertyName, const void *_Nonnull __propertyValue)
 {
     __didAnyPropertyGetChanged = false;
     tsukikaProperty setProp = {0};
     setProp.__propertyName = malloc(MAX_PROPERTY_NAME_LENGTH);
-    if(!setProp.__propertyName) {
+    if(!setProp.__propertyName)
+    {
         consoleLog(LOG_LEVEL_DEBUG, "__setProperty", "setProp.__propertyName: malloc");
         consoleLog(LOG_LEVEL_ERROR, "__setProperty", "Failed to set given property.");
         return false;
     }
     snprintf(setProp.__propertyName, MAX_PROPERTY_NAME_LENGTH, "%s", __propertyName);
     __readProperty(&setProp);
-    if(setProp.__found == 0) {
+    if(setProp.__found == 0)
+    {
         __freeThisPointer((void**)&__propertiesValue_cached[setProp.__propertyIndex]);
         __propertiesValue_cached[setProp.__propertyIndex] = malloc(MAX_PROPERTY_VALUE_LENGTH);
-        if(!__propertiesValue_cached[setProp.__propertyIndex]) {
+        if(!__propertiesValue_cached[setProp.__propertyIndex]) 
+        {
             consoleLog(LOG_LEVEL_DEBUG, "__setProperty", "__propertiesValue_cached[setProp.__propertyIndex]: malloc");
             consoleLog(LOG_LEVEL_ERROR, "__setProperty", "Failed to set given property.");
             __freeThisPointer((void**)&setProp.__propertyName);
@@ -49,7 +52,7 @@ bool __setProperty(const char *__propertyName, const void *__propertyValue)
     return __didAnyPropertyGetChanged;
 }
 
-void __readProperty(void *__cookie)
+void __readProperty(void *_Nonnull __cookie)
 {
     tsukikaProperty* thisInstanceTsukika = (tsukikaProperty*)__cookie;
     if(!thisInstanceTsukika) return;
@@ -187,7 +190,8 @@ void __saveState()
     if(!__didAnyPropertyGetChanged) return;
     // open the file in write mode to erase the previous content.
     FILE *thisPropertyFile = fopen(PROPERTY_FILE, "w");
-    if(!thisPropertyFile) {
+    if(!thisPropertyFile)
+    {
         consoleLog(LOG_LEVEL_DEBUG, "__saveState", "thisPropertyFile: fopen");
         consoleLog(LOG_LEVEL_ERROR, "__saveState", "Failed to save the current state.");
         return;
@@ -202,7 +206,7 @@ void __saveState()
     fclose(thisPropertyFile);
 }
 
-void __deleteProperty(const char *__propertyName)
+void __deleteProperty(const char *_Nonnull __propertyName)
 {
     __setProperty(__propertyName, "DELETED");
     __didAnyPropertyGetChanged = true;
@@ -213,13 +217,14 @@ void __deleteProperty(const char *__propertyName)
 void __init__properties()
 {
     // before caching and all of that stuff, let's check some stuff.
-    if(access(PROPERTY_FILE, F_OK) != 0) {
+    if(access(PROPERTY_FILE, F_OK) != 0)
+    {
         consoleLog(LOG_LEVEL_DEBUG, "__init__properties", "access(PROPERTY_FILE, F_OK): %d", access(PROPERTY_FILE, F_OK));
         consoleLog(LOG_LEVEL_ERROR, "__init__properties", "Failed to initialize property stuff.");
         exit(EXIT_FAILURE);
     }
     // wipe the old logs because we don't want it to be like Epic- ifykyk.
-    eraseFile(LOGFILE);
+    eraseFile(tsukikaLogFile);
     __cacheProperties();
 }
 
@@ -236,7 +241,7 @@ void __deinit__properties(bool saveTheProps)
     __freeThisPointer((void **)&__propertiesValue_cached);
 }
 
-void __wipeMetadata(void *__cookie)
+void __wipeMetadata(void *_Nonnull __cookie)
 {
     tsukikaProperty* __thisModule = (tsukikaProperty*)__cookie;
     __thisModule->__found = -1;
@@ -249,11 +254,12 @@ void __wipeMetadata(void *__cookie)
     __thisModule->typeProp = CAST_NONE;
 }
 
-tsukikaProperty __getPropertyMetadata(const char *__propertyName)
+tsukikaProperty __getPropertyMetadata(const char *_Nonnull __propertyName)
 {
     tsukikaProperty getprop = {0};
     getprop.__propertyName = malloc(MAX_PROPERTY_NAME_LENGTH);
-    if(!getprop.__propertyName) {
+    if(!getprop.__propertyName)
+    {
         consoleLog(LOG_LEVEL_ERROR, "__getProperty::tsukikaProperty", "malloc failed for __propertyName");
         return getprop;
     }
@@ -261,7 +267,8 @@ tsukikaProperty __getPropertyMetadata(const char *__propertyName)
     snprintf(getprop.__propertyName, MAX_PROPERTY_NAME_LENGTH, "%s", __propertyName);
     __readProperty(&getprop);
     // not found, ig
-    if(getprop.__found != 0) {
+    if(getprop.__found != 0)
+    {
         consoleLog(LOG_LEVEL_ERROR, "__getProperty::tsukikaProperty", "Property doesn't exist.");
         return getprop;
     }

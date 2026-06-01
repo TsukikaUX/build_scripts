@@ -17,31 +17,26 @@
 #include <tsukika.h>
 #include <tsukikautils.h>
 
-int executeCommands(const char *command, char *const args[], bool requiresOutput) {
+int executeCommands(const char *_Nonnull command, char * const _Nonnull args[_Nonnull], bool requiresOutput)
+{
     pid_t ProcessID = fork();
     consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "Trying to create a child process for a shell command: %s", command);
     consoleLog(LOG_LEVEL_DEBUG, "executeCommands", "Child process ID: %d", ProcessID);
-    switch(ProcessID) {
+    switch(ProcessID)
+    {
         case -1:
             consoleLog(LOG_LEVEL_ERROR, "executeCommands", "Failed to fork process.");
             return 1;
         case 0:
-            // throw stderr and stdout to /dev/null.
-            if(!requiresOutput) {
-                int devNull = open("/dev/null", O_WRONLY);
-                if(devNull == -1) exit(EXIT_FAILURE);
-                dup2(devNull, STDOUT_FILENO);
-                dup2(devNull, STDERR_FILENO);
-                close(devNull);
-            }
-            // throw stderr and stdout to LOGFILE
-            else 
-            {
-                int logFile = open(LOGFILE, O_WRONLY);
-                dup2(logFile, STDOUT_FILENO);
-                dup2(logFile, STDERR_FILENO);
-                close(logFile);
-            }
+            int zeroFile;
+            // throw stderr and stdout to /dev/null if that's the fate,
+            if(!requiresOutput) zeroFile = open("/dev/null", O_WRONLY);
+            // or throw stderr and stdout to tsukikaLogFile if possible.
+            else zeroFile = open(tsukikaLogFile, O_WRONLY);
+            if(zeroFile == -1) exit(EXIT_FAILURE);
+            dup2(zeroFile, STDOUT_FILENO);
+            dup2(zeroFile, STDERR_FILENO);
+            close(zeroFile);
             execvp(command, args);
             consoleLog(LOG_LEVEL_ERROR, "executeCommands", "Failed to execute command: %s", command);
             return 1;
@@ -56,36 +51,28 @@ int executeCommands(const char *command, char *const args[], bool requiresOutput
     return -1;
 }
 
-int executeScripts(const char *scriptFile, char *const args[], bool requiresOutput) {
+int executeScripts(const char *_Nonnull scriptFile, char * const _Nonnull args[_Nonnull], bool requiresOutput)
+{
     // verify and execute.
-    for(int i = 0; args[i] != NULL; i++) {
-        if(strstr(args[i], ";") || strstr(args[i], "&&") || strstr(args[i], "|") || strstr(args[i], "$(")) abort_instance("executeScripts", "Malicious hijack attempts detected: %s", args[i]);
-    }
     if(checkBlocklistedStringsNChar(scriptFile) != 0 && verifyScriptStatusUsingShell(scriptFile) != 0) abort_instance("executeScripts", "The given script either doesn't have executable permission or it contains malicious commands. Please report this issue immediately. (%s)", scriptFile);
     pid_t ProcessID = fork();
     consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "Trying to create a child process for a shell script execution, path to the script: %s", scriptFile);
     consoleLog(LOG_LEVEL_DEBUG, "executeScripts", "Child process ID: %d", ProcessID);
-    switch(ProcessID) {
+    switch(ProcessID)
+    {
         case -1:
             consoleLog(LOG_LEVEL_ERROR, "executeScripts", "Failed to fork process.");
             return 1;
         case 0:
-            // throw stderr and stdout to /dev/null.
-            if(!requiresOutput) {
-                int devNull = open("/dev/null", O_WRONLY);
-                if(devNull == -1) exit(EXIT_FAILURE);
-                dup2(devNull, STDOUT_FILENO);
-                dup2(devNull, STDERR_FILENO);
-                close(devNull);
-            }
-            // throw stderr and stdout to LOGFILE
-            else 
-            {
-                int logFile = open(LOGFILE, O_WRONLY);
-                dup2(logFile, STDOUT_FILENO);
-                dup2(logFile, STDERR_FILENO);
-                close(logFile);
-            }
+            int zeroFile;
+            // throw stderr and stdout to /dev/null if that's the fate,
+            if(!requiresOutput) zeroFile = open("/dev/null", O_WRONLY);
+            // or throw stderr and stdout to tsukikaLogFile if possible.
+            else zeroFile = open(tsukikaLogFile, O_WRONLY);
+            if(zeroFile == -1) exit(EXIT_FAILURE);
+            dup2(zeroFile, STDOUT_FILENO);
+            dup2(zeroFile, STDERR_FILENO);
+            close(zeroFile);
             execv(scriptFile, args);
             consoleLog(LOG_LEVEL_ERROR, "executeScripts", "Failed to execute %s", scriptFile);
             return 1;
@@ -107,34 +94,36 @@ int executeScripts(const char *scriptFile, char *const args[], bool requiresOutp
 // Hi! i don't think i'm good at C, so please don't trash talk about me and just 
 // help me to improve myself if you can or otherwise don't be a bad guy on me.
 // -----------------------------------------------------------------------------
-int searchBlockListedStrings(const char *filename, const char *search_str) {
+int searchBlockListedStrings(const char *_Nonnull filename, const char *_Nonnull search_str)
+{
     // let's grab the shell exitCode from the command. it's better to use native C but- nvm let's just use native C instead.
     char boii[1000];
     FILE *fptr = fopen(filename, "r"); 
     if(!fptr) abort_instance("searchBlockListedStrings", "Failed to open file for reading: %s", filename);
     while(fgets(boii, sizeof(boii), fptr)) 
     {
-        boii[strcspn(boii, "\n")] = '\0';
-        if(strstr(boii, search_str)) 
+        if(strncmp(boii, search_str, sizeof(search_str) - 1) == 0)
         {
             fclose(fptr);
             consoleLog(LOG_LEVEL_ERROR, "searchBlockListedStrings", "Expected string found in given file: %s", filename);
-            return 1;
+            return 0;
         }
     }
     fclose(fptr);
-    return 0;
+    return 1;
 }
 
 // yet another thing to protect good peoples from getting fucked
 // this ensures that the chosen is a bash script and if it's not one
 // it'll return 1 to make the program to stop from executing that bastard
-int verifyScriptStatusUsingShell(const char *filename) {
-    return executeCommands("file", (char *const[]) {"file", combineStringsFormatted("file %s | grep -q 'ASCII text executable'", filename), NULL}, false) == 0;
+int verifyScriptStatusUsingShell(const char *_Nonnull filename)
+{
+    return executeCommands("file", (char *const[]) {"file", combineStringsFormatted("file %s | grep -q 'ASCII text executable'", filename), NULL}, false);
 }
 
 // Checks if a given string contains blacklisted substrings
-int checkBlocklistedStringsNChar(const char *haystack) {
+int checkBlocklistedStringsNChar(const char *_Nonnull haystack) 
+{
     static const char *blocklistedStrings[] = {
         "/xbl_config",
         "/fsc",
@@ -166,17 +155,20 @@ int checkBlocklistedStringsNChar(const char *haystack) {
         "/dev/block/mmcblk",
         "/dev/mmcblk"
     };
-    for(size_t i = 0; i < sizeof(blocklistedStrings) / sizeof(blocklistedStrings[0]); i++) {
-        if(searchBlockListedStrings(haystack, blocklistedStrings[i]) == 1) {
+    for(size_t i = 0; i < sizeof(blocklistedStrings) / sizeof(blocklistedStrings[0]); i++)
+    {
+        if(searchBlockListedStrings(haystack, blocklistedStrings[i]) == 0)
+        {
             consoleLog(LOG_LEVEL_ERROR, "checkBlocklistedStringsNChar", "Found Blocklisted string: %s", blocklistedStrings[i]);
             consoleLog(LOG_LEVEL_ERROR, "checkBlocklistedStringsNChar", "The script is not safe to execute! Stopping execution process...");
-            return 1;
+            return 0;
         }
     }
-    return 0;
+    return 1;
 }
 
-bool eraseFile(const char *file) {
+bool eraseFile(const char *_Nonnull file)
+{
     FILE *fileConstantAgain = fopen(file, "w");
     if(!fileConstantAgain) return false;
     fclose(fileConstantAgain);
@@ -184,7 +176,8 @@ bool eraseFile(const char *file) {
 }
 
 // NOTE: THIS FUNCTION RETURNS HEAP AND SHOULD BE CLEARED!!
-char *combineStringsFormatted(const char *format, ...) {
+char *_Nullable combineStringsFormatted(const char *_Nonnull format, ...)
+{
     va_list args;
     va_start(args, format);
     va_list args_copy;
@@ -211,62 +204,61 @@ char *combineStringsFormatted(const char *format, ...) {
     return result;
 }
 
-char *stringCase(char *string, enum stringCases thisStringCase) {
-    int i = 0;
-    char stringg[sizeof(string)];
-    if(!strcpy(stringg, string)) return string;
-    switch(thisStringCase) {
-        case UPPER:
-            while(stringg[i]) {
-                stringg[i] = (char)toupper(stringg[i]);
-                i++;
-            }
-            return strdup(stringg);
-        case LOWER:
-            while(stringg[i]) {
-                stringg[i] = (char)tolower(stringg[i]);
-                i++;
-            }
-            return strdup(stringg);
-        case BLEH:
-            while(stringg[i]) {
-                if(i % 2 == 0) stringg[i] = (char)tolower(stringg[i]);
-                else stringg[i] = (char)toupper(stringg[i]);
-                i++;
-            }
-            return strdup(stringg);
-        default:
-            return string;
+// returns heap and should be cleared.
+char *_Nonnull stringCase(char *_Nonnull string, enum stringCases thisStringCase)
+{
+    char *stringg = malloc(strlen(string));
+    if(!stringg) return string;
+    for(int i = 0; i < strlen(string); i++)
+    {
+        switch(thisStringCase)
+        {
+            case UPPER:
+                stringg[i] = toupper(string[i]);
+            break;
+            case LOWER:
+                stringg[i] = tolower(string[i]);
+            break;
+            case BLEH:
+                if(i % 2 == 0) stringg[i] = tolower(string[i]);
+                else stringg[i] = tolower(string[i]);
+            break;
+        }
     }
+    return stringg;
 }
 
-char *getpropFromFile(const char *variableName, const char *propFile) {
-    FILE *filePointer = fopen(propFile, "r");
-    if(!filePointer) {
+char *_Nullable getpropFromFile(const char *_Nonnull variableName, const char *_Nonnull propFile)
+{
+    FILE *propertyFile = fopen(propFile, "r");
+    if(!propertyFile)
+    {
         consoleLog(LOG_LEVEL_ERROR, "getpropFromFile", "Failed to open properties file: %s", propFile);
         return NULL;
     }
-    char theLine[1000];
-    while(fgets(theLine, sizeof(theLine), filePointer)) {
+    char theLine[1024];
+    while(fgets(theLine, sizeof(theLine), propertyFile)) 
+    {
         if(strncmp(theLine, variableName, strlen(variableName)) == 0) {
             strtok(theLine, "=");
-            char *value = strtok(NULL, "\n");
-            fclose(filePointer);
-            return strdup(value);
+            fclose(propertyFile);
+            return strdup(strtok(NULL, "\n"));
         }
     }
-    fclose(filePointer);
+    fclose(propertyFile);
     return NULL;
 }
 
-void abort_instance(const char *service, const char *message, ...) {
+void abort_instance(const char *_Nonnull service, const char *_Nonnull message, ...) 
+{
     va_list args;
     va_start(args, message);
     FILE *out = NULL;
     bool toFile = false;
     if(useStdoutForAllLogs) out = stderr;
-    else {
-        out = fopen(LOGFILE, "a");
+    else
+    {
+        out = fopen(tsukikaLogFile, "a");
         if(!out) exit(EXIT_FAILURE);
         toFile = true;
     }
@@ -283,17 +275,20 @@ void abort_instance(const char *service, const char *message, ...) {
     exit(EXIT_FAILURE);
 }
 
-void consoleLog(enum elogLevel loglevel, const char *service, const char *message, ...) {
+void consoleLog(enum elogLevel loglevel, const char *_Nonnull service, const char *_Nonnull message, ...)
+{
     va_list args;
     va_start(args, message);
     FILE *out = NULL;
     bool toFile = false;
-    if(useStdoutForAllLogs && loglevel != LOG_LEVEL_DEBUG) {
+    if(useStdoutForAllLogs && loglevel != LOG_LEVEL_DEBUG)
+    {
         out = stdout;
         if(loglevel == LOG_LEVEL_ERROR || loglevel == LOG_LEVEL_WARN || loglevel == LOG_LEVEL_ABORT) out = stderr;
     }
-    else {
-        out = fopen(LOGFILE, "a");
+    else
+    {
+        out = fopen(tsukikaLogFile, "a");
         if(!out) exit(EXIT_FAILURE);
         toFile = true;
     }
@@ -329,9 +324,10 @@ void consoleLog(enum elogLevel loglevel, const char *service, const char *messag
     va_end(args);
 }
 
-void __freeThisPointer(void **thisPointer)
+void __freeThisPointer(void *_Nonnull*_Nonnull thisPointer)
 {    
-    if(thisPointer && *thisPointer) {
+    if(thisPointer && *thisPointer)
+    {
         free(*thisPointer);
         *thisPointer = NULL;
     }

@@ -14,10 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-
 #ifndef TSUKIKA
 #define TSUKIKA
-
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -26,12 +24,12 @@
 #include <stdint.h>
 #include <sys/system_properties.h>
 #include <tsukikautils.h>
-#include <dirent.h>
 
 // extern variables.
-extern char *codenameForThisBinary;
-extern char *batteryPercentageBlobFilePaths[];
-extern char *const resetprop;
+extern int batteryPercentageBlobIndex;
+extern char *_Nonnull codenameForThisBinary;
+extern char *_Nonnull batteryPercentageBlobFilePaths[];
+extern char *_Nonnull const resetprop;
 
 /*
 It's worth noting a historical caveat about popen in Android NDK:
@@ -48,16 +46,6 @@ typedef struct {
     char propertyName[PROP_NAME_MAX];
     char propertyValue[PROP_VALUE_MAX];
 } PropertyHandler;
-
-// only used for void* based arguments.
-// compiler will throw errors if somebody tried to use a diff enum.
-enum expectedDataType {
-	TYPE_INT,
-	TYPE_FLOAT,
-	TYPE_DOUBLE,
-	TYPE_CHAR,
-	TYPE_STRING,
-};
 
 // used for verifying if we are in a expected state.
 enum expectedDeviceState {
@@ -99,23 +87,25 @@ enum systemTable {
 	TABLE_SYSTEM
 };
 
+// for managing/manipulating properties.
+enum propertyTinkerState {
+    MAYBE_SETPROP,
+    SET_IF_DIFF, 
+    REMOVE_PROPERTY, 
+    SETPROP,
+    MATCHED_WITH_EXPECTED
+};
+
 // function declarations.
-int isPackageInstalled(const char packageName[250]);
-int getSystemProperty__(const char *propertyVariableName);
-int maybeSetProp(char* property, void* expectedPropertyValue, enum expectedDataType Type);
-int doWhenPropValueIsMatchedWithExpected(const char *property, void *expectedPropertyValue, enum expectedDataType Type);
-int setprop(char *property, void *propertyValue, enum expectedDataType Type);
-int setpropIfDifferent(char *property, void *propertyValue, enum expectedDataType Type);
-int removeProperty(char *const property);
+int isPackageInstalled(const char *_Nonnull packageName);
 int getBatteryPercentage();
-int getPidOf(const char *proc);
-bool killProcess(pid_t procID);
+bool manageProperty(char *_Nonnull property, void*_Nullable expressivePropertyValue, enum propertyTinkerState propertyState);
 bool getDeviceState(enum expectedDeviceState exptx);
-bool setSystemSettings(enum systemTable table, char *name, char *value);
-char *getSystemSettings(enum systemTable table, char *name, bool skipNewlinesAtStart);
-char *getSystemProperty(const char *propertyVariableName);
-void alertUser(char *message);
-void prepareStockRecoveryCommandFile(enum openRecoveryScriptNextCommand ors, char *actionArgOne, char *actionArgTwo);
-void daemonStateManager(enum setDaemonPropertyState daemonProp, char *daemonName);
-void androidPropertyCallback(void* cookie, const char* name, const char* value, uint32_t serial);
+bool setSystemSettings(enum systemTable table, char *_Nonnull name, char *_Nullable value);
+char *_Nullable getSystemSettings(enum systemTable table, char *_Nonnull name, bool skipNewlinesAtStart);
+char *_Nullable getSystemProperty(const char *_Nonnull propertyVariableName);
+void alertUser(char *_Nonnull message);
+void prepareStockRecoveryCommandFile(enum openRecoveryScriptNextCommand ors, char * _Nullable actionArgOne, char * _Nullable actionArgTwo);
+void daemonStateManager(enum setDaemonPropertyState daemonProp, char *_Nonnull daemonName);
+void androidPropertyCallback(void*_Nonnull cookie, const char*_Nonnull name, const char*_Nonnull value, uint32_t serial);
 #endif

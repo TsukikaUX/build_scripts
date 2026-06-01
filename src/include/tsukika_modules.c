@@ -16,7 +16,7 @@
 //
 #include <tsukika_modules.h>
 
-bool __isModuleInTheBlocklist(char *moduleName)
+bool __isModuleInTheBlocklist(char *_Nonnull moduleName)
 {
     tsukikaProperty* __thisScopeStuffs = NULL;
     __thisScopeStuffs->__propertyName = malloc(MAX_PROPERTY_NAME_LENGTH);
@@ -51,7 +51,7 @@ bool __isModuleInTheBlocklist(char *moduleName)
     return false;
 }
 
-void __addModuleToBlocklist(char* moduleName)
+void __addModuleToBlocklist(char *_Nonnull moduleName)
 {
     tsukikaProperty* __thisScopeStuffs = NULL;
     __thisScopeStuffs->__propertyName = malloc(MAX_PROPERTY_NAME_LENGTH);
@@ -74,7 +74,7 @@ void __addModuleToBlocklist(char* moduleName)
     }
 }
 
-void __runThisModule(void *thisModule)
+void __runThisModule(void *_Nonnull thisModule)
 {
     tsukikaModule* __thisModule = (tsukikaModule*)thisModule;
     const char *suffix;
@@ -121,7 +121,7 @@ void __runThisModule(void *thisModule)
     __cleanModuleMetadata((void *)__thisModule);
 }
 
-void __cleanModuleMetadata(void *__moduleMetadata__)
+void __cleanModuleMetadata(void *_Nonnull __moduleMetadata__)
 {
     tsukikaModule* __moduleMetadata = (tsukikaModule*)__moduleMetadata__;
     __moduleMetadata->moduleRunState = 0;
@@ -135,9 +135,9 @@ void __cleanModuleMetadata(void *__moduleMetadata__)
     __freeThisPointer((void **)&__moduleMetadata__);
 }
 
-void __verifyAndLogModule(void *runnableModule)
+void __verifyAndLogModule(void *_Nonnull runnableModule)
 {
-    int systemSDK = getSystemProperty__("ro.system.build.version.sdk");
+    int systemSDK = (int)getSystemProperty("ro.system.build.version.sdk");
     tsukikaModule* thisInstanceModule = (tsukikaModule*)runnableModule;
     // init state checks
     if(thisInstanceModule->moduleRunState != LATE_FS && thisInstanceModule->moduleRunState != POST_FS && thisInstanceModule->moduleRunState != POST_FS_DATA)
@@ -165,9 +165,8 @@ void __verifyAndLogModule(void *runnableModule)
     __runThisModule((void *)runnableModule);
 }
 
-void *__listModulesAndVerifyThem(void *nullArg)
+void *__listModulesAndVerifyThem()
 {
-    if(!nullArg) consoleLog(LOG_LEVEL_DEBUG, "__listModulesAndVerifyThem", "nullArg is NULL");
     tsukikaModule* module = NULL;
     DIR *baseDirectory = opendir("/data/tsukika/modules");
     if(!baseDirectory) abort_instance("__listModulesAndVerifyThem", "Failed to open module directory.");
@@ -190,7 +189,7 @@ void *__listModulesAndVerifyThem(void *nullArg)
             }
             continue;
         }
-        // allocate and do misc stuff these shits:
+        // allocate and do misc stuff with these shits:
         module->moduleName = malloc(MAX_MODULE_PROPERTY_NAME);
         module->moduleAuthor = malloc(MAX_MODULE_PROPERTY_AUTHOR);
         module->moduleCOAuthor = malloc(MAX_MODULE_PROPERTY_CO_AUTHOR);

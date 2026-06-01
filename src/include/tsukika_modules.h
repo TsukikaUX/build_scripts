@@ -18,6 +18,7 @@
 #define TSUKIKA_MODULES_H
 #include <tsukika.h>
 #include <tsukika_props.h>
+#include <dirent.h>
 
 // max prop length:
 #define MAX_MODULE_PROPERTY_NAME 50
@@ -34,19 +35,19 @@ typedef struct {
 	int moduleRunState;
 	int maxSDK;
 	int minSDK;
-	char *moduleName;
-	char *moduleVersion;
-    char *moduleAuthor;
-    char *moduleCOAuthor;
-	char *pathOfTheModule;
+	char *_Nonnull moduleName;
+	char *_Nonnull moduleVersion;
+    char *_Nonnull moduleAuthor;
+    char *_Nullable moduleCOAuthor;
+	char *_Nonnull pathOfTheModule;
 } tsukikaModule;
 
 // function declarations:
-bool __isModuleInTheBlocklist(char *moduleNameAuthor);
-void __addModuleToBlocklist(char* moduleName);
-void __runThisModule(void *thisModule);
-void __cleanModuleMetadata(void *__moduleMetadata__);
+bool __isModuleInTheBlocklist(char *_Nonnull moduleNameAuthor);
+void __addModuleToBlocklist(char*_Nonnull  moduleName);
+void __runThisModule(void *_Nonnull thisModule);
+void __cleanModuleMetadata(void *_Nonnull __moduleMetadata__);
 void __cleanPointers();
-void __verifyAndLogModule(void *runnableModule);
-void *__listModulesAndVerifyThem(void *nullArg);
+void __verifyAndLogModule(void *_Nonnull runnableModule);
+void *_Nullable __listModulesAndVerifyThem();
 #endif
