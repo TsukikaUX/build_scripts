@@ -89,6 +89,8 @@ compareDefaultMakeConfigs
 console_print "Starting to build Tsukika - ${CODENAME} on ${BUILD_USERNAME}'s computer..."
 console_print "Build started at $(date +%I:%M%p) on $(date +%d\ %B\ %Y)"
 
+read fpo
+
 # check root privilages
 [ "$(id -u)" != "0" ] && abort "Give root privilages before using this script";
 
@@ -343,13 +345,13 @@ fi
 [ "$TARGET_REMOVE_SWIPE_SECURITY_OPTION" == "true" ] && changeXMLValues "config_hide_swipe_security_option" "true" "${DECODEDAPKTOOLPATHS[0]}/res/values/bools.xml"
 
 # builds and deploys the overlay
-[[ "$TARGET_REMOVE_NONE_SECURITY_OPTION" == "true" || "$TARGET_REMOVE_SWIPE_SECURITY_OPTION" == "true" ]] && buildAndSignThePackage "${DECODEDAPKTOOLPATHS[0]}" "$TSUKIKA_FALLBACK_OVERLAY_PATH" "false" --skip-editing-version-info
+[[ "$TARGET_REMOVE_NONE_SECURITY_OPTION" == "true" || "$TARGET_REMOVE_SWIPE_SECURITY_OPTION" == "true" ]] && buildAndSignThePackage "${DECODEDAPKTOOLPATHS[0]}" "$TSUKIKA_FALLBACK_OVERLAY_PATH" --edit-version-info
 
 # misc - additional animation scales
-[ "$TARGET_ADD_EXTRA_ANIMATION_SCALES" == "true" ] && buildAndSignThePackage "${DECODEDAPKTOOLPATHS[1]}" "$TSUKIKA_FALLBACK_OVERLAY_PATH" --skip-editing-version-info
+[ "$TARGET_ADD_EXTRA_ANIMATION_SCALES" == "true" ] && buildAndSignThePackage "${DECODEDAPKTOOLPATHS[1]}" "$TSUKIKA_FALLBACK_OVERLAY_PATH" --edit-version-info
 
 # misc - rounded corners on pip window
-[[ "$TARGET_ADD_ROUNDED_CORNERS_TO_THE_PIP_WINDOWS" == "true" && $BUILD_TARGET_ANDROID_VERSION -eq 11 ]] && buildAndSignThePackage "${DECODEDAPKTOOLPATHS[2]}" "$TSUKIKA_FALLBACK_OVERLAY_PATH" "false" --skip-editing-version-info
+[[ "$TARGET_ADD_ROUNDED_CORNERS_TO_THE_PIP_WINDOWS" == "true" && $BUILD_TARGET_ANDROID_VERSION -eq 11 ]] && buildAndSignThePackage "${DECODEDAPKTOOLPATHS[2]}" "$TSUKIKA_FALLBACK_OVERLAY_PATH"
 
 # enables game launcher.
 [ "$TARGET_FLOATING_FEATURE_INCLUDE_GAMELAUNCHER_IN_THE_HOMESCREEN" == "true" ] && addFloatXMLValues "SEC_FLOATING_FEATURE_GRAPHICS_SUPPORT_DEFAULT_GAMELAUNCHER_ENABLE" "TRUE" || \
@@ -488,7 +490,7 @@ if [ "$CUSTOM_WALLPAPER_RES_JSON_GENERATOR" == "true" ]; then
 	done
 	echo -e "  ]\n}" >> ${DECODEDAPKTOOLPATHS[3]}/raw/resources_info.json
 	rm -rf ${SYSTEM_DIR}/priv-app/wallpaper-res/*
-	buildAndSignThePackage "${DECODEDAPKTOOLPATHS[3]}" "${SYSTEM_DIR}/priv-app/wallpaper-res/" "false"
+	buildAndSignThePackage "${DECODEDAPKTOOLPATHS[3]}" "${SYSTEM_DIR}/priv-app/wallpaper-res/"
 	chmod 644 "${SYSTEM_DIR}/priv-app/wallpaper-res/tsukika-cust-wallpapers.apk"
 	chown root:root "${SYSTEM_DIR}/priv-app/wallpaper-res/tsukika-cust-wallpapers.apk"
 	chcon u:object_r:system_file:s0 "${SYSTEM_DIR}/priv-app/wallpaper-res/tsukika-cust-wallpapers.apk"
@@ -683,22 +685,7 @@ fi
 [[ "${TARGET_FLOATING_FEATURE_ENABLE_VOICE_MEMO_ON_NOTES}" == "true" && ${BUILD_TARGET_SDK_VERSION} == 35 ]] && addFloatXMLValues "SEC_FLOATING_FEATURE_VOICERECORDER_CONFIG_DEF_MODE" "normal,interview,voicememo"
 
 # hahahaha
-[  "${TARGET_BUILD_DISABLE_GBOARD_HOME_ICON}" == "true" ] && buildAndSignThePackage "${DECODEDAPKTOOLPATHS[6]}" "${TSUKIKA_VENDOR_OVERLAY}" "false"
-
-# hehe~
-if [ "${TARGET_BUILD_OVERLAY_CUSTOMGIFLOADER}" == "true" ]; then
- 	maxGIFLoadables=19
- 	gifIndexSuffix="preload_gif_"
- 	overlayGIFIndexPath="${DECODEDAPKTOOLPATHS[7]}/res/raw"
- 	gifIndex=0
- 	[ ! -f "${DECODEDAPKTOOLPATHS[7]}/AndroidManifest.xml" ] && abort "- Leaflit overlay not found, exiting." "leaflit.sh";
- 	[[ -z "${gifPaths[@]}" ]] && abort "Error: No GIF paths found in leaflit.conf" "leaflit.sh";
- 	for (( i=0; i<=$maxGIFIndex; i++ )); do
- 		cp "${gifPaths[${i}]}" "${overlayGIFIndexPath}/${gifIndexSuffix}${gifIndex}.gif"
- 		(( gifIndex++ ))
- 	done
- 	buildAndSignThePackage "${DECODEDAPKTOOLPATHS[7]}" "${TSUKIKA_FALLBACK_OVERLAY_PATH}" "false" --skip-editing-version-info || abort "- Failed to build the leaflit overlay package." "leaflit.sh";
-fi
+[  "${TARGET_BUILD_DISABLE_GBOARD_HOME_ICON}" == "true" ] && buildAndSignThePackage "${DECODEDAPKTOOLPATHS[6]}" "${TSUKIKA_VENDOR_OVERLAY}" --edit-version-info
 
 # verify if the device is capable of running Generative AI and it's related actions.
 if [ "${BUILD_TARGET_IS_CAPABLE_FOR_GENERATIVE_AI}" == "true" ]; then
@@ -760,7 +747,7 @@ if [ "${TARGET_BUILD_ADD_SCREENRESOLUTION_CHANGER}" == "true" ]; then
 		rm -rf "${SYSTEM_DIR}/priv-app/screenResolution"
 		makeADirectory "${SYSTEM_DIR}/priv-app/screenResolution" "root" "root"
 		[ -f "${DECODEDAPKTOOLPATHS[5]}" ] || logInterpreter "Trying to extract the screenResolution app.." "tar -C ./src/tsukika/android_packages/ -xf ${DECODEDAPKTOOLPATHS[5]}.tar"
-		buildAndSignThePackage "${DECODEDAPKTOOLPATHS[5]}" "${SYSTEM_DIR}/priv-app/screenResolution/screenResolution.apk" "false" || abort "Failed to build screenResolution, please try again" "build.sh"
+		buildAndSignThePackage "${DECODEDAPKTOOLPATHS[5]}" "${SYSTEM_DIR}/priv-app/screenResolution/screenResolution.apk" --edit-version-info || abort "Failed to build screenResolution, please try again" "build.sh"
 		chmod 644 ${SYSTEM_DIR}/priv-app/screenResolution/*.apk
 		chown root:root ${SYSTEM_DIR}/priv-app/screenResolution/*.apk
 		chcon u:object_r:system_file:s0 ${SYSTEM_DIR}/priv-app/screenResolution/*.apk
@@ -834,7 +821,7 @@ fi
 # refer ts: https://www.reddit.com/r/technology/comments/1iy19yt/a_new_android_feature_is_scanning_your_photos_for/
 if [ "${TARGET_INCLUDE_SAFETYCORESTUB}" == "true" ]; then
 	makeADirectory "$SYSTEM_DIR/app/SafetyCoreStub/" root root
-	buildAndSignThePackage "${DECODEDAPKTOOLPATHS[9]}" "$SYSTEM_DIR/app/SafetyCoreStub/" "false" --skip-editing-version-info
+	buildAndSignThePackage "${DECODEDAPKTOOLPATHS[9]}" "$SYSTEM_DIR/app/SafetyCoreStub/" --edit-version-info
 fi
 
 # setup wizard customization
@@ -845,7 +832,7 @@ if [ "$TARGET_BUILD_CUSTOMIZE_SETUP_WIZARD_STRINGS" == "true" ]; then
 	xmlstarlet sel -t -v "//string[@name='outro_title']" ${DECODEDAPKTOOLPATHS[10]}/res/values/strings.xml | grep -q '^".*"$' && \
 		xmlstarlet ed -L -u '//string[@name="outro_title"]' -v "\"${TARGET_BUILD_SETUP_WIZARD_OUTRO_TEXT}\"" ${DECODEDAPKTOOLPATHS[10]}/res/values/strings.xml || \
 		xmlstarlet ed -L -u '//string[@name="outro_title"]' -v "${TARGET_BUILD_SETUP_WIZARD_OUTRO_TEXT}" ${DECODEDAPKTOOLPATHS[10]}/res/values/strings.xml
-	logInterpreter "Building overlay package..." "buildAndSignThePackage ${DECODEDAPKTOOLPATHS[10]} ${TSUKIKA_FALLBACK_OVERLAY_PATH}/" "false" || abort "Failed to build overlay package."
+	logInterpreter "Building overlay package..." "buildAndSignThePackage ${DECODEDAPKTOOLPATHS[10]} ${TSUKIKA_FALLBACK_OVERLAY_PATH}/" --edit-version-info || abort "Failed to build overlay package."
 fi
 
 # oh boy.

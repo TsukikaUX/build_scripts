@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright (C) 2025 ぼっち <ayumi.aiko@outlook.com>
+# Copyright (C) 2026 ぼっち <ayumi.aiko@outlook.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -159,89 +159,70 @@ function changeDefaultLanguageConfiguration() {
     fi
 }
 
-function buildAndSignThePackage() {
-    local extracted_dir_path="$1"
-    local app_path="$2"
-    local skipSign="$3"
-    local arg="$4"
-    local apkFileName
-    local signed_apk
-    local apk_file
-    local sign_output
-
-    # Ensure valid directory with apktool.yml
-    [[ ! -d "$extracted_dir_path" || ! -f "$extracted_dir_path/apktool.yml" ]] && abort "Invalid Apkfile path: $extracted_dir_path" "buildAndSignThePackage"
-
-    # Extract APK filename
-    apkFileName=$(grep "apkFileName" "$extracted_dir_path/apktool.yml" | cut -d ':' -f 2 | tr -d ' "')
-    apk_file="${extracted_dir_path}/dist/${apkFileName}"
-
-    # Modify manifest and apktool.yml if editing not skipped
-    if [[ "$arg" == "--edit-version-info" ]]; then
-        changeXMLValues "compileSdkVersion" "${BUILD_TARGET_SDK_VERSION}" "${extracted_dir_path}/AndroidManifest.xml"
-        changeXMLValues "platformBuildVersionCode" "${BUILD_TARGET_SDK_VERSION}" "${extracted_dir_path}/AndroidManifest.xml" 
-        changeXMLValues "compileSdkVersionCodename" "${BUILD_TARGET_ANDROID_VERSION}" "${extracted_dir_path}/AndroidManifest.xml"
-        changeXMLValues "platformBuildVersionName" "${BUILD_TARGET_ANDROID_VERSION}" "${extracted_dir_path}/AndroidManifest.xml"
-        changeYAMLValues "minSdkVersion" "${BUILD_TARGET_ANDROID_VERSION}" "${extracted_dir_path}/apktool.yml"
-        changeYAMLValues "targetSdkVersion" "${BUILD_TARGET_ANDROID_VERSION}" "${extracted_dir_path}/apktool.yml"
-        changeYAMLValues "version" "${CODENAME_VERSION_REFERENCE_ID}" "${extracted_dir_path}/apktool.yml"
-        changeYAMLValues "versionName" "${CODENAME}" "${extracted_dir_path}/apktool.yml"
-        changeYAMLValues "versionCode" "${BUILD_TARGET_ANDROID_VERSION}" "${extracted_dir_path}/apktool.yml"
+function buildAndSignThePackage()
+{
+    local wholeArg="$@" extractedDir="$1" appPath="$2" skipSigning=false skipEditingManifest=true apkFileName signedApk apkFile signOutput;
+    # verify arguments:
+    [ "$#" < 2 ] && abort "Not enough arguments." "buildAndSignThePackage"
+    echo "$wholeArg" | grep -q "--skip-signing" && skipSigning=true;
+    echo "$wholeArg" | grep -q "--edit-version-info" && skipEditingManifest=false;
+    [[ ! -d "$extractedDir" || ! -f "$extractedDir/apktool.yml" ]] && abort "Invalid path: $extractedDir" "buildAndSignThePackage"
+    apkFileName=$(grep "apkFileName" "$extractedDir/apktool.yml" | cut -d ':' -f 2 | tr -d ' "')
+    apkFile="${extractedDir}/dist/${apkFileName}"
+    # play args lol
+    if ! $skipEditingManifest; then
+        changeXMLValues "compileSdkVersion" "${BUILD_TARGET_SDK_VERSION}" "${extractedDir}/AndroidManifest.xml"
+        changeXMLValues "platformBuildVersionCode" "${BUILD_TARGET_SDK_VERSION}" "${extractedDir}/AndroidManifest.xml" 
+        changeXMLValues "compileSdkVersionCodename" "${BUILD_TARGET_ANDROID_VERSION}" "${extractedDir}/AndroidManifest.xml"
+        changeXMLValues "platformBuildVersionName" "${BUILD_TARGET_ANDROID_VERSION}" "${extractedDir}/AndroidManifest.xml"
+        changeYAMLValues "minSdkVersion" "${BUILD_TARGET_ANDROID_VERSION}" "${extractedDir}/apktool.yml"
+        changeYAMLValues "targetSdkVersion" "${BUILD_TARGET_ANDROID_VERSION}" "${extractedDir}/apktool.yml"
+        changeYAMLValues "version" "${CODENAME_VERSION_REFERENCE_ID}" "${extractedDir}/apktool.yml"
+        changeYAMLValues "versionName" "${CODENAME}" "${extractedDir}/apktool.yml"
+        changeYAMLValues "versionCode" "${BUILD_TARGET_ANDROID_VERSION}" "${extractedDir}/apktool.yml"
     fi
-
-    # Build APK
-    if java -jar ./src/dependencies/bin/apktool.jar build "$extracted_dir_path" &>>"$thisConsoleTempLogFile"; then
-        debugPrint "Successfully built: $apkFileName"
+    # build the apk
+    if java -jar ./src/dependencies/bin/apktool.jar build "$extractedDir" &>>"$thisConsoleTempLogFile"; then
+        debugPrint "Successfully built $apkFileName"
     else
-        abort "Apktool build failed for $extracted_dir_path" "buildAndSignThePackage"
+        abort "Apktool build failed for $extractedDir" "buildAndSignThePackage"
     fi
-
-    [[ ! -f "$apk_file" ]] && abort "No APK found in $extracted_dir_path/dist/" "buildAndSignThePackage"
-
-    # Handle default value for skipSign
-    [[ -z "$skipSign" ]] && skipSign=false
-
-    # Sign APK
-    if [[ "$skipSign" == "false" ]]; then
+    [[ ! -f "$apkFile" ]] && abort "No APK found in $extractedDir/dist" "buildAndSignThePackage"
+    # sign the app if requested.
+    if ! $skipSigning; then
         if [[ -f "$MY_KEYSTORE_PATH" && -n "$MY_KEYSTORE_ALIAS" && -n "$MY_KEYSTORE_PASSWORD" && -n "$MY_KEYSTORE_ALIAS_KEY_PASSWORD" ]]; then
-            sign_output=$(java -jar ./src/dependencies/bin/signer.jar \
-                --apk "$apk_file" \
+            signOutput=$(java -jar ./src/dependencies/bin/signer.jar \
+                --apk "$apkFile" \
                 --ks "$MY_KEYSTORE_PATH" \
                 --ksAlias "$MY_KEYSTORE_ALIAS" \
                 --ksPass "$MY_KEYSTORE_PASSWORD" \
                 --ksKeyPass "$MY_KEYSTORE_ALIAS_KEY_PASSWORD" \
                 2>>"$thisConsoleTempLogFile")
         else
-            sign_output=$(java -jar ./src/dependencies/bin/signer.jar \
-                --apk "$apk_file" \
+            signOutput=$(java -jar ./src/dependencies/bin/signer.jar \
+                --apk "$apkFile" \
                 2>>"$thisConsoleTempLogFile")
         fi
-
-        signed_apk=$(echo "$sign_output" \
+        signedApk=$(echo "$signOutput" \
             | grep 'file:.*-aligned-.*\.apk' \
             | sed -n '2p' \
             | grep -oP 'file: \K.*?-aligned-.*?\.apk' \
             | sed 's|.*\(src/.*\)|\1|')
-
         # Fallback to first if second not found
-        if [[ ! -f "$signed_apk" ]]; then
-            signed_apk=$(echo "$sign_output" \
+        if [[ ! -f "$signedApk" ]]; then
+            signedApk=$(echo "$signOutput" \
                 | grep 'file:.*-aligned-.*\.apk' \
                 | sed -n '1p' \
                 | grep -oP 'file: \K.*?-aligned-.*?\.apk' \
                 | sed 's|.*\(src/.*\)|\1|')
         fi
-
-        [[ ! -f "$signed_apk" ]] && abort "No signed APK found from signing output." "buildAndSignThePackage"
+        [[ ! -f "$signedApk" ]] && abort "No signed APK found from signing output." "buildAndSignThePackage"
     else
-        signed_apk="$apk_file"
+        signedApk="$apkFile"
     fi
-
-    # Move signed APK to final location
-    mv "$signed_apk" "$app_path/" || abort "Failed to move APK to target location: $app_path" "buildAndSignThePackage"
-
-    # Clean up
-    rm -rf "$extracted_dir_path/build" "$extracted_dir_path/dist/" "$extracted_dir_path/original/"
+    # Move signed APK to final location and clean up
+    mv "$signedApk" "$appPath/" || abort "Failed to move APK to target location: $appPath" "buildAndSignThePackage"
+    rm -rf "$extractedDir/build" "$extractedDir/dist/" "$extractedDir/original/"
 }
 
 function catchDuplicatesInXML() {
@@ -1004,7 +985,7 @@ function compareDefaultMakeConfigs() {
         localVariableValue="$(echo "${differences}" | cut -d '=' --fields=-1)"
         localValue=$(grep_prop ${localVariableValue} ./src/makeconfigs.prop)
         localUntouchedValue=$(grep_prop ${localVariableValue} ./localUntouched)
-        [ "${localValue}" == "${localUntouchedValue}" ] || echo "+ ${localVariableValue}"
+        [ "${localValue}" == "${localUntouchedValue}" ] || echo "+ ${localVariableValue}" || echo "- ${localVariableValue}"
     done
 }
 
@@ -1067,8 +1048,6 @@ function runModule() {
         [[ "$(grep_prop moduleContainsFiles "${moduleProp}")" == "true" && ! -f "${moduleBlobRootMap}" ]] && abort "Can't fetch module blob root map file, check the sources and try running again." "runModule"
         [[ "$(grep_prop hasSDKVersionRestrictions "${moduleProp}")" == "true" && "${BUILD_TARGET_SDK_VERSION}" -ge "$(grep_prop leastSupportedSDKVersion "${moduleProp}")" && "${BUILD_TARGET_SDK_VERSION}" -le "$(grep_prop maxSupportedSDKVersion "${moduleProp}")" ]] && \
             abort "This module is not supported on your current SDK version (${BUILD_TARGET_SDK_VERSION})." "runModule"
-        # perfect use of cURL and brain gng 🤑🤑
-        curl "$(grep_prop baseModuleURL "${moduleProp}")" &>/dev/null | grep -q "Not Found" && abort "Can't run this module with unknown link, please download the module again or find one with proper source link." "runModule" || debugPrint "runModule(): Module source link is valid, proceeding with the module run."
         . "./src/outskirts/addon-modules/${moduleName}/customize.sh" "${moduleProp}" "./src/outskirts/addon-modules/${moduleName}/module_blob_files.rootMap"
         return $?
     fi
